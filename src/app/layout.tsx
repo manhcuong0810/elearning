@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import React from 'react';
+import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,6 +18,10 @@ export default function RootLayout({
     <html lang="vi">
       <body className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-emerald-50 text-slate-900 antialiased">
         {children}
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

@@ -49,49 +49,107 @@ export function AuthModal({
     defaultAudioManager.playSfx('click');
     setLocalError(null);
 
-    // If real Google Client ID is configured and script is available:
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (clientId && typeof window !== 'undefined' && (window as unknown as { google?: { accounts?: { id?: unknown } } }).google?.accounts?.id) {
-      // Trigger official Google Identity Services
-      try {
-        const googleObj = (window as unknown as {
-          google: {
-            accounts: {
-              id: {
-                initialize: (opts: unknown) => void;
-                prompt: () => void;
+    const winGoogle =
+      typeof window !== 'undefined'
+        ? (window as unknown as {
+            google?: {
+              accounts?: {
+                oauth2?: {
+                  initTokenClient: (config: unknown) => {
+                    requestAccessToken: (opts?: unknown) => void;
+                  };
+                };
+                id?: {
+                  initialize: (opts: unknown) => void;
+                  prompt: () => void;
+                };
               };
             };
-          };
-        }).google;
+          }).google
+        : null;
 
-        googleObj.accounts.id.initialize({
-          client_id: clientId,
-          callback: async (response: { credential?: string }) => {
-            if (response.credential) {
-              try {
-                // Decode Google JWT payload
-                const base64Url = response.credential.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const payload = JSON.parse(decodeURIComponent(escape(atob(base64))));
-                const user = await loginWithGoogle({
-                  email: payload.email,
-                  fullName: payload.name || payload.email.split('@')[0],
-                  avatarUrl: payload.picture || '👩‍👧',
-                });
-                defaultAudioManager.playSfx('cheer');
-                onSuccess?.(user);
-                onClose();
-              } catch {
-                setLocalError('Lỗi xác thực chứng chỉ Google. Vui lòng thử lại!');
+    if (clientId && winGoogle?.accounts) {
+      // 1. Try OAuth 2.0 Token Client (Popup window, modern & most reliable)
+      if (winGoogle.accounts.oauth2?.initTokenClient) {
+        try {
+          const tokenClient = winGoogle.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: 'email profile openid',
+            callback: async (tokenResponse: {
+              access_token?: string;
+              error?: string;
+            }) => {
+              if (tokenResponse.error) {
+                setLocalError(`Google OAuth: ${tokenResponse.error}`);
+                return;
               }
-            }
-          },
-        });
-        googleObj.accounts.id.prompt();
-        return;
-      } catch (err) {
-        console.warn('Google SDK prompt failed, falling back to interactive modal', err);
+              if (tokenResponse.access_token) {
+                try {
+                  const res = await fetch(
+                    'https://www.googleapis.com/oauth2/v3/userinfo',
+                    {
+                      headers: {
+                        Authorization: `Bearer ${tokenResponse.access_token}`,
+                      },
+                    }
+                  );
+                  const info = await res.json();
+                  const user = await loginWithGoogle({
+                    email: info.email,
+                    fullName: info.name || info.email?.split('@')[0] || 'Phụ Huynh Google',
+                    avatarUrl: info.picture || '👩‍👧',
+                  });
+                  defaultAudioManager.playSfx('cheer');
+                  onSuccess?.(user);
+                  onClose();
+                } catch {
+                  setLocalError(
+                    'Không thể lấy thông tin từ Google API. Vui lòng thử lại!'
+                  );
+                }
+              }
+            },
+          });
+          tokenClient.requestAccessToken({ prompt: 'select_account' });
+          return;
+        } catch (err) {
+          console.warn('Google initTokenClient failed, falling back to ID prompt', err);
+        }
+      }
+
+      // 2. Try Google ID initialize / prompt
+      if (winGoogle.accounts.id?.initialize) {
+        try {
+          winGoogle.accounts.id.initialize({
+            client_id: clientId,
+            callback: async (response: { credential?: string }) => {
+              if (response.credential) {
+                try {
+                  const base64Url = response.credential.split('.')[1];
+                  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                  const payload = JSON.parse(
+                    decodeURIComponent(escape(atob(base64)))
+                  );
+                  const user = await loginWithGoogle({
+                    email: payload.email,
+                    fullName: payload.name || payload.email.split('@')[0],
+                    avatarUrl: payload.picture || '👩‍👧',
+                  });
+                  defaultAudioManager.playSfx('cheer');
+                  onSuccess?.(user);
+                  onClose();
+                } catch {
+                  setLocalError('Lỗi xác thực chứng chỉ Google. Vui lòng thử lại!');
+                }
+              }
+            },
+          });
+          winGoogle.accounts.id.prompt();
+          return;
+        } catch (err) {
+          console.warn('Google ID prompt failed, falling back to interactive modal', err);
+        }
       }
     }
 
