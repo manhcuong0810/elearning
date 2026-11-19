@@ -1,0 +1,50 @@
+[
+  {
+    "id": "hat_knight",
+    "name": "Mũ Hiệp Sĩ Vàng",
+    "category": "hat",
+    "cost": 30,
+    "description": "Chiếc mũ lấp lánh dành cho Hiệp Sĩ Toán Học dũng cảm!",
+    "iconType": "crown"
+  },
+  {
+    "id": "cape_star",
+    "name": "Áo Choàng Ánh Sao",
+    "category": "cape",
+    "cost": 40,
+    "description": "Áo choàng bầu trời đêm điểm ngàn vì sao tỏa sáng.",
+    "iconType": "sparkles"
+  },
+  {
+    "id": "wand_rainbow",
+    "name": "Đũa Phép Cầu Vồng",
+    "category": "wand",
+    "cost": 45,
+    "description": "Cây đũa phép 7 sắc cầu vồng giúp phép tính thêm diệu kỳ!",
+    "iconType": "wand"
+  },
+  {
+    "id": "food_apple_gold",
+    "name": "Táo Vàng Cho Cú Mèo",
+    "category": "pet_food",
+    "cost": 20,
+    "description": "Trái táo vàng ngọt lịm giúp Cú Mèo Thông Thái thêm vui vẻ!",
+    "iconType": "apple"
+  },
+  {
+    "id": "hat_wizard",
+    "name": "Mũ Phù Thủy Sao Băng",
+    "category": "hat",
+    "cost": 35,
+    "description": "Chiếc mũ chóp tím kỳ diệu của bậc thầy đếm số.",
+    "iconType": "hat"
+  },
+  {
+    "id": "food_berry_magic",
+    "name": "Dâu Tây Lấp Lánh",
+    "category": "pet_food",
+    "cost": 15,
+    "description": "Món quà nhỏ xinh thưởng cho bạn đồng hành Cú Mèo.",
+    "iconType": "berry"
+  }
+]
