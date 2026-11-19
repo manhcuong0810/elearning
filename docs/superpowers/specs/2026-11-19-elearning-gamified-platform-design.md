@@ -142,8 +142,19 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
     - Bảng vinh danh tuần (Mini Leaderboard) tạo động lực thi đua cùng bạn bè.
 - **Kiến trúc Modal An toàn Viewport (Viewport-Safe Modal Architecture)**:
   - Vì thanh điều hướng `<header>` sử dụng hiệu ứng làm mờ nền `backdrop-blur-md` (`backdrop-filter`), CSS sẽ tạo Containing Block làm sai lệch tọa độ của các phần tử `position: fixed`.
-  - Toàn bộ modal (Chọn hồ sơ bé `profile-switcher-modal`, Cổng phụ huynh `parental-gate-modal`) bắt buộc sử dụng **React `createPortal`** gắn trực tiếp vào `document.body`.
+  - Toàn bộ modal (Chọn hồ sơ bé `profile-switcher-modal`, Cổng phụ huynh `parental-gate-modal`, Cửa sổ đăng nhập `auth-modal`) bắt buộc sử dụng **React `createPortal`** gắn trực tiếp vào `document.body`.
   - Cấu hình an toàn: `z-[9999]`, padding trên/dưới `py-8 sm:py-12`, giới hạn `max-h-[85vh]` kèm `overflow-y-auto` để đảm bảo không bao giờ bị cắt cụt phần đầu (Top) hay đáy trên mọi kích cỡ màn hình.
+
+### 5.4. Kiến Trúc Xác Thực Tài Khoản Phụ Huynh & Đăng Nhập Google (Auth Architecture)
+- **Mô hình người dùng**:
+  - `ParentUser`: `{ id, email, fullName, avatarUrl, provider: 'google' | 'email' | 'guest', createdAt }`.
+  - `AuthSession`: Quản lý phiên đăng nhập của phụ huynh, lưu trữ an toàn trong localStorage/cookies.
+- **Phương thức đăng nhập**:
+  - **1-Click Google Sign-In**: Đăng nhập nhanh qua tài khoản Google của phụ huynh, tự động trích xuất tên, email, ảnh đại diện Google.
+  - **Email & Mật khẩu**: Cho phép phụ huynh đăng ký tài khoản độc lập với mật khẩu bảo mật (tối thiểu 6 ký tự).
+- **Chế độ Học Thử (Guest Mode)**:
+  - Người dùng mới hoặc các bé chưa cần đăng nhập vẫn có thể trải nghiệm toàn bộ bài học và tính năng.
+  - Khi phụ huynh đăng nhập hoặc đăng ký tài khoản, hệ thống tự động liên kết tiến độ và hồ sơ con hiện có vào tài khoản mới.
 
 ---
 
