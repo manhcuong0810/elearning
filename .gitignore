@@ -6,3 +6,5 @@ dist/
 .superpowers/
 .env*.local
 *.log
+*.tsbuildinfo
+
