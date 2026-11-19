@@ -35,6 +35,19 @@ export interface LeaderboardItem {
   isUser?: boolean;
 }
 
+export interface WeeklyLearner {
+  name: string;
+  stars: number;
+  emoji: string;
+}
+
+export const DEFAULT_WEEKLY_LEARNERS: WeeklyLearner[] = [
+  { name: 'Bé Bo', stars: 45, emoji: '🐯' },
+  { name: 'Bé Tuấn Minh', stars: 38, emoji: '🦁' },
+  { name: 'Bé Bảo An', stars: 32, emoji: '🐰' },
+  { name: 'Bé Mai Chi', stars: 25, emoji: '🐼' },
+];
+
 export function ActivitiesSidebar({
   todayStars = 0,
   stagesCompletedToday = 0,
@@ -103,58 +116,88 @@ export function ActivitiesSidebar({
   };
 
   const leaderboard: LeaderboardItem[] = useMemo(() => {
+    // Nếu chưa đăng nhập: Hiển thị bảng vàng tuần bình thường
     if (!isAuthenticated) {
-      return [];
-    }
+      return DEFAULT_WEEKLY_LEARNERS.map((learner, index) => {
+        const rank = index + 1;
+        let medal = '⭐';
+        if (rank === 1) medal = '🥇';
+        else if (rank === 2) medal = '🥈';
+        else if (rank === 3) medal = '🥉';
 
-    const effectiveUserStars = totalStars ?? todayStars;
-
-    if (familyProfiles && familyProfiles.length > 0) {
-      const items = familyProfiles.map((p, idx) => {
-        const isCurrent = p.name === childName;
-        const stars = isCurrent ? effectiveUserStars : 0;
         return {
-          rank: idx + 1,
-          name: isCurrent ? `${p.name} (Bạn)` : p.name,
-          stars,
-          emoji: p.avatarEmoji || '👧',
-          medal: '⭐',
-          isUser: isCurrent,
+          rank,
+          name: learner.name,
+          stars: learner.stars,
+          emoji: learner.emoji,
+          medal,
+          isUser: false,
         };
       });
-
-      return items
-        .sort((a, b) => b.stars - a.stars)
-        .map((item, index) => {
-          const rank = index + 1;
-          let medal = '⭐';
-          if (rank === 1) medal = '🥇';
-          else if (rank === 2) medal = '🥈';
-          else if (rank === 3) medal = '🥉';
-
-          return {
-            ...item,
-            rank,
-            medal,
-          };
-        });
     }
 
-    if (childName) {
-      return [
-        {
-          rank: 1,
-          name: `${childName} (Bạn)`,
+    // Nếu đã đăng nhập:
+    const effectiveUserStars = totalStars ?? todayStars ?? 0;
+    const currentName = childName?.trim();
+
+    // Khởi tạo danh sách các bạn tiêu biểu
+    let items: Array<{
+      name: string;
+      stars: number;
+      emoji: string;
+      isUser: boolean;
+    }> = DEFAULT_WEEKLY_LEARNERS.map((learner) => ({
+      name: learner.name,
+      stars: learner.stars,
+      emoji: learner.emoji,
+      isUser: false,
+    }));
+
+    if (currentName) {
+      const matchIndex = items.findIndex(
+        (item) => item.name.toLowerCase() === currentName.toLowerCase()
+      );
+
+      if (matchIndex >= 0) {
+        // Trùng tên trong bảng vàng: thêm (Bạn) và cập nhật số sao của bé
+        items[matchIndex] = {
+          ...items[matchIndex],
+          name: `${items[matchIndex].name} (Bạn)`,
           stars: effectiveUserStars,
-          emoji: childEmoji,
-          medal: '🥇',
+          emoji: childEmoji || items[matchIndex].emoji,
           isUser: true,
-        },
-      ];
+        };
+      } else {
+        // Thêm bé vào bảng vàng để cùng xếp hạng
+        items.push({
+          name: `${currentName} (Bạn)`,
+          stars: effectiveUserStars,
+          emoji: childEmoji || '👧',
+          isUser: true,
+        });
+      }
     }
 
-    return [];
-  }, [isAuthenticated, totalStars, todayStars, childName, childEmoji, familyProfiles]);
+    // Sắp xếp giảm dần theo số sao
+    items.sort((a, b) => b.stars - a.stars);
+
+    return items.map((item, index) => {
+      const rank = index + 1;
+      let medal = '⭐';
+      if (rank === 1) medal = '🥇';
+      else if (rank === 2) medal = '🥈';
+      else if (rank === 3) medal = '🥉';
+
+      return {
+        rank,
+        name: item.name,
+        stars: item.stars,
+        emoji: item.emoji,
+        medal,
+        isUser: item.isUser,
+      };
+    });
+  }, [isAuthenticated, totalStars, todayStars, childName, childEmoji]);
 
   return (
     <aside
@@ -340,27 +383,7 @@ export function ActivitiesSidebar({
           <span className="text-[11px] font-bold text-slate-400">Lớp 1</span>
         </div>
 
-        {!isAuthenticated ? (
-          <div
-            data-testid="guest-leaderboard-lock"
-            className="p-4 rounded-2xl bg-amber-50/70 border-2 border-amber-200 text-center flex flex-col items-center gap-2"
-          >
-            <span className="text-2xl" role="img" aria-label="Khóa">
-              🔒
-            </span>
-            <p className="text-xs font-bold text-amber-900 leading-relaxed">
-              Bảng vinh danh chỉ ghi nhận và xếp hạng thành tích từ tài khoản học sinh thật.
-            </p>
-            <button
-              type="button"
-              data-testid="leaderboard-login-cta-btn"
-              onClick={onOpenAuthModal}
-              className="btn-3d text-xs font-black px-4 py-2 rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 text-slate-900 border-2 border-white border-b-4 border-b-amber-600 shadow-md transition-transform hover:scale-105 active:scale-95"
-            >
-              Đăng nhập để vào bảng vàng
-            </button>
-          </div>
-        ) : leaderboard.length > 0 ? (
+        {leaderboard.length > 0 ? (
           <div className="flex flex-col gap-2">
             {leaderboard.map((item) => (
               <div
@@ -387,15 +410,35 @@ export function ActivitiesSidebar({
               </div>
             ))}
 
-            {leaderboard[0]?.stars === 0 ? (
-              <p className="text-[11px] font-bold text-slate-500 text-center bg-slate-50 rounded-xl py-1.5 px-2 border border-slate-200 mt-1">
-                💡 Bé hãy chinh phục các ải toán để tích lũy Sao tỏa sáng trên Bảng vàng nhé!
-              </p>
-            ) : (
-              <p className="text-[11px] font-bold text-amber-800 text-center bg-amber-50 rounded-xl py-1.5 px-2 border border-amber-200 mt-1">
-                🎉 Bé {childName} đang giữ vị trí Top 1 với {totalStars ?? todayStars} ⭐!
-              </p>
-            )}
+            {!isAuthenticated ? (
+              <div className="text-[11px] font-bold text-amber-800 bg-amber-50 rounded-xl py-2 px-3 border border-amber-200 mt-1 flex items-center justify-between gap-2">
+                <span>💡 Đăng nhập để ghi tên bé lên Bảng vinh danh!</span>
+                {onOpenAuthModal && (
+                  <button
+                    type="button"
+                    onClick={onOpenAuthModal}
+                    className="text-orange-600 underline font-black hover:text-orange-700 whitespace-nowrap cursor-pointer"
+                  >
+                    Đăng nhập
+                  </button>
+                )}
+              </div>
+            ) : (() => {
+              const userItem = leaderboard.find((item) => item.isUser);
+              if (!userItem) return null;
+              if (userItem.rank === 1) {
+                return (
+                  <p className="text-[11px] font-bold text-amber-800 text-center bg-amber-50 rounded-xl py-1.5 px-2 border border-amber-200 mt-1">
+                    🎉 Bé {childName} đang giữ vị trí Top 1 với {userItem.stars} ⭐!
+                  </p>
+                );
+              }
+              return (
+                <p className="text-[11px] font-bold text-slate-600 text-center bg-slate-50 rounded-xl py-1.5 px-2 border border-slate-200 mt-1">
+                  💪 Bé {childName} đang ở Hạng {userItem.rank} ({userItem.stars} ⭐). Cố gắng tích lũy thêm sao nhé!
+                </p>
+              );
+            })()}
           </div>
         ) : (
           <p className="text-xs font-bold text-slate-500 text-center py-3">
