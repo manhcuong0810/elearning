@@ -177,86 +177,82 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
             </div>
           </div>
 
-          <div className="h-7 w-[2px] bg-slate-200 hidden sm:block" />
+          {isAuthenticated && (
+            <>
+              <div className="h-7 w-[2px] bg-slate-200 hidden sm:block" />
 
-          {/* Child Profile Switcher Badge */}
-          <button
-            type="button"
-            data-testid="active-profile-badge"
-            onClick={() => {
-              audioManager.playSfx('click');
-              if (!isAuthenticated) {
-                openAuthModal(
-                  'Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để tạo hồ sơ riêng cho bé và đặt mã PIN nhé!'
-                );
-              } else {
-                setIsProfileModalOpen(true);
-              }
-            }}
-            className="btn-3d min-h-[48px] px-3.5 py-1.5 rounded-2xl bg-gradient-to-b from-sky-50 to-sky-100 border-2 border-sky-300 border-b-4 border-b-sky-400 flex items-center gap-2"
-            aria-label={
-              isAuthenticated
-                ? `Đổi hồ sơ bé: hiện tại là ${effectiveActiveProfile.name}`
-                : 'Đăng nhập để tạo hồ sơ bé'
-            }
-          >
-            <span
-              className="text-xl sm:text-2xl drop-shadow-sm"
-              role="img"
-              aria-hidden="true"
-            >
-              {effectiveActiveProfile.avatarEmoji}
-            </span>
-            <div className="text-left">
-              <span className="text-xs sm:text-sm font-black text-slate-800 block leading-tight">
-                {effectiveActiveProfile.name}
-              </span>
-              <span className="text-[10px] font-black text-sky-700 block leading-tight">
-                {isAuthenticated
-                  ? `${effectiveActiveProfile.gradeLabel} ▾`
-                  : 'Khách (Đăng nhập để thêm bé ▾)'}
-              </span>
-            </div>
-          </button>
+              {/* Child Profile Switcher Badge */}
+              <button
+                type="button"
+                data-testid="active-profile-badge"
+                onClick={() => {
+                  audioManager.playSfx('click');
+                  setIsProfileModalOpen(true);
+                }}
+                className="btn-3d min-h-[48px] px-3.5 py-1.5 rounded-2xl bg-gradient-to-b from-sky-50 to-sky-100 border-2 border-sky-300 border-b-4 border-b-sky-400 flex items-center gap-2"
+                aria-label={`Đổi hồ sơ bé: hiện tại là ${effectiveActiveProfile.name}`}
+              >
+                <span
+                  className="text-xl sm:text-2xl drop-shadow-sm"
+                  role="img"
+                  aria-hidden="true"
+                >
+                  {effectiveActiveProfile.avatarEmoji}
+                </span>
+                <div className="text-left">
+                  <span className="text-xs sm:text-sm font-black text-slate-800 block leading-tight">
+                    {effectiveActiveProfile.name}
+                  </span>
+                  <span className="text-[10px] font-black text-sky-700 block leading-tight">
+                    {effectiveActiveProfile.gradeLabel} ▾
+                  </span>
+                </div>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Right: Currency Counters & Sound Mute Toggle */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Star Counter */}
-          <div
-            data-testid="header-total-stars"
-            className="flex items-center gap-1.5 bg-gradient-to-b from-amber-50 to-amber-100 px-3 py-1.5 rounded-2xl border-2 border-amber-300 border-b-4 border-b-amber-400 shadow-sm"
-            title="Tổng số Sao"
-          >
-            <span className="text-lg animate-wiggle" role="img" aria-label="Sao">
-              ⭐
-            </span>
-            <span className="text-sm sm:text-base font-black text-amber-950">{totalStars}</span>
-          </div>
+          {isAuthenticated && (
+            <>
+              {/* Star Counter */}
+              <div
+                data-testid="header-total-stars"
+                className="flex items-center gap-1.5 bg-gradient-to-b from-amber-50 to-amber-100 px-3 py-1.5 rounded-2xl border-2 border-amber-300 border-b-4 border-b-amber-400 shadow-sm"
+                title="Tổng số Sao"
+              >
+                <span className="text-lg animate-wiggle" role="img" aria-label="Sao">
+                  ⭐
+                </span>
+                <span className="text-sm sm:text-base font-black text-amber-950">{totalStars}</span>
+              </div>
 
-          {/* Coin Counter */}
-          <div
-            data-testid="header-total-coins"
-            className="flex items-center gap-1.5 bg-gradient-to-b from-yellow-50 to-yellow-100 px-3 py-1.5 rounded-2xl border-2 border-yellow-300 border-b-4 border-b-yellow-400 shadow-sm"
-            title="Tổng số Xu Vàng"
-          >
-            <span className="text-lg animate-wiggle" role="img" aria-label="Xu vàng">
-              🪙
-            </span>
-            <span className="text-sm sm:text-base font-black text-yellow-950">{totalCoins}</span>
-          </div>
+              {/* Coin Counter */}
+              <div
+                data-testid="header-total-coins"
+                className="flex items-center gap-1.5 bg-gradient-to-b from-yellow-50 to-yellow-100 px-3 py-1.5 rounded-2xl border-2 border-yellow-300 border-b-4 border-b-yellow-400 shadow-sm"
+                title="Tổng số Xu Vàng"
+              >
+                <span className="text-lg animate-wiggle" role="img" aria-label="Xu vàng">
+                  🪙
+                </span>
+                <span className="text-sm sm:text-base font-black text-yellow-950">{totalCoins}</span>
+              </div>
 
-          {/* EXP Counter */}
-          <div
-            data-testid="header-total-exp"
-            className="hidden md:flex items-center gap-1.5 bg-gradient-to-b from-purple-50 to-purple-100 px-3 py-1.5 rounded-2xl border-2 border-purple-300 border-b-4 border-b-purple-400 shadow-sm"
-            title="Điểm kinh nghiệm EXP"
-          >
-            <span className="text-lg" role="img" aria-label="EXP">
-              ⚡
-            </span>
-            <span className="text-sm sm:text-base font-black text-purple-950">{totalExp}</span>
-          </div>
+              {/* EXP Counter */}
+              <div
+                data-testid="header-total-exp"
+                className="hidden md:flex items-center gap-1.5 bg-gradient-to-b from-purple-50 to-purple-100 px-3 py-1.5 rounded-2xl border-2 border-purple-300 border-b-4 border-b-purple-400 shadow-sm"
+                title="Điểm kinh nghiệm EXP"
+              >
+                <span className="text-lg" role="img" aria-label="EXP">
+                  ⚡
+                </span>
+                <span className="text-sm sm:text-base font-black text-purple-950">{totalExp}</span>
+              </div>
+            </>
+          )}
 
           {/* Mute Toggle */}
           <button

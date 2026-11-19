@@ -318,23 +318,24 @@ export function ActivitiesSidebar({
           {leaderboard.map((item) => (
             <div
               key={`${item.rank}-${item.name}`}
-              className={`flex items-center justify-between px-3 py-2 rounded-2xl border-2 transition-all ${
+              className={`flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border-2 transition-all ${
                 item.isUser
                   ? 'bg-amber-100/80 border-amber-400 shadow-sm'
                   : 'bg-slate-50 border-slate-200'
               }`}
             >
-              <div className="flex items-center gap-2.5">
-                <span className="text-base font-black w-5 text-center">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="text-base font-black w-5 text-center shrink-0">
                   {item.medal}
                 </span>
-                <span className="text-xl">{item.emoji}</span>
-                <span className="text-xs sm:text-sm font-black text-slate-800">
+                <span className="text-xl shrink-0">{item.emoji}</span>
+                <span className="text-xs sm:text-sm font-black text-slate-800 truncate">
                   {item.name}
                 </span>
               </div>
-              <span className="text-xs font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                {item.stars} ⭐
+              <span className="text-xs font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 whitespace-nowrap shrink-0 inline-flex items-center gap-1">
+                <span>{item.stars}</span>
+                <span>⭐</span>
               </span>
             </div>
           ))}

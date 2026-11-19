@@ -23,8 +23,9 @@ describe('New Parent Onboarding & Child Profile Creation Flow', () => {
   it('triggers CreateChildModal onboarding when a new parent signs in with 0 children, and switches to created child', async () => {
     render(<HomePage />);
 
-    // 1. Initial state is unauthenticated Guest
-    expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Học Thử');
+    // 1. Initial state is unauthenticated Guest (no profile badge and no currency counters)
+    expect(screen.queryByTestId('active-profile-badge')).toBeNull();
+    expect(screen.queryByTestId('header-total-stars')).toBeNull();
 
     // 2. Open auth modal and register a new parent account
     fireEvent.click(screen.getByTestId('auth-open-modal-btn'));

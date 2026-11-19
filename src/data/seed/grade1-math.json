@@ -6,11 +6,11 @@
   "chapters": [
     {
       "id": "chapter_1",
-      "title": "Thung lũng Số đếm (1-10)",
-      "description": "Làm quen với các chữ số từ 1 đến 10 qua trò chơi đếm đồ vật sinh động",
+      "title": "Vườn Hoa Số Đếm (Thung lũng Số đếm)",
+      "description": "Làm quen với các chữ số từ 1 đến 10 qua trò chơi hái hoa quả sinh động",
       "order": 1,
-      "theme": "valley",
-      "icon": "mountain",
+      "theme": "garden-valley",
+      "icon": "flower",
       "stages": [
         {
           "id": "stage_1",
@@ -256,10 +256,10 @@
     },
     {
       "id": "chapter_2",
-      "title": "Rừng Phép cộng phạm vi 10",
-      "description": "Cùng các bạn thú trong rừng rậm học phép cộng kỳ diệu",
+      "title": "Vườn Cây Phép Cộng (Rừng Phép cộng)",
+      "description": "Cùng các bạn thú trong khu vườn cổ tích học phép cộng kỳ diệu",
       "order": 2,
-      "theme": "forest",
+      "theme": "garden-forest",
       "icon": "trees",
       "stages": [
         {
@@ -407,6 +407,229 @@
               ],
               "rewardCoins": 20,
               "rewardExp": 40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chapter_3",
+      "title": "Đồi Nấm Phép trừ & Hình khối Kỳ diệu",
+      "description": "Hái cà rốt tặng bạn thỏ và dựng hàng rào hình khối bảo vệ khu vườn",
+      "order": 3,
+      "theme": "garden-hills",
+      "icon": "flower",
+      "stages": [
+        {
+          "id": "stage_5",
+          "chapterId": "chapter_3",
+          "name": "Hái Cà Rốt Tặng Thỏ Trắng",
+          "order": 1,
+          "isBoss": false,
+          "description": "Làm quen với phép trừ và bớt đi trong phạm vi 10",
+          "icon": "carrot",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 8,
+          "questions": [
+            {
+              "id": "math_g1_c3_s5_q1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "stage_5",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Có 6 củ cà rốt, bạn Thỏ ăn mất 2 củ. Còn lại bao nhiêu củ cà rốt?",
+              "promptAudioUrl": "/audio/math/g1_c3_s5_q1_6_minus_2.mp3",
+              "options": [
+                { "id": "opt1", "text": "3", "isCorrect": false },
+                { "id": "opt2", "text": "4", "isCorrect": true },
+                { "id": "opt3", "text": "5", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c3_s5_q2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "stage_5",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Bé hãy tính: 9 − 4 = ?",
+              "promptAudioUrl": "/audio/math/g1_c3_s5_q2_9_minus_4.mp3",
+              "options": [
+                { "id": "opt1", "text": "5", "isCorrect": true },
+                { "id": "opt2", "text": "4", "isCorrect": false },
+                { "id": "opt3", "text": "6", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c3_s5_q3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "stage_5",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Bé hãy tính: 10 − 5 = ?",
+              "promptAudioUrl": "/audio/math/g1_c3_s5_q3_10_minus_5.mp3",
+              "options": [
+                { "id": "opt1", "text": "4", "isCorrect": false },
+                { "id": "opt2", "text": "5", "isCorrect": true }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            }
+          ]
+        },
+        {
+          "id": "stage_6",
+          "chapterId": "chapter_3",
+          "name": "Xây Hàng Rào Hình Khối",
+          "order": 2,
+          "isBoss": false,
+          "description": "Nhận biết các hình khối cơ bản: tròn, vuông, tam giác",
+          "icon": "shapes",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 11,
+          "questions": [
+            {
+              "id": "math_g1_c3_s6_q1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "stage_6",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Hình nào dưới đây là Hình Tam Giác có 3 cạnh?",
+              "promptAudioUrl": "/audio/math/g1_c3_s6_q1_triangle.mp3",
+              "options": [
+                { "id": "opt1", "text": "🔺 Hình tam giác", "isCorrect": true },
+                { "id": "opt2", "text": "⬛ Hình vuông", "isCorrect": false },
+                { "id": "opt3", "text": "⚪ Hình tròn", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c3_s6_q2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "stage_6",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Ông mặt trời và quả bóng bàn có dạng hình gì?",
+              "promptAudioUrl": "/audio/math/g1_c3_s6_q2_circle.mp3",
+              "options": [
+                { "id": "opt1", "text": "Hình vuông", "isCorrect": false },
+                { "id": "opt2", "text": "Hình tròn", "isCorrect": true }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c3_s6_q3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "stage_6",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Bức tranh chiếc bánh chưng ngày Tết có dạng hình gì?",
+              "promptAudioUrl": "/audio/math/g1_c3_s6_q3_square.mp3",
+              "options": [
+                { "id": "opt1", "text": "Hình vuông", "isCorrect": true },
+                { "id": "opt2", "text": "Hình tam giác", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            }
+          ]
+        },
+        {
+          "id": "boss_c3",
+          "chapterId": "chapter_3",
+          "name": "Boss Nhím Gai Vườn Bách Thảo",
+          "order": 3,
+          "isBoss": true,
+          "bossMaxHp": 5,
+          "bossName": "Boss Nhím Gai",
+          "bossAvatar": "/images/bosses/hedgehog.png",
+          "description": "Giải đố toán học để thuyết phục bạn Nhím bảo vệ khu vườn!",
+          "icon": "shield-alert",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 14,
+          "questions": [
+            {
+              "id": "bq3_1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "boss_c3",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "7 − 3 = ?",
+              "promptAudioUrl": "/audio/math/boss3_q1_7_minus_3.mp3",
+              "options": [
+                { "id": "o1", "text": "4", "isCorrect": true },
+                { "id": "o2", "text": "5", "isCorrect": false }
+              ],
+              "rewardCoins": 25,
+              "rewardExp": 50
+            },
+            {
+              "id": "bq3_2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "boss_c3",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "5 + 3 = ?",
+              "promptAudioUrl": "/audio/math/boss3_q2_mix.mp3",
+              "options": [
+                { "id": "o1", "text": "7", "isCorrect": false },
+                { "id": "o2", "text": "8", "isCorrect": true }
+              ],
+              "rewardCoins": 25,
+              "rewardExp": 50
+            },
+            {
+              "id": "bq3_3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_3",
+              "levelId": "boss_c3",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "8 − 4 = ?",
+              "promptAudioUrl": "/audio/math/boss3_q3_8_minus_4.mp3",
+              "options": [
+                { "id": "o1", "text": "4", "isCorrect": true },
+                { "id": "o2", "text": "3", "isCorrect": false }
+              ],
+              "rewardCoins": 25,
+              "rewardExp": 50
             }
           ]
         }

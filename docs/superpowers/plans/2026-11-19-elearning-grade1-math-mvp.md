@@ -820,3 +820,51 @@ git commit -m "feat: integrate main application navigation, home page and parent
 
 - [x] **Step 9: Commit**
   - Commit mã nguồn với Conventional Commits `feat(auth): enforce mandatory auth gate, dynamic parental challenges, real streak and standard leaderboard`.
+
+---
+
+## Task 15: Ẩn Dữ Liệu Khách (Profile Bé & Bộ Đếm), Sửa Hiển Thị Sao Leaderboard & Nâng Cấp Bản Đồ Khu Vườn Toán Học
+
+- Files:
+  - `src/components/navigation/MainHeader.tsx`
+  - `src/components/dashboard/CompanionSidebar.tsx`
+  - `src/components/dashboard/ActivitiesSidebar.tsx`
+  - `src/components/map/AdventureMap.tsx`
+  - `src/data/seed/grade1-math.json`
+- Tests:
+  - `tests/integration/auth-flow.test.tsx`
+  - `tests/integration/onboarding-flow.test.tsx`
+  - `tests/unit/companion-sidebar.test.tsx`
+  - `tests/unit/adventure-map.test.tsx`
+
+**Interfaces:**
+- Consumes: `useAuthStore` (`isAuthenticated`), `Curriculum` (`chapters`, `stages`).
+- Produces:
+  - Header: Khi `!isAuthenticated`, ẩn hoàn toàn huy hiệu hồ sơ bé (không còn "Bé Học Thử") và ẩn toàn bộ bộ đếm Sao, Xu, EXP.
+  - CompanionSidebar: Khi `!isAuthenticated`, ẩn thẻ Cấp độ & EXP (không hiển thị 0 EXP vô lý cho khách).
+  - ActivitiesSidebar: Tối ưu hàng Bảng vinh danh tuần hiển thị trọn vẹn trên 1 dòng đơn, không bị ngắt/xuống dòng số sao (`truncate`, `whitespace-nowrap shrink-0`).
+  - AdventureMap & Curriculum: Nâng cấp chủ đề sang **Khu Vườn Toán Học Kỳ Diệu** với lối đi lát đá cỏ hoa, bổ sung Chương 3 Đồi Nấm Phép Trừ & Hình Khối với nhiều ải học và Boss Nhím Gai 🦔.
+
+- [x] **Step 1: Write/Update failing tests**
+  - Cập nhật `tests/integration/auth-flow.test.tsx` và `tests/integration/onboarding-flow.test.tsx`: xác nhận `active-profile-badge` và các bộ đếm `header-total-stars`, `header-total-coins`, `header-total-exp` đều là `null` khi unauthenticated.
+  - Cập nhật `tests/unit/companion-sidebar.test.tsx`: xác nhận thẻ tiến độ EXP ẩn khi unauthenticated.
+
+- [x] **Step 2: Run tests to verify they fail**
+  - Chạy test xác nhận FAIL.
+
+- [x] **Step 3: Update MainHeader & CompanionSidebar**
+  - Điều kiện hóa hiển thị `active-profile-badge` và `header-total-stars/coins/exp` trong `MainHeader.tsx` chỉ khi `isAuthenticated`.
+  - Điều kiện hóa hiển thị Level EXP card trong `CompanionSidebar.tsx` chỉ khi `isAuthenticated`.
+
+- [x] **Step 4: Fix Leaderboard Single Line Display**
+  - Cập nhật hàng vinh danh trong `ActivitiesSidebar.tsx` với `whitespace-nowrap shrink-0` và `truncate`.
+
+- [x] **Step 5: Enrich Curriculum Data & Magical Garden Theme**
+  - Bổ sung Chương 3 và các ải mới (`stage_5`, `stage_6`, `boss_c3`) vào `src/data/seed/grade1-math.json`.
+  - Cập nhật giao diện `AdventureMap.tsx` với đồ họa Khu Vườn Thần Tiên (thảm cỏ hoa, bậc đá, bướm bay, nắng vàng).
+
+- [x] **Step 6: Run all tests to verify they pass**
+  - Chạy `npm test` xác nhận toàn bộ 20 test suites PASS.
+
+- [x] **Step 7: Commit**
+  - Commit mã nguồn với Conventional Commits `feat(ui): clean guest headers, fix leaderboard single line, and upgrade magical garden map`.

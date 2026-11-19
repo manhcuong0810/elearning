@@ -197,16 +197,28 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
 
 ## 8. Trải Nghiệm Người Dùng: Bắt Buộc Đăng Nhập Sử Dụng Tính Năng & Phân Định Trạng Thái
 1. **Trạng Thái Khách (Guest / Chưa Đăng Nhập) - Chế Độ Preview / Showcase**:
-   - **Mục tiêu**: Giới thiệu giao diện, lộ trình các chương trình học môn Toán Lớp 1 (Bản đồ các đảo toán, linh vật Cú Mèo, bảng vinh danh tuần) như một Landing Showcase trực quan, nhưng **bắt buộc đăng nhập** để sử dụng mọi tính năng.
+   - **Mục tiêu**: Giới thiệu giao diện, lộ trình các chương trình học môn Toán Lớp 1 (Khu Vườn Toán Học Kỳ Diệu, linh vật Cú Mèo, bảng vinh danh tuần) như một Landing Showcase trực quan, nhưng **bắt buộc đăng nhập** để sử dụng mọi tính năng.
+   - **Ẩn hoàn toàn dữ liệu giả lập**:
+     - Tuyệt đối **không hiển thị huy hiệu "Bé Học Thử"** hay bất kỳ profile bé nào trên Header khi chưa đăng nhập.
+     - **Ẩn hoàn toàn các bộ đếm Sao ⭐, Xu 🪙, EXP ⚡** trên Header và ẩn thẻ Cấp độ EXP ở Sidebar bạn đồng hành vì khách chưa có dữ liệu tài khoản.
+     - Header bên trái chỉ hiển thị Logo Xứ Sở Cú Mèo, bên phải hiển thị nút Bật/Tắt âm thanh và nút `🔑 Đăng Nhập` nổi bật.
    - **Rào chắn bảo vệ (Auth Gate)**:
-     - Nhấp vào bất kỳ ải toán nào trên Bản đồ: Ngay lập tức mở `AuthModal` với thông điệp: *"Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để bé bắt đầu học bài này nhé!"*. Tuyệt đối không cho học thử vô danh.
+     - Nhấp vào bất kỳ ải toán nào trên Bản đồ Khu Vườn: Ngay lập tức mở `AuthModal` với thông điệp: *"Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để bé bắt đầu học bài này nhé!"*. Tuyệt đối không cho học thử vô danh.
      - Nhấp vào tab Đấu Trường (`Arena`), Nhà Của Bé (`Avatar Room`), hay Phụ Huynh (`Parent Portal`): Ngay lập tức mở `AuthModal` yêu cầu đăng nhập.
-     - Hồ sơ trên Header hiển thị `🎒 Bé Học Thử (Khách)` kèm nút `👤 Đăng Nhập` nổi bật.
    - **Bảng vinh danh chuẩn (Standard Leaderboard)**:
-     - Hiển thị danh sách top học sinh xuất sắc tiêu biểu (ví dụ: Bé Bo - 45⭐, Bé Tuấn Minh - 38⭐, Bé Bảo An - 32⭐, Bé Mai Chi - 25⭐).
-     - Không tự tiện gán nhãn fake `(Bạn)` hay `(Khách)` vào top khi chưa đăng nhập. Kèm lời kêu gọi: *"Đăng nhập để đưa tên bé lên Bảng vinh danh!"*.
+     - Hiển thị danh sách top học sinh xuất sắc tiêu biểu (Bé Bo - 45⭐, Bé Tuấn Minh - 38⭐, Bé Bảo An - 32⭐, Bé Mai Chi - 25⭐).
+     - Định dạng 1 dòng gọn gàng, chống tràn/gãy dòng số sao (`whitespace-nowrap shrink-0`).
+     - Kèm lời kêu gọi: *"💡 Đăng nhập để đưa tên bé lên Bảng vinh danh!"*.
    - **Chuỗi học tập (Streak)**:
-     - Hiển thị lời nhắc: *"Đăng nhập để kích hoạt Chuỗi ngày học tập 🔥"*, không hiển thị số ngày giả lập khi chưa có tài khoản.
+     - Hiển thị lời nhắc: *"Đăng nhập để kích hoạt Chuỗi ngày học tập 🔥"*, nhấp vào mở modal đăng nhập.
+
+2. **Giao Diện Bản Đồ: Khu Vườn Toán Học Kỳ Diệu (Magical Math Garden)**:
+   - Bản đồ học tập được thiết kế như một **Khu Vườn Cổ Tích Rực Rỡ Sắc Màu**:
+     - Lối đi lát đá cuội qua thảm cỏ xanh mướt, hoa hướng dương, cúc họa mi, bướm lượn và nấm phát sáng.
+     - Mở rộng lộ trình bài học phong phú gồm 3 Vùng vườn lớn:
+       1. *Vườn Hoa Số Đếm (Phạm vi 1-10)*: Ải hái táo 🍎, đàn vịt bên suối 🦆, Boss Sói Xám 🐺.
+       2. *Vườn Cây Phép Cộng*: Ải hái nấm rơm 🍄, tưới hoa hướng dương 🌻, Boss Gấu Nâu 🐻.
+       3. *Đồi Nấm Phép Trừ & Hình Học*: Ải cà rốt tặng thỏ 🥕, xây hàng rào hình khối 🌿, Boss Nhím Gai 🦔.
 
 2. **Trạng Thái Đã Đăng Nhập (Member / Authenticated)**:
    - **Xác thực**: Hỗ trợ Google Sign-In (qua Google Identity Services token client) và Email/Mật khẩu.

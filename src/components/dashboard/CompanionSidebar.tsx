@@ -124,49 +124,50 @@ export function CompanionSidebar({
         </p>
       </div>
 
-      {/* 2. Child Profile & Level EXP Card */}
-      <div className="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-300 flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-sky-100 to-sky-200 border-2 border-sky-300 flex items-center justify-center text-2xl shadow-inner">
-            {isAuthenticated ? profile.avatarEmoji : '🎒'}
+      {/* 2. Child Profile & Level EXP Card (Member Only) */}
+      {isAuthenticated && (
+        <div
+          data-testid="companion-level-card"
+          className="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-300 flex flex-col gap-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-sky-100 to-sky-200 border-2 border-sky-300 flex items-center justify-center text-2xl shadow-inner">
+              {profile.avatarEmoji}
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="text-base font-black text-slate-800 leading-tight">
+                {profile.name}
+              </h3>
+              <span className="inline-block bg-sky-100 text-sky-800 text-[11px] font-black px-2 py-0.5 rounded-full mt-0.5">
+                Cấp {levelInfo.level}: {levelInfo.title}
+              </span>
+            </div>
           </div>
-          <div className="flex-1 text-left">
-            <h3 className="text-base font-black text-slate-800 leading-tight">
-              {isAuthenticated ? profile.name : 'Khách Ghé Thăm'}
-            </h3>
-            <span className="inline-block bg-sky-100 text-sky-800 text-[11px] font-black px-2 py-0.5 rounded-full mt-0.5">
-              {isAuthenticated
-                ? `Cấp ${levelInfo.level}: ${levelInfo.title}`
-                : 'Chưa đăng nhập'}
+
+          {/* EXP Progress Bar */}
+          <div className="flex flex-col gap-1.5 mt-1">
+            <div className="flex items-center justify-between text-xs font-black text-slate-600">
+              <span>Tiến độ kinh nghiệm</span>
+              <span className="text-sky-700 font-extrabold">{totalExp} EXP</span>
+            </div>
+            <div
+              className="w-full h-4 bg-slate-100 rounded-full border-2 border-slate-200 overflow-hidden p-0.5"
+              role="progressbar"
+              aria-valuenow={progressPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transition-all duration-500 shadow-sm"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-bold text-slate-400 text-right">
+              Còn {levelInfo.nextLevelExp - totalExp} EXP để lên cấp kế tiếp
             </span>
           </div>
         </div>
-
-        {/* EXP Progress Bar */}
-        <div className="flex flex-col gap-1.5 mt-1">
-          <div className="flex items-center justify-between text-xs font-black text-slate-600">
-            <span>Tiến độ kinh nghiệm</span>
-            <span className="text-sky-700 font-extrabold">{totalExp} EXP</span>
-          </div>
-          <div
-            className="w-full h-4 bg-slate-100 rounded-full border-2 border-slate-200 overflow-hidden p-0.5"
-            role="progressbar"
-            aria-valuenow={progressPercent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div
-              className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transition-all duration-500 shadow-sm"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <span className="text-[10px] font-bold text-slate-400 text-right">
-            {isAuthenticated
-              ? `Còn ${levelInfo.nextLevelExp - totalExp} EXP để lên cấp kế tiếp`
-              : 'Đăng nhập để lưu tiến độ và cấp độ!'}
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* 3. Streak Card */}
       <div

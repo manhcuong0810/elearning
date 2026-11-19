@@ -101,10 +101,16 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
         </div>
       )}
 
-      {/* Top Banner: Owl Mascot Guide + Daily Quest Motivation */}
-      <div className="relative rounded-[2.5rem] p-5 sm:p-6 shadow-2xl border-4 border-white bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400 overflow-hidden">
-        {/* Decorative Light Rays */}
-        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full border-8 border-yellow-300/40 pointer-events-none" />
+      {/* Top Banner: Owl Mascot Guide in the Magical Garden */}
+      <div className="relative rounded-[2.5rem] p-5 sm:p-6 shadow-2xl border-4 border-white bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 overflow-hidden">
+        {/* Decorative Floating Garden Elements */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full border-8 border-yellow-200/40 pointer-events-none" />
+        <div className="absolute top-2 right-12 text-3xl select-none animate-bounce-gentle opacity-80">
+          🦋
+        </div>
+        <div className="absolute bottom-2 right-36 text-2xl select-none animate-float opacity-70">
+          🌸
+        </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5 relative z-10">
           {/* Owl Mascot Guide */}
@@ -116,42 +122,42 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
               <div className="w-18 h-18 sm:w-22 sm:h-22 p-2 rounded-3xl bg-gradient-to-br from-amber-200 to-amber-400 border-4 border-white shadow-xl flex items-center justify-center text-4xl sm:text-5xl animate-bounce-gentle">
                 🦉
               </div>
-              <span className="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black border-2 border-white shadow">
-                SẴN SÀNG
+              <span className="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black border-2 border-white shadow">
+                KHU VƯỜN
               </span>
             </div>
 
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-sky-950 text-xs font-black uppercase tracking-wider shadow-sm mb-1.5">
-                <span>✨</span>
-                <span>Cú Mèo Đồng Hành</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-emerald-950 text-xs font-black uppercase tracking-wider shadow-sm mb-1.5">
+                <span>🌿</span>
+                <span>Khu Vườn Toán Học Kỳ Diệu</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-white drop-shadow-md">
-                {data.title}
+                Khu Vườn Cú Mèo Thông Thái 🦉
               </h1>
-              <p className="text-xs sm:text-sm font-extrabold text-sky-950 mt-0.5">
-                Hôm nay: Hãy vượt ải có biểu tượng Cú Mèo đang vẫy tay nhé! 🚀
+              <p className="text-xs sm:text-sm font-extrabold text-emerald-950 mt-0.5">
+                Cùng dạo bước qua các bậc đá cỏ hoa, giải đố hái quả và khám phá tri thức Lớp 1! 🌻
               </p>
             </div>
           </div>
 
           {/* Quick Quest Progress Badge */}
-          <div className="bg-white/95 backdrop-blur-sm px-4 py-3 rounded-2xl border-2 border-amber-300 shadow-md flex flex-col items-center sm:items-end gap-1">
-            <span className="text-[11px] font-black uppercase text-amber-800 tracking-wider">
-              🎯 Thử Thách Ngày
+          <div className="bg-white/95 backdrop-blur-sm px-4 py-3 rounded-2xl border-2 border-emerald-300 shadow-md flex flex-col items-center sm:items-end gap-1">
+            <span className="text-[11px] font-black uppercase text-emerald-800 tracking-wider">
+              🎯 Tiến Độ Khu Vườn
             </span>
             <div className="flex items-center gap-2">
               <span className="text-sm font-black text-slate-800">
-                ⭐ {totalStarsEarned}/15 Sao
+                ⭐ {totalStarsEarned} Sao
               </span>
               <span className="text-sm font-black text-amber-600">
                 🪙 {totalCoins} Xu
               </span>
             </div>
-            <div className="w-32 h-2.5 bg-amber-100 rounded-full overflow-hidden border border-amber-300">
+            <div className="w-32 h-2.5 bg-emerald-100 rounded-full overflow-hidden border border-emerald-300">
               <div
-                className="h-full bg-gradient-to-r from-amber-400 to-emerald-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, (totalStarsEarned / 15) * 100)}%` }}
+                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, (totalStarsEarned / 20) * 100)}%` }}
               />
             </div>
           </div>
@@ -168,50 +174,59 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
       {/* Chapters & Adventure Trail */}
       <div className="flex flex-col gap-12">
         {data.chapters.map((chapter, chapterIdx) => {
-          const isForest = chapter.theme === 'forest' || chapterIdx % 2 === 1;
+          const isHills = chapterIdx === 2;
+          const isForest = chapterIdx === 1;
 
           return (
             <section
               key={chapter.id}
               data-testid={`chapter-section-${chapter.id}`}
               className={`rounded-[3rem] p-6 sm:p-10 shadow-2xl border-4 border-white relative overflow-hidden transition-all ${
-                isForest
+                isHills
+                  ? 'bg-gradient-to-b from-purple-100 via-pink-50 to-indigo-100'
+                  : isForest
                   ? 'bg-gradient-to-b from-emerald-100 via-teal-50 to-lime-100'
-                  : 'bg-gradient-to-b from-amber-100 via-yellow-50 to-orange-100'
+                  : 'bg-gradient-to-b from-amber-100 via-rose-50 to-emerald-100'
               }`}
               style={{
-                boxShadow: isForest
+                boxShadow: isHills
+                  ? '0 20px 40px -15px rgba(147, 51, 234, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.8)'
+                  : isForest
                   ? '0 20px 40px -15px rgba(5, 150, 105, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.8)'
                   : '0 20px 40px -15px rgba(217, 119, 6, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.8)',
               }}
             >
-              {/* Lively Cartoon Scenic Landmarks */}
-              <div className="absolute top-4 left-6 text-4xl select-none animate-float opacity-70">
-                {isForest ? '🍄' : '🌻'}
+              {/* Lively Garden Landmarks */}
+              <div className="absolute top-4 left-6 text-4xl select-none animate-float opacity-75">
+                {isHills ? '🥕' : isForest ? '🍄' : '🌸'}
               </div>
-              <div className="absolute top-12 right-8 text-4xl select-none animate-bounce-gentle opacity-70">
-                {isForest ? '🌲' : '🍎'}
+              <div className="absolute top-12 right-8 text-4xl select-none animate-bounce-gentle opacity-75">
+                {isHills ? '🦔' : isForest ? '🌻' : '🍎'}
               </div>
               <div className="absolute bottom-6 left-8 text-4xl select-none opacity-60">
-                {isForest ? '🦋' : '🐝'}
+                {isHills ? '🐰' : isForest ? '🦋' : '🐝'}
               </div>
               <div className="absolute bottom-8 right-6 text-4xl select-none opacity-60">
-                {isForest ? '🦌' : '🏡'}
+                {isHills ? '🌿' : isForest ? '🌲' : '🏡'}
               </div>
 
-              {/* 3D Chapter Banner Header */}
+              {/* 3D Garden Wooden Signpost Chapter Banner */}
               <div className="flex flex-col items-center text-center mb-8 relative z-10">
                 <div
-                  className={`inline-flex items-center gap-2 px-6 sm:px-8 py-3 rounded-2xl border-4 border-white shadow-xl ${
-                    isForest
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white'
-                      : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                  className={`inline-flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-2xl border-4 border-white shadow-xl ${
+                    isHills
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                      : isForest
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
+                      : 'bg-gradient-to-r from-amber-500 to-emerald-600 text-white'
                   }`}
                 >
-                  <span className="text-xl">📍</span>
+                  <span className="text-2xl">
+                    {isHills ? '🍄' : isForest ? '🌳' : '🌸'}
+                  </span>
                   <div className="text-left">
                     <span className="text-[10px] uppercase font-black tracking-wider block opacity-90">
-                      Chương {chapter.order}
+                      Vùng Vườn {chapter.order}
                     </span>
                     <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-sm">
                       {chapter.title}
@@ -220,7 +235,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                 </div>
 
                 {chapter.description && (
-                  <p className="text-xs sm:text-sm font-extrabold text-slate-700 mt-2 max-w-md bg-white/60 px-4 py-1.5 rounded-full border border-white">
+                  <p className="text-xs sm:text-sm font-extrabold text-slate-700 mt-2.5 max-w-md bg-white/75 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white shadow-sm">
                     {chapter.description}
                   </p>
                 )}

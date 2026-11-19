@@ -23,13 +23,14 @@ describe('Auth Flow Integration', () => {
   it('shows Guest profile when unauthenticated, prompts to log in, and supports dynamic Google Sign-In', async () => {
     render(<HomePage />);
 
-    // 1. Unauthenticated state: Shows Bé Học Thử (Khách), not default family kids!
-    const profileBadge = screen.getByTestId('active-profile-badge');
-    expect(profileBadge.textContent).toContain('Bé Học Thử');
-    expect(profileBadge.textContent).toContain('Khách');
+    // 1. Unauthenticated state: NO profile badge and NO currency counters shown!
+    expect(screen.queryByTestId('active-profile-badge')).toBeNull();
+    expect(screen.queryByTestId('header-total-stars')).toBeNull();
+    expect(screen.queryByTestId('header-total-coins')).toBeNull();
+    expect(screen.queryByTestId('header-total-exp')).toBeNull();
 
-    // 2. Clicking profile badge when unauthenticated prompts parent to login
-    fireEvent.click(profileBadge);
+    // 2. Open auth modal via prominent Login button
+    fireEvent.click(screen.getByTestId('auth-open-modal-btn'));
     expect(screen.getByTestId('auth-modal')).toBeDefined();
 
     // 3. Click Google Sign-In button -> opens interactive Google account input
@@ -77,7 +78,8 @@ describe('Auth Flow Integration', () => {
     fireEvent.click(screen.getByTestId('parent-user-menu-btn'));
     fireEvent.click(screen.getByTestId('auth-logout-btn'));
 
-    expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Học Thử');
+    expect(screen.queryByTestId('active-profile-badge')).toBeNull();
+    expect(screen.getByTestId('auth-open-modal-btn')).toBeDefined();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });
 });

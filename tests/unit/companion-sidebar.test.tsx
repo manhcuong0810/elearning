@@ -70,6 +70,7 @@ describe('CompanionSidebar', () => {
     );
 
     expect(screen.getByText(/Đăng nhập để tích chuỗi/i)).toBeDefined();
+    expect(screen.queryByTestId('companion-level-card')).toBeNull();
     const streakBtn = screen.getByTestId('companion-streak-card');
     fireEvent.click(streakBtn);
     expect(mockOnOpenAuthModal).toHaveBeenCalled();
