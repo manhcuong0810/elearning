@@ -108,6 +108,7 @@ export interface ProgressStoreState {
   equippedItems: string[];
   streakDays: number;
   lastStudyDate: string | null;
+  studyMinutesToday: number;
   claimedQuestIds: string[];
   claimedQuestDate: string | null;
   lastChestOpenedDate: string | null;
@@ -121,6 +122,7 @@ export interface ProgressStoreState {
     nextStageId?: string
   ) => void;
   recordStudyDay: (dateStr?: string) => void;
+  addStudyMinutes: (minutes: number) => void;
   addRewards: (coins: number, exp: number) => void;
   purchaseItem: (itemId: string, cost: number) => boolean;
   equipItem: (itemId: string) => void;
@@ -148,6 +150,7 @@ const createInitialData = (childId = 'guest') => ({
   equippedItems: [] as string[],
   streakDays: 0,
   lastStudyDate: null as string | null,
+  studyMinutesToday: 0,
   claimedQuestIds: [] as string[],
   claimedQuestDate: null as string | null,
   lastChestOpenedDate: null as string | null,
@@ -168,6 +171,7 @@ function persistCurrentChildSnapshot(getFn: () => ProgressStoreState): void {
       equippedItems: getFn().equippedItems,
       streakDays: getFn().streakDays,
       lastStudyDate: getFn().lastStudyDate,
+      studyMinutesToday: getFn().studyMinutesToday ?? 0,
       claimedQuestIds: getFn().claimedQuestIds,
       claimedQuestDate: getFn().claimedQuestDate,
       lastChestOpenedDate: getFn().lastChestOpenedDate,
@@ -264,6 +268,14 @@ export const useProgressStore = create<ProgressStoreState>()(
             lastStudyDate: todayStr,
           };
         });
+      },
+
+      addStudyMinutes: (minutes: number): void => {
+        if (minutes <= 0) return;
+        set((state) => ({
+          studyMinutesToday: (state.studyMinutesToday || 0) + minutes,
+        }));
+        persistCurrentChildSnapshot(get);
       },
 
       addRewards: (coins: number, exp: number): void => {
@@ -429,6 +441,7 @@ export const useProgressStore = create<ProgressStoreState>()(
         equippedItems: state.equippedItems,
         streakDays: state.streakDays,
         lastStudyDate: state.lastStudyDate,
+        studyMinutesToday: state.studyMinutesToday,
         claimedQuestIds: state.claimedQuestIds,
         claimedQuestDate: state.claimedQuestDate,
         lastChestOpenedDate: state.lastChestOpenedDate,

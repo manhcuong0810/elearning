@@ -230,4 +230,28 @@ describe('Progress Store (useProgressStore)', () => {
     expect(useProgressStore.getState().getStageStars('stage_1')).toBe(3);
     expect(useProgressStore.getState().totalCoins).toBe(15);
   });
+
+  it('should track and accumulate study minutes and isolate per child', () => {
+    const store = useProgressStore.getState();
+    expect(store.studyMinutesToday).toBe(0);
+
+    store.loadChildProgress('child_minh');
+    expect(useProgressStore.getState().studyMinutesToday).toBe(0);
+
+    useProgressStore.getState().addStudyMinutes(15);
+    expect(useProgressStore.getState().studyMinutesToday).toBe(15);
+
+    useProgressStore.getState().addStudyMinutes(10);
+    expect(useProgressStore.getState().studyMinutesToday).toBe(25);
+
+    // Switch to another child -> starts at 0
+    useProgressStore.getState().loadChildProgress('child_an');
+    expect(useProgressStore.getState().studyMinutesToday).toBe(0);
+    useProgressStore.getState().addStudyMinutes(5);
+    expect(useProgressStore.getState().studyMinutesToday).toBe(5);
+
+    // Switch back to child_minh -> restored 25 minutes
+    useProgressStore.getState().loadChildProgress('child_minh');
+    expect(useProgressStore.getState().studyMinutesToday).toBe(25);
+  });
 });

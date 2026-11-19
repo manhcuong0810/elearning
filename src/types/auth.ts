@@ -51,6 +51,7 @@ export interface AuthState {
     initialChildName?: string
   ) => Promise<ParentUser>;
   addChildProfile: (child: Omit<ChildProfile, 'id' | 'studyMinutesToday'>) => ChildProfile;
+  addStudyMinutesToChild: (childId: string, minutes: number) => void;
   logout: () => void;
   clearError: () => void;
 }

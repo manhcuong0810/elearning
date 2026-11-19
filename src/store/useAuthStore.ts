@@ -181,6 +181,28 @@ export const useAuthStore = create<AuthState>()(
         return newChild;
       },
 
+      addStudyMinutesToChild: (childId: string, minutes: number) => {
+        const currentUser = get().user;
+        if (!currentUser || !currentUser.children) return;
+
+        const updatedChildren = currentUser.children.map((child) => {
+          if (child.id === childId) {
+            return {
+              ...child,
+              studyMinutesToday: Math.max(0, (child.studyMinutesToday || 0) + minutes),
+            };
+          }
+          return child;
+        });
+
+        set({
+          user: {
+            ...currentUser,
+            children: updatedChildren,
+          },
+        });
+      },
+
       logout: () => {
         useProgressStore.getState().reset();
         set({

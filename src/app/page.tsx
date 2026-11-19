@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Stage } from '@/types/curriculum';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Stage, Question } from '@/types/curriculum';
 import { loadGrade1MathData } from '@/lib/curriculum-loader';
 import { defaultAudioManager } from '@/lib/audio-manager';
 import { useProgressStore } from '@/store/useProgressStore';
@@ -122,6 +122,21 @@ export default function HomePage() {
     }
   }, [isAuthenticated, activeProfile?.id]);
 
+  const sessionStartTimeRef = useRef<number | null>(null);
+
+  const commitActiveStudyTime = () => {
+    if (!sessionStartTimeRef.current) return;
+    const elapsedSec = Math.round((Date.now() - sessionStartTimeRef.current) / 1000);
+    sessionStartTimeRef.current = null;
+    if (elapsedSec >= 5) {
+      const minutes = Math.max(1, Math.round(elapsedSec / 60));
+      if (activeProfile && activeProfile.id !== 'guest') {
+        useAuthStore.getState().addStudyMinutesToChild(activeProfile.id, minutes);
+      }
+      useProgressStore.getState().addStudyMinutes(minutes);
+    }
+  };
+
   const handleSelectNavigationTab = (tab: NavigationTab) => {
     if (!isAuthenticated && tab !== 'adventure-map') {
       if (tab === 'arena') {
@@ -136,6 +151,13 @@ export default function HomePage() {
       return;
     }
 
+    if (activeTab === 'arena' && tab !== 'arena') {
+      commitActiveStudyTime();
+    }
+    if (tab === 'arena') {
+      sessionStartTimeRef.current = Date.now();
+    }
+
     if (tab === 'parent-portal') {
       if (isParentUnlocked) {
         setActiveTab('parent-portal');
@@ -145,6 +167,7 @@ export default function HomePage() {
       return;
     }
 
+    commitActiveStudyTime();
     setSelectedStage(null);
     setIsStageCompletedModalOpen(false);
     setActiveTab(tab);
@@ -158,6 +181,8 @@ export default function HomePage() {
       return;
     }
 
+    commitActiveStudyTime();
+    sessionStartTimeRef.current = Date.now();
     defaultAudioManager.playSfx('click');
     setSelectedStage(stage);
     setCurrentQuestionIndex(0);
@@ -190,6 +215,7 @@ export default function HomePage() {
     }
 
     // Completed all questions in the normal stage
+    commitActiveStudyTime();
     const correctFromResults = Object.values(questionResults).filter(Boolean).length;
     const effectiveCorrect = Math.max(correctAnswersCount, correctFromResults, 1);
     const stars =
@@ -224,6 +250,7 @@ export default function HomePage() {
 
   const handleBossVictory = (rewards?: BossVictoryRewards) => {
     if (!selectedStage) return;
+    commitActiveStudyTime();
     completeStage(selectedStage.id, {
       stars: rewards?.stars ?? 3,
       earnedCoins: rewards?.coins ?? 45,
@@ -261,6 +288,7 @@ export default function HomePage() {
               type="button"
               data-testid="stage-exit-btn"
               onClick={() => {
+                commitActiveStudyTime();
                 defaultAudioManager.playSfx('click');
                 setSelectedStage(null);
                 setIsStageCompletedModalOpen(false);
@@ -360,6 +388,13 @@ export default function HomePage() {
   };
 
   const renderParentDashboard = () => {
+    const activeChildData = user?.children?.find((c) => c.id === activeProfile.id);
+    const effectiveStudyMinutes =
+      activeChildData?.studyMinutesToday ??
+      (activeProfile.id === useProgressStore.getState().currentChildId
+        ? useProgressStore.getState().studyMinutesToday
+        : activeProfile.studyMinutesToday ?? 0);
+
     const completedStagesCount = Object.keys(stageStars).length;
     const chapter1Stages = curriculum.chapters[0]?.stages ?? [];
     const chapter2Stages = curriculum.chapters[1]?.stages ?? [];
@@ -467,7 +502,7 @@ export default function HomePage() {
                 data-testid="parent-stat-study-time"
                 className="text-2xl font-black text-emerald-950"
               >
-                ⏱️ {activeProfile.studyMinutesToday} phút
+                ⏱️ {effectiveStudyMinutes} phút
               </span>
               <span className="text-xs font-semibold text-emerald-700 block mt-1">
                 Mục tiêu khuyến nghị: 20-30 phút/ngày
@@ -622,7 +657,10 @@ export default function HomePage() {
               <BossBattleScreen
                 stage={selectedStage}
                 onVictory={handleBossVictory}
-                onExit={() => setSelectedStage(null)}
+                onExit={() => {
+                  commitActiveStudyTime();
+                  setSelectedStage(null);
+                }}
                 audioManager={defaultAudioManager}
               />
             ) : (
@@ -637,7 +675,10 @@ export default function HomePage() {
             playerId={activeProfile.id}
             grade={1}
             audioManager={defaultAudioManager}
-            onExit={() => setActiveTab('adventure-map')}
+            onExit={() => {
+              commitActiveStudyTime();
+              setActiveTab('adventure-map');
+            }}
           />
         )}
 
