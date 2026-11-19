@@ -1,0 +1,416 @@
+{
+  "subject": "math",
+  "grade": 1,
+  "title": "Toán Lớp 1 - Xứ Sở Toán Học Diệu Kỳ",
+  "description": "Hành trình khám phá số đếm và phép tính kỳ thú dành cho học sinh Lớp 1",
+  "chapters": [
+    {
+      "id": "chapter_1",
+      "title": "Thung lũng Số đếm (1-10)",
+      "description": "Làm quen với các chữ số từ 1 đến 10 qua trò chơi đếm đồ vật sinh động",
+      "order": 1,
+      "theme": "valley",
+      "icon": "mountain",
+      "stages": [
+        {
+          "id": "stage_1",
+          "chapterId": "chapter_1",
+          "name": "Đếm Quả Táo Ngọt",
+          "order": 1,
+          "isBoss": false,
+          "description": "Bé tập đếm các loại hoa quả thơm ngon",
+          "icon": "apple",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 0,
+          "questions": [
+            {
+              "id": "math_g1_c1_s1_q1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "stage_1",
+              "type": "COUNTING",
+              "promptText": "Có bao nhiêu quả táo đỏ trong tranh?",
+              "promptAudioUrl": "/audio/math/g1_c1_s1_q1_count_apples.mp3",
+              "interactivePayload": {
+                "targetCount": 3,
+                "itemType": "apple",
+                "sourcePool": 5
+              },
+              "options": [
+                { "id": "opt1", "text": "2", "isCorrect": false },
+                { "id": "opt2", "text": "3", "isCorrect": true },
+                { "id": "opt3", "text": "4", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3",
+                "hint": "/audio/math/hint_count_carefully.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c1_s1_q2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "stage_1",
+              "type": "DRAG_DROP",
+              "promptText": "Bé hãy kéo 4 chú vịt vàng vào ao nước nhé!",
+              "promptAudioUrl": "/audio/math/g1_c1_s1_q2_drag_ducks.mp3",
+              "interactivePayload": {
+                "targetCount": 4,
+                "itemType": "duck",
+                "sourcePool": 6
+              },
+              "options": [
+                { "id": "opt1", "text": "4", "isCorrect": true }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3",
+                "hint": "/audio/math/hint_drag_ducks.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c1_s1_q3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "stage_1",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Bé hãy chọn số thích hợp tương ứng với số ngôi sao lấp lánh:",
+              "promptAudioUrl": "/audio/math/g1_c1_s1_q3_count_stars.mp3",
+              "interactivePayload": {
+                "targetCount": 5,
+                "itemType": "star"
+              },
+              "options": [
+                { "id": "opt1", "text": "4", "isCorrect": false },
+                { "id": "opt2", "text": "5", "isCorrect": true },
+                { "id": "opt3", "text": "6", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3",
+                "hint": "/audio/math/hint_count_stars.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            }
+          ]
+        },
+        {
+          "id": "stage_2",
+          "chapterId": "chapter_1",
+          "name": "Nông Trại Vui Vẻ",
+          "order": 2,
+          "isBoss": false,
+          "description": "Cùng bạn cừu và bò sữa học số đếm từ 6 đến 10",
+          "icon": "cow",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 2,
+          "questions": [
+            {
+              "id": "math_g1_c1_s2_q1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "stage_2",
+              "type": "COUNTING",
+              "promptText": "Đếm xem nông trại có bao nhiêu chú cừu con?",
+              "promptAudioUrl": "/audio/math/g1_c1_s2_q1_count_sheeps.mp3",
+              "interactivePayload": {
+                "targetCount": 7,
+                "itemType": "sheep",
+                "sourcePool": 8
+              },
+              "options": [
+                { "id": "opt1", "text": "6", "isCorrect": false },
+                { "id": "opt2", "text": "7", "isCorrect": true },
+                { "id": "opt3", "text": "8", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c1_s2_q2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "stage_2",
+              "type": "DRAG_DROP",
+              "promptText": "Bé hãy kéo 8 củ cà rốt vào giỏ cho bạn thỏ nhé!",
+              "promptAudioUrl": "/audio/math/g1_c1_s2_q2_drag_carrots.mp3",
+              "interactivePayload": {
+                "targetCount": 8,
+                "itemType": "carrot",
+                "sourcePool": 10
+              },
+              "options": [
+                { "id": "opt1", "text": "8", "isCorrect": true }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c1_s2_q3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "stage_2",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Số nào lớn nhất trong các số sau?",
+              "promptAudioUrl": "/audio/math/g1_c1_s2_q3_compare_numbers.mp3",
+              "options": [
+                { "id": "opt1", "text": "3", "isCorrect": false },
+                { "id": "opt2", "text": "7", "isCorrect": false },
+                { "id": "opt3", "text": "9", "isCorrect": true }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            }
+          ]
+        },
+        {
+          "id": "boss_c1",
+          "chapterId": "chapter_1",
+          "name": "Quái Vật Kẹo Ngọt",
+          "order": 3,
+          "isBoss": true,
+          "bossMaxHp": 3,
+          "bossName": "Quái Vật Kẹo Ngọt",
+          "bossAvatar": "/images/bosses/candy-monster.png",
+          "description": "Giải cứu thung lũng bằng tài đếm số siêu tốc!",
+          "icon": "swords",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 5,
+          "questions": [
+            {
+              "id": "bq1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "boss_c1",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "3 + 2 = ?",
+              "promptAudioUrl": "/audio/math/boss_q1_3_plus_2.mp3",
+              "options": [
+                { "id": "o1", "text": "4", "isCorrect": false },
+                { "id": "o2", "text": "5", "isCorrect": true },
+                { "id": "o3", "text": "6", "isCorrect": false }
+              ],
+              "rewardCoins": 15,
+              "rewardExp": 30
+            },
+            {
+              "id": "bq2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "boss_c1",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "4 + 1 = ?",
+              "promptAudioUrl": "/audio/math/boss_q2_4_plus_1.mp3",
+              "options": [
+                { "id": "o1", "text": "5", "isCorrect": true },
+                { "id": "o2", "text": "3", "isCorrect": false }
+              ],
+              "rewardCoins": 15,
+              "rewardExp": 30
+            },
+            {
+              "id": "bq3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_1",
+              "levelId": "boss_c1",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "2 + 2 = ?",
+              "promptAudioUrl": "/audio/math/boss_q3_2_plus_2.mp3",
+              "options": [
+                { "id": "o1", "text": "3", "isCorrect": false },
+                { "id": "o2", "text": "4", "isCorrect": true }
+              ],
+              "rewardCoins": 15,
+              "rewardExp": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chapter_2",
+      "title": "Rừng Phép cộng phạm vi 10",
+      "description": "Cùng các bạn thú trong rừng rậm học phép cộng kỳ diệu",
+      "order": 2,
+      "theme": "forest",
+      "icon": "trees",
+      "stages": [
+        {
+          "id": "stage_3",
+          "chapterId": "chapter_2",
+          "name": "Bí Mật Phép Cộng",
+          "order": 1,
+          "isBoss": false,
+          "description": "Khám phá phép cộng với đồ vật dễ thương",
+          "icon": "plus-circle",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 6,
+          "questions": [
+            {
+              "id": "math_g1_c2_s1_q1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_2",
+              "levelId": "stage_3",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "Có 2 quả cam, mẹ cho thêm 3 quả cam. Hỏi bé có tất cả mấy quả cam?",
+              "promptAudioUrl": "/audio/math/g1_c2_s1_q1_orange_add.mp3",
+              "options": [
+                { "id": "opt1", "text": "4", "isCorrect": false },
+                { "id": "opt2", "text": "5", "isCorrect": true },
+                { "id": "opt3", "text": "6", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c2_s1_q2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_2",
+              "levelId": "stage_3",
+              "type": "DRAG_DROP",
+              "promptText": "Bé kéo 3 hạt dẻ ghép với 2 hạt dẻ để được 5 hạt dẻ nhé!",
+              "promptAudioUrl": "/audio/math/g1_c2_s1_q2_drag_nuts.mp3",
+              "interactivePayload": {
+                "targetCount": 3,
+                "itemType": "nut",
+                "sourcePool": 5
+              },
+              "options": [
+                { "id": "opt1", "text": "5", "isCorrect": true }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            },
+            {
+              "id": "math_g1_c2_s1_q3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_2",
+              "levelId": "stage_3",
+              "type": "COUNTING",
+              "promptText": "Đếm xem 4 chú bướm xanh cộng thêm 2 chú bướm vàng là mấy chú bướm?",
+              "promptAudioUrl": "/audio/math/g1_c2_s1_q3_butterfly_sum.mp3",
+              "interactivePayload": {
+                "targetCount": 6,
+                "itemType": "butterfly",
+                "sourcePool": 7
+              },
+              "options": [
+                { "id": "opt1", "text": "5", "isCorrect": false },
+                { "id": "opt2", "text": "6", "isCorrect": true },
+                { "id": "opt3", "text": "7", "isCorrect": false }
+              ],
+              "feedbackAudio": {
+                "correct": "/audio/common/cheer_great_job.mp3",
+                "wrong": "/audio/common/try_again.mp3"
+              },
+              "rewardCoins": 5,
+              "rewardExp": 10
+            }
+          ]
+        },
+        {
+          "id": "boss_c2",
+          "chapterId": "chapter_2",
+          "name": "Thần Cây Cổ Thụ",
+          "order": 2,
+          "isBoss": true,
+          "bossMaxHp": 5,
+          "bossName": "Thần Cây Cổ Thụ",
+          "bossAvatar": "/images/bosses/ancient-tree.png",
+          "description": "Vượt qua thử thách phép cộng bảo vệ khu rừng kỳ bí!",
+          "icon": "shield-alert",
+          "rewardStars": 3,
+          "requiredStarsToUnlock": 9,
+          "questions": [
+            {
+              "id": "bq2_1",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_2",
+              "levelId": "boss_c2",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "5 + 5 = ?",
+              "promptAudioUrl": "/audio/math/boss2_q1_5_plus_5.mp3",
+              "options": [
+                { "id": "o1", "text": "9", "isCorrect": false },
+                { "id": "o2", "text": "10", "isCorrect": true }
+              ],
+              "rewardCoins": 20,
+              "rewardExp": 40
+            },
+            {
+              "id": "bq2_2",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_2",
+              "levelId": "boss_c2",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "6 + 3 = ?",
+              "promptAudioUrl": "/audio/math/boss2_q2_6_plus_3.mp3",
+              "options": [
+                { "id": "o1", "text": "8", "isCorrect": false },
+                { "id": "o2", "text": "9", "isCorrect": true }
+              ],
+              "rewardCoins": 20,
+              "rewardExp": 40
+            },
+            {
+              "id": "bq2_3",
+              "grade": 1,
+              "subject": "math",
+              "chapterId": "chapter_2",
+              "levelId": "boss_c2",
+              "type": "MULTIPLE_CHOICE",
+              "promptText": "4 + 4 = ?",
+              "promptAudioUrl": "/audio/math/boss2_q3_4_plus_4.mp3",
+              "options": [
+                { "id": "o1", "text": "8", "isCorrect": true },
+                { "id": "o2", "text": "7", "isCorrect": false }
+              ],
+              "rewardCoins": 20,
+              "rewardExp": 40
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
