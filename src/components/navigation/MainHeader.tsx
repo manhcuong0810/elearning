@@ -84,63 +84,61 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
     testId: string;
     label: string;
     icon: string;
-    activeClass: string;
-    inactiveClass: string;
+    activeStyle: string;
   }> = [
     {
       tab: 'adventure-map',
       testId: 'nav-adventure-map',
       label: 'Bản Đồ',
       icon: '🏝️',
-      activeClass: 'btn-3d-yellow scale-105 shadow-xl',
-      inactiveClass: 'btn-3d-white hover:bg-amber-50',
+      activeStyle: 'btn-3d-yellow scale-105 ring-4 ring-amber-300/60 shadow-lg',
     },
     {
       tab: 'arena',
       testId: 'nav-arena',
       label: 'Đấu Trường',
       icon: '🏟️',
-      activeClass: 'btn-3d-green scale-105 shadow-xl',
-      inactiveClass: 'btn-3d-white hover:bg-emerald-50',
+      activeStyle: 'btn-3d-green scale-105 ring-4 ring-emerald-300/60 shadow-lg',
     },
     {
       tab: 'avatar-room',
       testId: 'nav-avatar-room',
       label: 'Nhà Của Bé',
       icon: '🎒',
-      activeClass: 'btn-3d-purple scale-105 shadow-xl',
-      inactiveClass: 'btn-3d-white hover:bg-purple-50',
+      activeStyle: 'btn-3d-purple scale-105 ring-4 ring-purple-300/60 shadow-lg',
     },
     {
       tab: 'parent-portal',
       testId: 'nav-parent-portal',
       label: 'Phụ Huynh',
       icon: '👨‍👩‍👧',
-      activeClass: 'btn-3d-blue scale-105 shadow-xl',
-      inactiveClass: 'btn-3d-white hover:bg-sky-50',
+      activeStyle: 'btn-3d-blue scale-105 ring-4 ring-sky-300/60 shadow-lg',
     },
   ];
 
   return (
-    <header className="w-full bg-white/95 backdrop-blur-md border-b-4 border-amber-300 shadow-md sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3 flex flex-col lg:flex-row items-center justify-between gap-3">
-        {/* Left: Brand Logo & 3D Active Profile Badge */}
-        <div className="flex items-center justify-between w-full lg:w-auto gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-500 border-2 border-white shadow-md flex items-center justify-center text-2xl animate-bounce-gentle">
+    <header className="w-full bg-white/95 backdrop-blur-md border-b-4 border-amber-300/80 shadow-md sticky top-0 z-40">
+      {/* Top Status Bar: Logo + Profile on Left, Currency Counters + Mute on Right */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4">
+        {/* Left: Brand Identity & Active Profile Switcher */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-300 to-amber-500 border-2 border-white shadow-md flex items-center justify-center text-xl sm:text-2xl animate-bounce-gentle">
               🦉
             </div>
-            <div>
-              <span className="text-[11px] font-black uppercase tracking-wider text-amber-700 block leading-tight">
+            <div className="hidden sm:block">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 block leading-none">
                 Toán Lớp 1 Diệu Kỳ
               </span>
-              <span className="text-lg font-black text-slate-800 leading-tight">
+              <span className="text-base font-black text-slate-800 leading-tight">
                 Xứ Sở Cú Mèo
               </span>
             </div>
           </div>
 
-          {/* 3D Child Profile Switcher Badge (>= 48x48px) */}
+          <div className="h-7 w-[2px] bg-slate-200 hidden sm:block" />
+
+          {/* Child Profile Switcher Badge */}
           <button
             type="button"
             data-testid="active-profile-badge"
@@ -148,27 +146,83 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
               audioManager.playSfx('click');
               setIsProfileModalOpen(true);
             }}
-            className="btn-3d min-h-[48px] min-w-[48px] px-3.5 py-2 rounded-2xl bg-gradient-to-b from-sky-50 to-sky-100 border-2 border-sky-300 border-b-4 border-b-sky-400 flex items-center gap-2"
+            className="btn-3d min-h-[48px] px-3.5 py-1.5 rounded-2xl bg-gradient-to-b from-sky-50 to-sky-100 border-2 border-sky-300 border-b-4 border-b-sky-400 flex items-center gap-2"
             aria-label={`Đổi hồ sơ bé: hiện tại là ${activeProfile.name}`}
           >
-            <span className="text-2xl drop-shadow-sm" role="img" aria-hidden="true">
+            <span className="text-xl sm:text-2xl drop-shadow-sm" role="img" aria-hidden="true">
               {activeProfile.avatarEmoji}
             </span>
             <div className="text-left">
-              <span className="text-sm font-black text-slate-800 block leading-tight">
+              <span className="text-xs sm:text-sm font-black text-slate-800 block leading-tight">
                 {activeProfile.name}
               </span>
-              <span className="text-[10px] font-extrabold text-sky-700 block leading-tight">
+              <span className="text-[10px] font-black text-sky-700 block leading-tight">
                 {activeProfile.gradeLabel} ▾
               </span>
             </div>
           </button>
         </div>
 
-        {/* Center: 3D Chunky Bouncy Navigation Tabs (all >= 48x48px) */}
+        {/* Right: Currency Counters & Sound Mute Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Star Counter */}
+          <div
+            data-testid="header-total-stars"
+            className="flex items-center gap-1.5 bg-gradient-to-b from-amber-50 to-amber-100 px-3 py-1.5 rounded-2xl border-2 border-amber-300 border-b-4 border-b-amber-400 shadow-sm"
+            title="Tổng số Sao"
+          >
+            <span className="text-lg animate-wiggle" role="img" aria-label="Sao">
+              ⭐
+            </span>
+            <span className="text-sm sm:text-base font-black text-amber-950">{totalStars}</span>
+          </div>
+
+          {/* Coin Counter */}
+          <div
+            data-testid="header-total-coins"
+            className="flex items-center gap-1.5 bg-gradient-to-b from-yellow-50 to-yellow-100 px-3 py-1.5 rounded-2xl border-2 border-yellow-300 border-b-4 border-b-yellow-400 shadow-sm"
+            title="Tổng số Xu Vàng"
+          >
+            <span className="text-lg animate-wiggle" role="img" aria-label="Xu vàng">
+              🪙
+            </span>
+            <span className="text-sm sm:text-base font-black text-yellow-950">{totalCoins}</span>
+          </div>
+
+          {/* EXP Counter */}
+          <div
+            data-testid="header-total-exp"
+            className="hidden md:flex items-center gap-1.5 bg-gradient-to-b from-purple-50 to-purple-100 px-3 py-1.5 rounded-2xl border-2 border-purple-300 border-b-4 border-b-purple-400 shadow-sm"
+            title="Điểm kinh nghiệm EXP"
+          >
+            <span className="text-lg" role="img" aria-label="EXP">
+              ⚡
+            </span>
+            <span className="text-sm sm:text-base font-black text-purple-950">{totalExp}</span>
+          </div>
+
+          {/* Mute Toggle */}
+          <button
+            type="button"
+            data-testid="audio-mute-toggle"
+            onClick={handleToggleMute}
+            aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+            className={`btn-3d min-w-[48px] min-h-[48px] rounded-2xl border-2 flex items-center justify-center text-lg sm:text-xl transition-all ${
+              isMuted
+                ? 'bg-rose-50 border-rose-300 border-b-4 border-b-rose-400 text-rose-700'
+                : 'bg-emerald-50 border-emerald-300 border-b-4 border-b-emerald-400 text-emerald-800'
+            }`}
+          >
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+        </div>
+      </div>
+
+      {/* Dedicated Floating Navigation Dock (Clean, Organized, Highly Accessible) */}
+      <div className="bg-gradient-to-r from-amber-100/60 via-sky-100/60 to-emerald-100/60 border-t border-amber-200/60 py-2 px-3">
         <nav
           aria-label="Điều hướng chính"
-          className="flex flex-wrap items-center justify-center gap-2 sm:gap-3"
+          className="max-w-2xl mx-auto flex items-center justify-between sm:justify-center gap-2 sm:gap-4"
         >
           {navItems.map((item) => {
             const isActive = activeTab === item.tab;
@@ -179,68 +233,18 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                 data-testid={item.testId}
                 onClick={() => handleTabClick(item.tab)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`btn-3d min-h-[48px] min-w-[48px] px-4 py-2.5 rounded-2xl font-black text-sm sm:text-base flex items-center gap-2 ${
-                  isActive ? item.activeClass : item.inactiveClass
+                className={`btn-3d flex-1 sm:flex-initial min-h-[48px] min-w-[48px] px-3 sm:px-6 py-2 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all ${
+                  isActive ? item.activeStyle : 'btn-3d-white hover:bg-white/90'
                 }`}
               >
-                <span className="text-xl" role="img" aria-hidden="true">
+                <span className="text-lg sm:text-xl" role="img" aria-hidden="true">
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
         </nav>
-
-        {/* Right: Shiny 3D Star/Coin/EXP Badges & Audio Mute Toggle */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          <div
-            data-testid="header-total-stars"
-            className="btn-3d flex items-center gap-1.5 bg-gradient-to-b from-amber-50 to-amber-100 px-3.5 py-2 rounded-2xl border-2 border-amber-300 border-b-4 border-b-amber-400 font-black text-amber-950 text-sm shadow-sm"
-            title="Tổng số Sao"
-          >
-            <span className="text-lg animate-wiggle" role="img" aria-label="Sao">
-              ⭐
-            </span>
-            <span className="text-base font-black">{totalStars}</span>
-          </div>
-
-          <div
-            data-testid="header-total-coins"
-            className="btn-3d flex items-center gap-1.5 bg-gradient-to-b from-yellow-50 to-yellow-100 px-3.5 py-2 rounded-2xl border-2 border-yellow-300 border-b-4 border-b-yellow-400 font-black text-yellow-950 text-sm shadow-sm"
-            title="Tổng số Xu Vàng"
-          >
-            <span className="text-lg animate-wiggle" role="img" aria-label="Xu vàng">
-              🪙
-            </span>
-            <span className="text-base font-black">{totalCoins}</span>
-          </div>
-
-          <div
-            data-testid="header-total-exp"
-            className="hidden sm:flex btn-3d items-center gap-1.5 bg-gradient-to-b from-purple-50 to-purple-100 px-3.5 py-2 rounded-2xl border-2 border-purple-300 border-b-4 border-b-purple-400 font-black text-purple-950 text-sm shadow-sm"
-            title="Điểm kinh nghiệm EXP"
-          >
-            <span className="text-lg" role="img" aria-label="EXP">
-              ⚡
-            </span>
-            <span className="text-base font-black">{totalExp}</span>
-          </div>
-
-          <button
-            type="button"
-            data-testid="audio-mute-toggle"
-            onClick={handleToggleMute}
-            aria-label={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
-            className={`btn-3d min-w-[48px] min-h-[48px] rounded-2xl border-2 flex items-center justify-center text-xl transition-all ${
-              isMuted
-                ? 'bg-gradient-to-b from-rose-50 to-rose-100 border-rose-300 border-b-4 border-b-rose-400 text-rose-700'
-                : 'bg-gradient-to-b from-emerald-50 to-emerald-100 border-emerald-300 border-b-4 border-b-emerald-400 text-emerald-800'
-            }`}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-        </div>
       </div>
 
       {/* Child Profile Switcher Modal (4-Icon PIN Family Account selector) */}
