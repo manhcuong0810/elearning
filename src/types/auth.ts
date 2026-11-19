@@ -18,32 +18,7 @@ export const GUEST_CHILD_PROFILE: ChildProfile = {
   studyMinutesToday: 0,
 };
 
-export const DEFAULT_CHILDREN: ChildProfile[] = [
-  {
-    id: 'child_1',
-    name: 'Bé Bin',
-    gradeLabel: 'Lớp 1A',
-    avatarEmoji: '🦁',
-    pinIcons: ['🍎', '⭐', '🦆', '🌈'],
-    studyMinutesToday: 25,
-  },
-  {
-    id: 'child_2',
-    name: 'Bé Na',
-    gradeLabel: 'Lớp 1B',
-    avatarEmoji: '🐰',
-    pinIcons: ['🍓', '🌸', '🐱', '⭐'],
-    studyMinutesToday: 15,
-  },
-  {
-    id: 'child_3',
-    name: 'Bé Bống',
-    gradeLabel: 'Lớp 1C',
-    avatarEmoji: '🐼',
-    pinIcons: ['⚽', '🚀', '🐶', '🍕'],
-    studyMinutesToday: 10,
-  },
-];
+export const DEFAULT_CHILDREN: ChildProfile[] = [];
 
 export interface ParentUser {
   id: string;

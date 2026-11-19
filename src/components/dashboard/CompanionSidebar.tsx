@@ -125,18 +125,18 @@ export function CompanionSidebar({
       </div>
 
       {/* 2. Child Profile & Level EXP Card (Member Only) */}
-      {isAuthenticated && (
+      {isAuthenticated && profile && (
         <div
           data-testid="companion-level-card"
           className="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-300 flex flex-col gap-3"
         >
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-sky-100 to-sky-200 border-2 border-sky-300 flex items-center justify-center text-2xl shadow-inner">
-              {profile.avatarEmoji}
+              {profile.avatarEmoji || '👧'}
             </div>
             <div className="flex-1 text-left">
               <h3 className="text-base font-black text-slate-800 leading-tight">
-                {profile.name}
+                {profile.name || 'Bé'}
               </h3>
               <span className="inline-block bg-sky-100 text-sky-800 text-[11px] font-black px-2 py-0.5 rounded-full mt-0.5">
                 Cấp {levelInfo.level}: {levelInfo.title}

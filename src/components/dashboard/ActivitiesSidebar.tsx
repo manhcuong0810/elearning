@@ -36,8 +36,8 @@ export interface LeaderboardItem {
 }
 
 export function ActivitiesSidebar({
-  todayStars = 4,
-  stagesCompletedToday = 1,
+  todayStars = 0,
+  stagesCompletedToday = 0,
   arenaMatchesToday = 0,
   onClaimReward,
   isAuthenticated = true,

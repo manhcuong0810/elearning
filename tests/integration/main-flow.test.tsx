@@ -3,8 +3,26 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import HomePage from '@/app/page';
 import { useAuthStore } from '@/store/useAuthStore';
-import { DEFAULT_CHILDREN } from '@/types/auth';
 import { useProgressStore } from '@/store/useProgressStore';
+
+const TEST_CHILDREN = [
+  {
+    id: 'child_1',
+    name: 'Bé Bin',
+    gradeLabel: 'Lớp 1A',
+    avatarEmoji: '🦁',
+    pinIcons: ['🍎', '⭐', '🦆', '🌈'],
+    studyMinutesToday: 0,
+  },
+  {
+    id: 'child_2',
+    name: 'Bé Na',
+    gradeLabel: 'Lớp 1B',
+    avatarEmoji: '🐰',
+    pinIcons: ['🍓', '🌸', '🐱', '⭐'],
+    studyMinutesToday: 0,
+  },
+];
 
 describe('Full Learning Platform Integration', () => {
   beforeEach(async () => {
@@ -12,7 +30,7 @@ describe('Full Learning Platform Integration', () => {
     await useAuthStore.getState().loginWithGoogle({
       email: 'parent@gmail.com',
       fullName: 'Phụ Huynh',
-      initialChildren: DEFAULT_CHILDREN,
+      initialChildren: TEST_CHILDREN,
     });
   });
 
@@ -151,7 +169,7 @@ describe('Full Learning Platform Integration', () => {
     await useAuthStore.getState().loginWithGoogle({
       email: 'parent@gmail.com',
       fullName: 'Mẹ Lan Anh',
-      initialChildren: DEFAULT_CHILDREN,
+      initialChildren: TEST_CHILDREN,
     });
 
     render(<HomePage />);

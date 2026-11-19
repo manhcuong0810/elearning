@@ -14,7 +14,14 @@ vi.mock('@/lib/audio-manager', () => ({
 }));
 
 describe('CompanionSidebar', () => {
-  const mockProfile: ChildProfile = DEFAULT_FAMILY_PROFILES[0]; // Bé Bống
+  const mockProfile: ChildProfile = {
+    id: 'test_child_1',
+    name: 'Bé Bống',
+    gradeLabel: 'Lớp 1',
+    avatarEmoji: '👧',
+    pinIcons: ['⭐', '🚀', '🐱', '🌈'],
+    studyMinutesToday: 15,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();

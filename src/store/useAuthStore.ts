@@ -6,7 +6,6 @@ import {
   ParentUser,
   GoogleAuthPayload,
   ChildProfile,
-  DEFAULT_CHILDREN,
 } from '@/types/auth';
 
 const STORAGE_KEY = 'elearning-parent-auth-storage';
