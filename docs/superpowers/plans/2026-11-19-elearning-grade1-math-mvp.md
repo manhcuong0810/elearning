@@ -662,25 +662,25 @@ git commit -m "feat: integrate main application navigation, home page and parent
 - Consumes: `useAuthStore`, `defaultAudioManager`, React `createPortal`.
 - Produces: Modal đăng nhập / đăng ký tài khoản phụ huynh với 1-Click Google Sign-In, Email/Password validation, session management, và avatar phụ huynh trên thanh điều hướng.
 
-- [ ] **Step 1: Write types & failing tests**
+- [x] **Step 1: Write types & failing tests**
   - Khởi tạo `src/types/auth.ts`.
   - Viết `tests/unit/auth-store.test.ts` kiểm thử các action: `loginWithEmail`, `registerWithEmail`, `loginWithGoogle`, `logout`, `guestMode`.
   - Viết `tests/unit/auth-modal.test.tsx` kiểm thử form đăng nhập/đăng ký, nút Google, validate lỗi email/mật khẩu, đóng mở modal.
   - Viết `tests/integration/auth-flow.test.tsx` kiểm thử luồng từ nút đăng nhập trên Header -> đăng nhập thành công -> hiển thị thông tin phụ huynh và menu đăng xuất.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
   - Chạy `npx vitest run tests/unit/auth-store.test.ts tests/unit/auth-modal.test.tsx tests/integration/auth-flow.test.tsx` -> Xác nhận FAIL.
 
-- [ ] **Step 3: Implement useAuthStore & AuthModal**
+- [x] **Step 3: Implement useAuthStore & AuthModal**
   - Xây dựng `src/store/useAuthStore.ts` với Zustand persist an toàn trong localStorage.
   - Xây dựng `src/components/auth/AuthModal.tsx` với 3D Cartoon Bouncy UI, Google Sign-In button, Email/Pass tabs, React `createPortal` và viewport-safe styling.
 
-- [ ] **Step 4: Integrate into MainHeader & HomePage**
+- [x] **Step 4: Integrate into MainHeader & HomePage**
   - Bổ sung nút Đăng Nhập / Profile phụ huynh trên `MainHeader.tsx`.
   - Kết nối trạng thái mở modal và đồng bộ với các thao tác của phụ huynh.
 
-- [ ] **Step 5: Run all tests to verify they pass**
+- [x] **Step 5: Run all tests to verify they pass**
   - Chạy `npm test` xác nhận toàn bộ test suites PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Commit mã nguồn với Conventional Commits `feat(auth): add parent authentication with email and google sign-in`.
