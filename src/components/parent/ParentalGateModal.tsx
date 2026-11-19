@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AudioManager, defaultAudioManager } from '@/lib/audio-manager';
 
 export interface ParentalGateModalProps {
@@ -12,26 +12,90 @@ export interface ParentalGateModalProps {
   audioManager?: AudioManager;
 }
 
+export function generateRandomParentChallenge(): {
+  questionText: string;
+  answer: number;
+} {
+  const types = ['mul', 'add', 'sub'] as const;
+  const pickedType = types[Math.floor(Math.random() * types.length)];
+
+  if (pickedType === 'mul') {
+    const a = Math.floor(Math.random() * 7) + 6; // 6 - 12
+    const b = Math.floor(Math.random() * 6) + 4; // 4 - 9
+    return {
+      questionText: `${a} × ${b} = ?`,
+      answer: a * b,
+    };
+  }
+
+  if (pickedType === 'add') {
+    const a = Math.floor(Math.random() * 40) + 25; // 25 - 64
+    const b = Math.floor(Math.random() * 30) + 18; // 18 - 47
+    return {
+      questionText: `${a} + ${b} = ?`,
+      answer: a + b,
+    };
+  }
+
+  // Subtraction
+  const a = Math.floor(Math.random() * 40) + 55; // 55 - 94
+  const b = Math.floor(Math.random() * 30) + 15; // 15 - 44
+  return {
+    questionText: `${a} − ${b} = ?`,
+    answer: a - b,
+  };
+}
+
 export const ParentalGateModal: React.FC<ParentalGateModalProps> = ({
   isOpen,
   onSuccess,
   onClose,
-  challengeText = '12 × 4 = ?',
-  expectedAnswer = 48,
+  challengeText: propChallengeText,
+  expectedAnswer: propExpectedAnswer,
   audioManager = defaultAudioManager,
 }) => {
   const [answerInput, setAnswerInput] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [activeChallenge, setActiveChallenge] = useState<{
+    questionText: string;
+    answer: number;
+  }>(() => {
+    if (propChallengeText && propExpectedAnswer !== undefined) {
+      return { questionText: propChallengeText, answer: propExpectedAnswer };
+    }
+    return generateRandomParentChallenge();
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setAnswerInput('');
+      setErrorMessage(null);
+      if (propChallengeText && propExpectedAnswer !== undefined) {
+        setActiveChallenge({
+          questionText: propChallengeText,
+          answer: propExpectedAnswer,
+        });
+      } else {
+        setActiveChallenge(generateRandomParentChallenge());
+      }
+    }
+  }, [isOpen, propChallengeText, propExpectedAnswer]);
+
   if (!isOpen) {
     return null;
   }
+
+  const effectiveChallengeText =
+    propChallengeText ?? activeChallenge.questionText;
+  const effectiveExpectedAnswer =
+    propExpectedAnswer ?? activeChallenge.answer;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const numericVal = Number(answerInput.trim());
 
-    if (answerInput.trim() !== '' && numericVal === expectedAnswer) {
+    if (answerInput.trim() !== '' && numericVal === effectiveExpectedAnswer) {
       setErrorMessage(null);
       setAnswerInput('');
       audioManager.playSfx('correct');
@@ -83,14 +147,17 @@ export const ParentalGateModal: React.FC<ParentalGateModalProps> = ({
             Xác Thực Dành Cho Ba Mẹ
           </h2>
           <p className="text-sm font-medium text-slate-600">
-            Để tránh các bé Lớp 1 vô tình bấm nhầm vào phần cài đặt, vui lòng giải phép tính nhân dưới đây:
+            Để tránh các bé Lớp 1 vô tình bấm nhầm vào phần quản trị, vui lòng giải phép tính dưới đây:
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-center">
-            <span className="text-3xl font-black text-amber-900 tracking-wide">
-              {challengeText}
+            <span
+              data-testid="parental-gate-challenge-text"
+              className="text-3xl font-black text-amber-900 tracking-wide select-none"
+            >
+              {effectiveChallengeText}
             </span>
           </div>
 

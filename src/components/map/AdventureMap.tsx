@@ -9,11 +9,15 @@ import { StageNode } from './StageNode';
 export interface AdventureMapProps {
   curriculum?: Curriculum;
   onSelectStage?: (stage: Stage) => void;
+  isAuthenticated?: boolean;
+  onRequireAuth?: () => void;
 }
 
 export const AdventureMap: React.FC<AdventureMapProps> = ({
   curriculum,
   onSelectStage,
+  isAuthenticated = true,
+  onRequireAuth,
 }) => {
   const data = curriculum ?? loadGrade1MathData();
   const unlockedStages = useProgressStore((state) => state.unlockedStages);
@@ -33,6 +37,10 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
     unlockedStages[unlockedStages.length - 1];
 
   const handleStageSelect = (stage: Stage) => {
+    if (!isAuthenticated) {
+      onRequireAuth?.();
+      return;
+    }
     if (!unlockedStages.includes(stage.id)) {
       return;
     }
@@ -61,6 +69,37 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
           🌈
         </div>
       </div>
+
+      {/* Guest Welcome & Sign-in CTA Banner */}
+      {!isAuthenticated && (
+        <div
+          data-testid="guest-welcome-banner"
+          className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 rounded-3xl p-4 sm:p-5 text-white shadow-lg border-4 border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl shadow-inner border border-white/40">
+              🏝️
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-white">
+                Chào mừng Ba Mẹ & Bé đến với Xứ Sở Cú Mèo!
+              </h3>
+              <p className="text-xs font-bold text-amber-100">
+                Khám phá lộ trình Toán Lớp 1 tương tác. Đăng nhập ngay để mở khóa các ải học và lưu tiến độ cho bé!
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            data-testid="guest-banner-login-btn"
+            onClick={onRequireAuth}
+            className="btn-3d whitespace-nowrap min-h-[48px] px-6 py-2.5 rounded-2xl bg-white text-orange-600 text-sm font-black shadow-md border-2 border-orange-200 hover:bg-orange-50 active:scale-95 transition-all flex items-center gap-2"
+          >
+            <span>🚀</span>
+            <span>Đăng Nhập Ngay</span>
+          </button>
+        </div>
+      )}
 
       {/* Top Banner: Owl Mascot Guide + Daily Quest Motivation */}
       <div className="relative rounded-[2.5rem] p-5 sm:p-6 shadow-2xl border-4 border-white bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400 overflow-hidden">

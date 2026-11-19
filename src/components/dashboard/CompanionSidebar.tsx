@@ -8,6 +8,8 @@ export interface CompanionSidebarProps {
   profile: ChildProfile;
   totalExp: number;
   streakDays?: number;
+  isAuthenticated?: boolean;
+  onOpenAuthModal?: () => void;
 }
 
 const CHEERFUL_QUOTES = [
@@ -21,7 +23,9 @@ const CHEERFUL_QUOTES = [
 export function CompanionSidebar({
   profile,
   totalExp,
-  streakDays = 3,
+  streakDays = 0,
+  isAuthenticated = true,
+  onOpenAuthModal,
 }: CompanionSidebarProps) {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [isWiggling, setIsWiggling] = useState(false);
@@ -124,14 +128,16 @@ export function CompanionSidebar({
       <div className="bg-white rounded-3xl p-5 shadow-lg border-4 border-sky-300 flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-sky-100 to-sky-200 border-2 border-sky-300 flex items-center justify-center text-2xl shadow-inner">
-            {profile.avatarEmoji}
+            {isAuthenticated ? profile.avatarEmoji : '🎒'}
           </div>
           <div className="flex-1 text-left">
             <h3 className="text-base font-black text-slate-800 leading-tight">
-              {profile.name}
+              {isAuthenticated ? profile.name : 'Khách Ghé Thăm'}
             </h3>
             <span className="inline-block bg-sky-100 text-sky-800 text-[11px] font-black px-2 py-0.5 rounded-full mt-0.5">
-              Cấp {levelInfo.level}: {levelInfo.title}
+              {isAuthenticated
+                ? `Cấp ${levelInfo.level}: ${levelInfo.title}`
+                : 'Chưa đăng nhập'}
             </span>
           </div>
         </div>
@@ -155,13 +161,27 @@ export function CompanionSidebar({
             />
           </div>
           <span className="text-[10px] font-bold text-slate-400 text-right">
-            Còn {levelInfo.nextLevelExp - totalExp} EXP để lên cấp kế tiếp
+            {isAuthenticated
+              ? `Còn ${levelInfo.nextLevelExp - totalExp} EXP để lên cấp kế tiếp`
+              : 'Đăng nhập để lưu tiến độ và cấp độ!'}
           </span>
         </div>
       </div>
 
       {/* 3. Streak Card */}
-      <div className="bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl p-4 text-white shadow-lg border-4 border-amber-300 flex items-center justify-between gap-3">
+      <div
+        data-testid="companion-streak-card"
+        onClick={() => {
+          if (!isAuthenticated) {
+            onOpenAuthModal?.();
+          }
+        }}
+        className={`bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl p-4 text-white shadow-lg border-4 border-amber-300 flex items-center justify-between gap-3 ${
+          !isAuthenticated
+            ? 'cursor-pointer hover:brightness-105 active:scale-95 transition-all'
+            : ''
+        }`}
+      >
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/40 flex items-center justify-center text-2xl shadow-inner">
             🔥
@@ -170,12 +190,18 @@ export function CompanionSidebar({
             <span className="text-xs font-bold text-orange-100 block uppercase tracking-wider">
               Chuỗi học tập
             </span>
-            <span className="text-base font-black leading-tight">
-              {streakDays} ngày chăm chỉ!
+            <span className="text-sm sm:text-base font-black leading-tight block">
+              {!isAuthenticated
+                ? 'Đăng nhập để tích chuỗi ngày học!'
+                : streakDays > 0
+                ? `${streakDays} ngày chăm chỉ!`
+                : 'Chưa có chuỗi ngày học'}
             </span>
           </div>
         </div>
-        <span className="text-2xl animate-pulse">⭐</span>
+        <span className="text-2xl animate-pulse">
+          {!isAuthenticated ? '🔒' : '⭐'}
+        </span>
       </div>
     </aside>
   );

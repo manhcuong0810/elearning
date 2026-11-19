@@ -7,8 +7,13 @@ import { DEFAULT_CHILDREN } from '@/types/auth';
 import { useProgressStore } from '@/store/useProgressStore';
 
 describe('Full Learning Platform Integration', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     useProgressStore.getState().reset();
+    await useAuthStore.getState().loginWithGoogle({
+      email: 'parent@gmail.com',
+      fullName: 'Phụ Huynh',
+      initialChildren: DEFAULT_CHILDREN,
+    });
   });
 
   it('renders main navigation tabs and adventure map for Grade 1 Math', () => {
@@ -107,21 +112,32 @@ describe('Full Learning Platform Integration', () => {
     // Click Parent Portal button in MainHeader
     fireEvent.click(screen.getByTestId('nav-parent-portal'));
 
-    // ParentalGateModal should appear with adult math challenge (12 x 4 = ?)
+    // ParentalGateModal should appear with dynamic adult math challenge
     expect(screen.getByTestId('parental-gate-modal')).toBeDefined();
-    expect(screen.getByText(/12 × 4 = \?/i)).toBeDefined();
+    const challengeBox = screen.getByTestId('parental-gate-challenge-text');
+    expect(challengeBox).toBeDefined();
+    const challengeText = challengeBox.textContent || '';
+    const match = /^(\d+)\s*([+×x*\-−])\s*(\d+)\s*=\s*\?$/.exec(challengeText.trim());
+    expect(match).not.toBeNull();
+    const a = Number(match![1]);
+    const op = match![2];
+    const b = Number(match![3]);
+    let expected = 0;
+    if (op === '+') expected = a + b;
+    else if (op === '-' || op === '−') expected = a - b;
+    else expected = a * b;
 
     const input = screen.getByTestId('parental-gate-input');
     const submitBtn = screen.getByTestId('parental-gate-submit-btn');
 
     // Enter wrong answer first
-    fireEvent.change(input, { target: { value: '99' } });
+    fireEvent.change(input, { target: { value: `${expected + 99}` } });
     fireEvent.click(submitBtn);
     expect(screen.getByTestId('parental-gate-error')).toBeDefined();
     expect(screen.queryByTestId('parent-dashboard')).toBeNull();
 
-    // Enter correct answer (48)
-    fireEvent.change(input, { target: { value: '48' } });
+    // Enter correct answer
+    fireEvent.change(input, { target: { value: `${expected}` } });
     fireEvent.click(submitBtn);
 
     // Parent Dashboard should now be rendered with learning analytics

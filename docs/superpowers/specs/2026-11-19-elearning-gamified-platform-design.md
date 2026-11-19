@@ -195,16 +195,27 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
 
 ---
 
-## 8. Trải Nghiệm Người Dùng: Trạng Thái Khách (Guest) vs Đã Đăng Nhập (Member)
-1. **Trạng Thái Khách (Guest / Chưa Đăng Nhập)**:
-   - **Mục tiêu**: Cho phép phụ huynh và bé học thử ngay mà không bị rào cản form đăng ký.
-   - **Hồ sơ hiển thị**: `🎒 Bé Học Thử (Khách)` kèm nút `👤 Đăng Nhập` nổi bật trên Header.
-   - **Bản đồ học tập & Đấu trường**: Bé vẫn có thể chơi thử các ải toán, đấu trường và boss.
-   - **Nhiệm vụ & Rương quà**: Ẩn các thẻ nhiệm vụ hàng ngày và rương báu mở xu; thay thế bằng Card **"Nhiệm Vụ & Rương Quà (Khóa)"** với nút CTA `🚀 Đăng nhập để mở khóa` nhằm khuyến khích phụ huynh tạo tài khoản để tích lũy xu và sao.
-   - **Bảng vinh danh**: Đổi nhãn người chơi thành `Bé Học Thử (Khách)`.
+## 8. Trải Nghiệm Người Dùng: Bắt Buộc Đăng Nhập Sử Dụng Tính Năng & Phân Định Trạng Thái
+1. **Trạng Thái Khách (Guest / Chưa Đăng Nhập) - Chế Độ Preview / Showcase**:
+   - **Mục tiêu**: Giới thiệu giao diện, lộ trình các chương trình học môn Toán Lớp 1 (Bản đồ các đảo toán, linh vật Cú Mèo, bảng vinh danh tuần) như một Landing Showcase trực quan, nhưng **bắt buộc đăng nhập** để sử dụng mọi tính năng.
+   - **Rào chắn bảo vệ (Auth Gate)**:
+     - Nhấp vào bất kỳ ải toán nào trên Bản đồ: Ngay lập tức mở `AuthModal` với thông điệp: *"Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để bé bắt đầu học bài này nhé!"*. Tuyệt đối không cho học thử vô danh.
+     - Nhấp vào tab Đấu Trường (`Arena`), Nhà Của Bé (`Avatar Room`), hay Phụ Huynh (`Parent Portal`): Ngay lập tức mở `AuthModal` yêu cầu đăng nhập.
+     - Hồ sơ trên Header hiển thị `🎒 Bé Học Thử (Khách)` kèm nút `👤 Đăng Nhập` nổi bật.
+   - **Bảng vinh danh chuẩn (Standard Leaderboard)**:
+     - Hiển thị danh sách top học sinh xuất sắc tiêu biểu (ví dụ: Bé Bo - 45⭐, Bé Tuấn Minh - 38⭐, Bé Bảo An - 32⭐, Bé Mai Chi - 25⭐).
+     - Không tự tiện gán nhãn fake `(Bạn)` hay `(Khách)` vào top khi chưa đăng nhập. Kèm lời kêu gọi: *"Đăng nhập để đưa tên bé lên Bảng vinh danh!"*.
+   - **Chuỗi học tập (Streak)**:
+     - Hiển thị lời nhắc: *"Đăng nhập để kích hoạt Chuỗi ngày học tập 🔥"*, không hiển thị số ngày giả lập khi chưa có tài khoản.
 
-2. **Trạng Thái Đã Đăng Nhập (Member)**:
+2. **Trạng Thái Đã Đăng Nhập (Member / Authenticated)**:
    - **Xác thực**: Hỗ trợ Google Sign-In (qua Google Identity Services token client) và Email/Mật khẩu.
    - **Avatar & Danh tính**: Tự động hiển thị ảnh đại diện Google (qua tag `<img>` an toàn với `referrerPolicy="no-referrer"`) hoặc emoji thân thiện, kèm họ tên phụ huynh.
    - **Onboarding Bé Đầu Tiên**: Phụ huynh mới tạo tài khoản (chưa có bé nào) sẽ tự động mở modal tạo hồ sơ bé đầu tiên (chọn tên, avatar động vật, mã PIN 4 hình ảnh).
-   - **Mở khóa toàn diện**: Toàn bộ Nhiệm Vụ Hôm Nay (nhận xu khi hoàn thành) và Rương Báu May Mắn được mở khóa đầy đủ. Bảng vinh danh tuần hiển thị `[Tên bé] (Bạn)`.
+   - **Mở khóa toàn diện**: Mở khóa chơi ải toán, đấu trường 1vs1, vào Nhà của bé trang bị đồ, mở nhiệm vụ hàng ngày và rương may mắn.
+   - **Chuỗi học tập thực tế**: Tự động cập nhật `streakDays` dựa trên ngày học thực tế (`lastStudyDate`) khi hoàn thành ải, bảo toàn trong local storage.
+   - **Bảng vinh danh động**: Tự động tích hợp số sao thực tế của bé vào bảng xếp hạng tuần.
+
+3. **Cổng Phụ Huynh (Parental Gate Challenge ngẫu nhiên)**:
+   - Mỗi lần mở modal xác thực phụ huynh, hệ thống tự động sinh ngẫu nhiên phép toán người lớn (phép nhân từ bảng cửu chương hoặc phép cộng/trừ 2 chữ số như `8 × 7 = ?`, `13 × 4 = ?`, `38 + 47 = ?`).
+   - Tuyệt đối không fix cứng một câu hỏi duy nhất để trẻ không học vẹt đáp án.

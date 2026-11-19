@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { defaultAudioManager } from '@/lib/audio-manager';
 
 export interface ActivitiesSidebarProps {
@@ -11,6 +11,7 @@ export interface ActivitiesSidebarProps {
   isAuthenticated?: boolean;
   onOpenAuthModal?: () => void;
   childName?: string;
+  totalStars?: number;
 }
 
 interface QuestItem {
@@ -22,11 +23,20 @@ interface QuestItem {
   rewardCoins: number;
 }
 
-const INITIAL_LEADERBOARD = [
-  { rank: 1, name: 'Bé Bo', stars: 180, emoji: '🐯', medal: '🥇' },
-  { rank: 2, name: 'Bé Bống (Bạn)', stars: 125, emoji: '👧', medal: '🥈' },
-  { rank: 3, name: 'Bé Bi', stars: 90, emoji: '🐰', medal: '🥉' },
-  { rank: 4, name: 'Bé An', stars: 65, emoji: '🐼', medal: '⭐' },
+export interface LeaderboardItem {
+  rank: number;
+  name: string;
+  stars: number;
+  emoji: string;
+  medal: string;
+  isUser?: boolean;
+}
+
+const STANDARD_TOP_LEARNERS: LeaderboardItem[] = [
+  { rank: 1, name: 'Bé Bo (Hà Nội)', stars: 45, emoji: '🐯', medal: '🥇' },
+  { rank: 2, name: 'Bé Tuấn Minh (Đà Nẵng)', stars: 38, emoji: '🦁', medal: '🥈' },
+  { rank: 3, name: 'Bé Bảo An (TP.HCM)', stars: 32, emoji: '🐰', medal: '🥉' },
+  { rank: 4, name: 'Bé Mai Chi (Hải Phòng)', stars: 25, emoji: '🐼', medal: '⭐' },
 ];
 
 export function ActivitiesSidebar({
@@ -37,6 +47,7 @@ export function ActivitiesSidebar({
   isAuthenticated = true,
   onOpenAuthModal,
   childName,
+  totalStars,
 }: ActivitiesSidebarProps) {
   const [claimedQuests, setClaimedQuests] = useState<Record<string, boolean>>({});
   const [isChestOpened, setIsChestOpened] = useState(false);
@@ -85,17 +96,39 @@ export function ActivitiesSidebar({
     onClaimReward(reward);
   };
 
-  const leaderboard = INITIAL_LEADERBOARD.map((item) => {
-    if (item.name.includes('(Bạn)')) {
-      if (!isAuthenticated) {
-        return { ...item, name: 'Bé Học Thử (Khách)' };
-      }
-      if (childName) {
-        return { ...item, name: `${childName} (Bạn)` };
-      }
+  const leaderboard: LeaderboardItem[] = useMemo(() => {
+    if (!isAuthenticated) {
+      return STANDARD_TOP_LEARNERS;
     }
-    return item;
-  });
+
+    const effectiveUserStars = totalStars ?? todayStars;
+    const userEntry: LeaderboardItem = {
+      rank: 0,
+      name: `${childName || 'Bé Bống'} (Bạn)`,
+      stars: effectiveUserStars,
+      emoji: '👧',
+      medal: '⭐',
+      isUser: true,
+    };
+
+    const combined = [...STANDARD_TOP_LEARNERS, userEntry].sort(
+      (a, b) => b.stars - a.stars
+    );
+
+    return combined.slice(0, 5).map((item, index) => {
+      const rank = index + 1;
+      let medal = '⭐';
+      if (rank === 1) medal = '🥇';
+      else if (rank === 2) medal = '🥈';
+      else if (rank === 3) medal = '🥉';
+
+      return {
+        ...item,
+        rank,
+        medal,
+      };
+    });
+  }, [isAuthenticated, totalStars, todayStars, childName]);
 
   return (
     <aside
@@ -284,10 +317,10 @@ export function ActivitiesSidebar({
         <div className="flex flex-col gap-2">
           {leaderboard.map((item) => (
             <div
-              key={item.rank}
+              key={`${item.rank}-${item.name}`}
               className={`flex items-center justify-between px-3 py-2 rounded-2xl border-2 transition-all ${
-                item.name.includes('Bạn') || item.name.includes('Khách')
-                  ? 'bg-amber-100/70 border-amber-400 shadow-sm'
+                item.isUser
+                  ? 'bg-amber-100/80 border-amber-400 shadow-sm'
                   : 'bg-slate-50 border-slate-200'
               }`}
             >
@@ -306,6 +339,12 @@ export function ActivitiesSidebar({
             </div>
           ))}
         </div>
+
+        {!isAuthenticated && (
+          <p className="text-[11px] font-bold text-amber-700 text-center bg-amber-50 rounded-xl py-1.5 px-2 border border-amber-200">
+            💡 Đăng nhập để đưa tên bé lên Bảng vinh danh!
+          </p>
+        )}
       </div>
     </aside>
   );

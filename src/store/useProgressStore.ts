@@ -98,6 +98,8 @@ export interface ProgressStoreState {
   totalExp: number;
   inventory: string[];
   equippedItems: string[];
+  streakDays: number;
+  lastStudyDate: string | null;
   isStageUnlocked: (stageId: string) => boolean;
   getStageStars: (stageId: string) => number;
   getTotalStars: () => number;
@@ -106,6 +108,7 @@ export interface ProgressStoreState {
     result: StageCompletionReward,
     nextStageId?: string
   ) => void;
+  recordStudyDay: (dateStr?: string) => void;
   addRewards: (coins: number, exp: number) => void;
   purchaseItem: (itemId: string, cost: number) => boolean;
   equipItem: (itemId: string) => void;
@@ -120,6 +123,8 @@ const createInitialData = () => ({
   totalExp: 0,
   inventory: [] as string[],
   equippedItems: [] as string[],
+  streakDays: 0,
+  lastStudyDate: null as string | null,
 });
 
 export const useProgressStore = create<ProgressStoreState>()(
@@ -167,6 +172,42 @@ export const useProgressStore = create<ProgressStoreState>()(
             },
             totalCoins: state.totalCoins + earnedCoins,
             totalExp: state.totalExp + earnedExp,
+          };
+        });
+
+        // Record study day for real consecutive streak
+        get().recordStudyDay();
+      },
+
+      recordStudyDay: (dateStr?: string): void => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        set((state) => {
+          if (!state.lastStudyDate) {
+            return {
+              streakDays: 1,
+              lastStudyDate: todayStr,
+            };
+          }
+
+          if (state.lastStudyDate === todayStr) {
+            return state;
+          }
+
+          const lastDate = new Date(state.lastStudyDate);
+          const currentDate = new Date(todayStr);
+          const diffTime = currentDate.getTime() - lastDate.getTime();
+          const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+
+          if (diffDays === 1) {
+            return {
+              streakDays: state.streakDays + 1,
+              lastStudyDate: todayStr,
+            };
+          }
+
+          return {
+            streakDays: 1,
+            lastStudyDate: todayStr,
           };
         });
       },
@@ -228,6 +269,8 @@ export const useProgressStore = create<ProgressStoreState>()(
         totalExp: state.totalExp,
         inventory: state.inventory,
         equippedItems: state.equippedItems,
+        streakDays: state.streakDays,
+        lastStudyDate: state.lastStudyDate,
       }),
     }
   )

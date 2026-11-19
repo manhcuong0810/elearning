@@ -30,6 +30,7 @@ export interface MainHeaderProps {
   isAuthModalOpen?: boolean;
   onOpenAuthModal?: () => void;
   onCloseAuthModal?: () => void;
+  authPromptMessage?: string;
 }
 
 export const MainHeader: React.FC<MainHeaderProps> = ({
@@ -42,6 +43,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   isAuthModalOpen: propsIsAuthModalOpen,
   onOpenAuthModal,
   onCloseAuthModal,
+  authPromptMessage: propsAuthPromptMessage,
 }) => {
   const stageStars = useProgressStore((state) => state.stageStars);
   const totalCoins = useProgressStore((state) => state.totalCoins);
@@ -91,6 +93,16 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
 
   const handleTabClick = (tab: NavigationTab) => {
     audioManager.playSfx('click');
+    if (!isAuthenticated && tab !== 'adventure-map') {
+      if (tab === 'arena') {
+        openAuthModal('Ba Mẹ hãy đăng nhập để cho bé tham gia Đấu Trường 1vs1 nhé!');
+      } else if (tab === 'avatar-room') {
+        openAuthModal('Ba Mẹ hãy đăng nhập để vào Nhà Của Bé và trang trí phòng nhé!');
+      } else if (tab === 'parent-portal') {
+        openAuthModal('Ba Mẹ hãy đăng nhập để xem Cổng Thông Tin Phụ Huynh nhé!');
+      }
+      return;
+    }
     onSelectTab(tab);
   };
 
@@ -472,7 +484,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
           closeAuthModal();
           setAuthPromptMessage(undefined);
         }}
-        initialPromptMessage={authPromptMessage}
+        initialPromptMessage={propsAuthPromptMessage ?? authPromptMessage}
       />
 
       {/* Create Child Profile Modal */}

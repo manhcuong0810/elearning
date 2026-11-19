@@ -46,7 +46,15 @@ export default function HomePage() {
 
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authPromptMessage, setAuthPromptMessage] = useState<string | undefined>();
   const addChildProfile = useAuthStore((state) => state.addChildProfile);
+
+  const openAuthWithPrompt = (msg?: string) => {
+    setAuthPromptMessage(
+      msg || 'Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để bé bắt đầu học nhé!'
+    );
+    setIsAuthModalOpen(true);
+  };
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -87,6 +95,7 @@ export default function HomePage() {
   const stageStars = useProgressStore((state) => state.stageStars);
   const totalCoins = useProgressStore((state) => state.totalCoins);
   const totalExp = useProgressStore((state) => state.totalExp);
+  const streakDays = useProgressStore((state) => state.streakDays);
   const completeStage = useProgressStore((state) => state.completeStage);
   const addRewards = useProgressStore((state) => state.addRewards);
 
@@ -96,6 +105,19 @@ export default function HomePage() {
   );
 
   const handleSelectNavigationTab = (tab: NavigationTab) => {
+    if (!isAuthenticated && tab !== 'adventure-map') {
+      if (tab === 'arena') {
+        openAuthWithPrompt('Ba Mẹ hãy đăng nhập để cho bé tham gia Đấu Trường 1vs1 nhé!');
+      } else if (tab === 'avatar-room') {
+        openAuthWithPrompt('Ba Mẹ hãy đăng nhập để vào Nhà Của Bé và trang trí phòng nhé!');
+      } else if (tab === 'parent-portal') {
+        openAuthWithPrompt('Ba Mẹ hãy đăng nhập để xem Cổng Thông Tin Phụ Huynh nhé!');
+      } else {
+        openAuthWithPrompt();
+      }
+      return;
+    }
+
     if (tab === 'parent-portal') {
       if (isParentUnlocked) {
         setActiveTab('parent-portal');
@@ -111,6 +133,13 @@ export default function HomePage() {
   };
 
   const handleSelectStage = (stage: Stage) => {
+    if (!isAuthenticated) {
+      openAuthWithPrompt(
+        'Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để bé bắt đầu học bài này nhé!'
+      );
+      return;
+    }
+
     defaultAudioManager.playSfx('click');
     setSelectedStage(stage);
     setCurrentQuestionIndex(0);
@@ -506,8 +535,12 @@ export default function HomePage() {
         onSelectProfile={setActiveProfile}
         audioManager={defaultAudioManager}
         isAuthModalOpen={isAuthModalOpen}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onCloseAuthModal={() => setIsAuthModalOpen(false)}
+        onOpenAuthModal={(msg) => openAuthWithPrompt(msg)}
+        onCloseAuthModal={() => {
+          setIsAuthModalOpen(false);
+          setAuthPromptMessage(undefined);
+        }}
+        authPromptMessage={authPromptMessage}
       />
 
       <main className="flex-1 py-6 px-2 sm:px-4">
@@ -520,7 +553,9 @@ export default function HomePage() {
                   <CompanionSidebar
                     profile={activeProfile}
                     totalExp={totalExp}
-                    streakDays={3}
+                    streakDays={streakDays}
+                    isAuthenticated={isAuthenticated}
+                    onOpenAuthModal={() => openAuthWithPrompt()}
                   />
                 </div>
 
@@ -529,6 +564,12 @@ export default function HomePage() {
                   <AdventureMap
                     curriculum={curriculum}
                     onSelectStage={handleSelectStage}
+                    isAuthenticated={isAuthenticated}
+                    onRequireAuth={() =>
+                      openAuthWithPrompt(
+                        'Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để bé bắt đầu học bài này nhé!'
+                      )
+                    }
                   />
                 </div>
 
@@ -536,9 +577,10 @@ export default function HomePage() {
                 <div className="hidden lg:block sticky top-24">
                   <ActivitiesSidebar
                     isAuthenticated={isAuthenticated}
-                    onOpenAuthModal={() => setIsAuthModalOpen(true)}
+                    onOpenAuthModal={() => openAuthWithPrompt()}
                     childName={activeProfile.name}
                     todayStars={Math.min(5, totalStarsEarned)}
+                    totalStars={totalStarsEarned}
                     stagesCompletedToday={unlockedStages.length > 1 ? 1 : 0}
                     arenaMatchesToday={0}
                     onClaimReward={(coins) => {

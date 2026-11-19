@@ -108,4 +108,29 @@ describe('Progress Store (useProgressStore)', () => {
     expect(rawPersisted).toContain('stage_2');
     expect(rawPersisted).toContain('"totalCoins":25');
   });
+
+  it('should track real streak days and update based on consecutive study dates', () => {
+    const store = useProgressStore.getState();
+    expect(store.streakDays).toBe(0);
+    expect(store.lastStudyDate).toBeNull();
+
+    // Day 1
+    store.recordStudyDay('2026-11-17');
+    expect(useProgressStore.getState().streakDays).toBe(1);
+    expect(useProgressStore.getState().lastStudyDate).toBe('2026-11-17');
+
+    // Same day study again -> streak remains 1
+    useProgressStore.getState().recordStudyDay('2026-11-17');
+    expect(useProgressStore.getState().streakDays).toBe(1);
+
+    // Consecutive day (Day 2) -> streak becomes 2
+    useProgressStore.getState().recordStudyDay('2026-11-18');
+    expect(useProgressStore.getState().streakDays).toBe(2);
+    expect(useProgressStore.getState().lastStudyDate).toBe('2026-11-18');
+
+    // Skipping a day (Day 4: 2026-11-20 instead of 2026-11-19) -> streak resets to 1
+    useProgressStore.getState().recordStudyDay('2026-11-20');
+    expect(useProgressStore.getState().streakDays).toBe(1);
+    expect(useProgressStore.getState().lastStudyDate).toBe('2026-11-20');
+  });
 });

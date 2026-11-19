@@ -57,4 +57,21 @@ describe('CompanionSidebar', () => {
     const newQuote = screen.getByTestId('companion-speech-bubble').textContent;
     expect(newQuote).toBeDefined();
   });
+
+  it('renders guest mode with login prompt on streak card when not authenticated', () => {
+    const mockOnOpenAuthModal = vi.fn();
+    render(
+      <CompanionSidebar
+        profile={{ id: 'guest', name: 'Bé Học Thử', gradeLabel: 'Lớp 1', avatarEmoji: '🎒', pinIcons: [] }}
+        totalExp={0}
+        isAuthenticated={false}
+        onOpenAuthModal={mockOnOpenAuthModal}
+      />
+    );
+
+    expect(screen.getByText(/Đăng nhập để tích chuỗi/i)).toBeDefined();
+    const streakBtn = screen.getByTestId('companion-streak-card');
+    fireEvent.click(streakBtn);
+    expect(mockOnOpenAuthModal).toHaveBeenCalled();
+  });
 });

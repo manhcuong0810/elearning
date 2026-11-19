@@ -758,3 +758,65 @@ git commit -m "feat: integrate main application navigation, home page and parent
 
 - [x] **Step 6: Commit**
   - Commit mã nguồn với Conventional Commits `feat(ui): partition guest vs member activities and fix google avatar url rendering`.
+
+---
+
+## Task 14: Bắt Buộc Đăng Nhập, Chuỗi Học Tập Thực Tế, Bảng Vinh Danh Chuẩn & Random Parental Gate Challenge
+
+- Files:
+  - `src/components/parent/ParentalGateModal.tsx`
+  - `src/store/useProgressStore.ts`
+  - `src/components/dashboard/CompanionSidebar.tsx`
+  - `src/components/dashboard/ActivitiesSidebar.tsx`
+  - `src/components/map/AdventureMap.tsx`
+  - `src/components/navigation/MainHeader.tsx`
+  - `src/app/page.tsx`
+- Tests:
+  - `tests/unit/parental-gate.test.tsx`
+  - `tests/unit/progress-store.test.ts`
+  - `tests/unit/companion-sidebar.test.tsx`
+  - `tests/unit/activities-sidebar.test.tsx`
+  - `tests/integration/auth-gate.test.tsx`
+
+**Interfaces:**
+- Consumes: `useAuthStore` (`isAuthenticated`), `useProgressStore` (`streakDays`, `lastStudyDate`, `recordStudyDay`, `totalStarsEarned`).
+- Produces:
+  - `ParentalGateModal` tự động tạo phép tính ngẫu nhiên mỗi khi mở modal (hoặc khi reset), hỗ trợ kiểm thử linh hoạt qua props tùy chọn.
+  - `useProgressStore` theo dõi chuỗi ngày học thực tế (`streakDays`, `lastStudyDate`) tăng dần khi hoàn thành bài học mỗi ngày.
+  - `CompanionSidebar` hiển thị chuỗi ngày học thực tế cho học sinh đã đăng nhập, và hiển thị CTA đăng nhập để kích hoạt streak cho khách.
+  - `ActivitiesSidebar` hiển thị Bảng Vinh Danh chuẩn với top học sinh tiêu biểu; chỉ đưa tài khoản bé vào bảng khi đã đăng nhập và có sao thực tế.
+  - Khóa toàn bộ các tương tác chơi ải, đấu trường, nhà của bé, cổng phụ huynh khi chưa đăng nhập; click vào bất kỳ tính năng nào đều bật AuthModal với thông điệp rõ ràng.
+
+- [x] **Step 1: Write failing tests**
+  - `tests/unit/parental-gate.test.tsx`: kiểm tra câu hỏi được sinh ngẫu nhiên khi mở modal và xác thực đáp án đúng với câu hỏi được sinh ra.
+  - `tests/unit/progress-store.test.ts`: kiểm tra `recordStudyDay()` tăng streak khi học liên tiếp các ngày và giữ nguyên trong cùng 1 ngày.
+  - `tests/integration/auth-gate.test.tsx`: kiểm tra khi `!isAuthenticated`, nhấp vào ải toán trên bản đồ, nhấp vào tab Đấu trường, Nhà của bé, Phụ huynh đều kích hoạt `AuthModal` và chặn không cho truy cập vào nội dung tính năng.
+
+- [x] **Step 2: Run tests to verify they fail**
+  - Chạy `npx vitest run tests/unit/parental-gate.test.tsx tests/integration/auth-gate.test.tsx` -> Xác nhận FAIL.
+
+- [x] **Step 3: Implement Random Challenge in ParentalGateModal**
+  - Bổ sung hàm sinh câu hỏi ngẫu nhiên `generateRandomChallenge()` trong `ParentalGateModal.tsx`.
+  - Khởi tạo câu hỏi ngẫu nhiên mỗi khi `isOpen` chuyển từ `false` sang `true` (nếu không truyền props cứng).
+
+- [x] **Step 4: Implement Real Streak Tracking in useProgressStore**
+  - Bổ sung `streakDays: number`, `lastStudyDate: string | null`, và `recordStudyDay: (dateStr?: string) => void`.
+  - Tự động gọi `recordStudyDay()` trong `completeStage`.
+
+- [x] **Step 5: Update CompanionSidebar & ActivitiesSidebar**
+  - `CompanionSidebar`: nhận `isAuthenticated`, hiển thị chuỗi học thực tế hoặc CTA đăng nhập.
+  - `ActivitiesSidebar`: chuẩn hóa Bảng vinh danh, tính toán thứ hạng thực tế của bé khi có sao.
+
+- [x] **Step 6: Update AdventureMap, MainHeader & HomePage**
+  - `AdventureMap`: nhận `isAuthenticated` và `onRequireAuth`, chặn chọn ải khi chưa đăng nhập.
+  - `MainHeader`: chặn chuyển tab Arena, Avatar Room, Parent Portal khi chưa đăng nhập, kích hoạt `openAuthModal`.
+  - `HomePage`: tích hợp toàn bộ luồng Auth Gate và truyền `streakDays` thực tế vào `CompanionSidebar`.
+
+- [x] **Step 7: Update integration tests**
+  - Đảm bảo các test tích hợp (`main-flow.test.tsx`) đăng nhập trước khi thực hiện các luồng của người dùng đã xác thực.
+
+- [x] **Step 8: Run all tests to verify they pass**
+  - Chạy `npm test` xác nhận 20/20 test suites (98/98 tests) PASS.
+
+- [x] **Step 9: Commit**
+  - Commit mã nguồn với Conventional Commits `feat(auth): enforce mandatory auth gate, dynamic parental challenges, real streak and standard leaderboard`.
