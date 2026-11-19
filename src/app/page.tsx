@@ -578,8 +578,10 @@ export default function HomePage() {
                     isAuthenticated={isAuthenticated}
                     onOpenAuthModal={() => openAuthWithPrompt()}
                     childName={activeProfile.name}
+                    childEmoji={activeProfile.avatarEmoji}
                     todayStars={Math.min(5, totalStarsEarned)}
                     totalStars={totalStarsEarned}
+                    familyProfiles={familyProfiles}
                     stagesCompletedToday={unlockedStages.length > 1 ? 1 : 0}
                     arenaMatchesToday={0}
                   />

@@ -60,8 +60,10 @@ describe('ActivitiesSidebar', () => {
     expect(screen.queryByTestId('daily-quests-card')).toBeNull();
     expect(screen.queryByTestId('mystery-chest-btn')).toBeNull();
 
-    // Leaderboard is still visible for social proof
+    // Leaderboard shows guest lock notice and zero mock learners
     expect(screen.getByTestId('mini-leaderboard')).toBeDefined();
+    expect(screen.getByTestId('guest-leaderboard-lock')).toBeDefined();
+    expect(screen.queryByText(/Bé Bo/i)).toBeNull();
 
     // Clicking CTA button triggers auth modal
     const ctaBtn = screen.getByTestId('guest-login-cta-btn');
@@ -103,6 +105,33 @@ describe('ActivitiesSidebar', () => {
     expect(defaultAudioManager.playSfx).toHaveBeenCalledWith('cheer');
     expect(mockOnClaimReward).toHaveBeenCalledWith(expect.any(Number));
     expect(screen.getByText(/Đã mở rương báu/i)).toBeDefined();
+  });
+
+  it('renders only authentic child profile on the leaderboard and contains zero mock learners', () => {
+    render(
+      <ActivitiesSidebar
+        isAuthenticated={true}
+        childName="Bé Khôi Nguyên"
+        childEmoji="🦁"
+        totalStars={9}
+        todayStars={3}
+        stagesCompletedToday={2}
+        arenaMatchesToday={1}
+        onClaimReward={mockOnClaimReward}
+      />
+    );
+
+    expect(screen.getByTestId('mini-leaderboard')).toBeDefined();
+
+    // Must show real child
+    expect(screen.getByText(/Bé Khôi Nguyên \(Bạn\)/i)).toBeDefined();
+    expect(screen.getByText('9')).toBeDefined();
+
+    // Must NEVER contain mock learners
+    expect(screen.queryByText(/Bé Bo/i)).toBeNull();
+    expect(screen.queryByText(/Bé Tuấn Minh/i)).toBeNull();
+    expect(screen.queryByText(/Bé Bảo An/i)).toBeNull();
+    expect(screen.queryByText(/Bé Mai Chi/i)).toBeNull();
   });
 
   it('preserves claimed quests and opened chest status on remount (preventing duplicate claims on page reload)', () => {

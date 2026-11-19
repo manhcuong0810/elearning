@@ -12,7 +12,9 @@ export interface ActivitiesSidebarProps {
   isAuthenticated?: boolean;
   onOpenAuthModal?: () => void;
   childName?: string;
+  childEmoji?: string;
   totalStars?: number;
+  familyProfiles?: { id: string; name: string; avatarEmoji: string }[];
 }
 
 interface QuestItem {
@@ -33,13 +35,6 @@ export interface LeaderboardItem {
   isUser?: boolean;
 }
 
-const STANDARD_TOP_LEARNERS: LeaderboardItem[] = [
-  { rank: 1, name: 'Bé Bo (Hà Nội)', stars: 45, emoji: '🐯', medal: '🥇' },
-  { rank: 2, name: 'Bé Tuấn Minh (Đà Nẵng)', stars: 38, emoji: '🦁', medal: '🥈' },
-  { rank: 3, name: 'Bé Bảo An (TP.HCM)', stars: 32, emoji: '🐰', medal: '🥉' },
-  { rank: 4, name: 'Bé Mai Chi (Hải Phòng)', stars: 25, emoji: '🐼', medal: '⭐' },
-];
-
 export function ActivitiesSidebar({
   todayStars = 4,
   stagesCompletedToday = 1,
@@ -48,7 +43,9 @@ export function ActivitiesSidebar({
   isAuthenticated = true,
   onOpenAuthModal,
   childName,
+  childEmoji = '👧',
   totalStars,
+  familyProfiles,
 }: ActivitiesSidebarProps) {
   const isQuestClaimed = useProgressStore((state) => state.isQuestClaimed);
   const isChestOpenedToday = useProgressStore((state) => state.isChestOpenedToday);
@@ -107,37 +104,57 @@ export function ActivitiesSidebar({
 
   const leaderboard: LeaderboardItem[] = useMemo(() => {
     if (!isAuthenticated) {
-      return STANDARD_TOP_LEARNERS;
+      return [];
     }
 
     const effectiveUserStars = totalStars ?? todayStars;
-    const userEntry: LeaderboardItem = {
-      rank: 0,
-      name: `${childName || 'Bé Bống'} (Bạn)`,
-      stars: effectiveUserStars,
-      emoji: '👧',
-      medal: '⭐',
-      isUser: true,
-    };
 
-    const combined = [...STANDARD_TOP_LEARNERS, userEntry].sort(
-      (a, b) => b.stars - a.stars
-    );
+    if (familyProfiles && familyProfiles.length > 0) {
+      const items = familyProfiles.map((p, idx) => {
+        const isCurrent = p.name === childName;
+        const stars = isCurrent ? effectiveUserStars : 0;
+        return {
+          rank: idx + 1,
+          name: isCurrent ? `${p.name} (Bạn)` : p.name,
+          stars,
+          emoji: p.avatarEmoji || '👧',
+          medal: '⭐',
+          isUser: isCurrent,
+        };
+      });
 
-    return combined.slice(0, 5).map((item, index) => {
-      const rank = index + 1;
-      let medal = '⭐';
-      if (rank === 1) medal = '🥇';
-      else if (rank === 2) medal = '🥈';
-      else if (rank === 3) medal = '🥉';
+      return items
+        .sort((a, b) => b.stars - a.stars)
+        .map((item, index) => {
+          const rank = index + 1;
+          let medal = '⭐';
+          if (rank === 1) medal = '🥇';
+          else if (rank === 2) medal = '🥈';
+          else if (rank === 3) medal = '🥉';
 
-      return {
-        ...item,
-        rank,
-        medal,
-      };
-    });
-  }, [isAuthenticated, totalStars, todayStars, childName]);
+          return {
+            ...item,
+            rank,
+            medal,
+          };
+        });
+    }
+
+    if (childName) {
+      return [
+        {
+          rank: 1,
+          name: `${childName} (Bạn)`,
+          stars: effectiveUserStars,
+          emoji: childEmoji,
+          medal: '🥇',
+          isUser: true,
+        },
+      ];
+    }
+
+    return [];
+  }, [isAuthenticated, totalStars, todayStars, childName, childEmoji, familyProfiles]);
 
   return (
     <aside
@@ -323,36 +340,66 @@ export function ActivitiesSidebar({
           <span className="text-[11px] font-bold text-slate-400">Lớp 1</span>
         </div>
 
-        <div className="flex flex-col gap-2">
-          {leaderboard.map((item) => (
-            <div
-              key={`${item.rank}-${item.name}`}
-              className={`flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border-2 transition-all ${
-                item.isUser
-                  ? 'bg-amber-100/80 border-amber-400 shadow-sm'
-                  : 'bg-slate-50 border-slate-200'
-              }`}
+        {!isAuthenticated ? (
+          <div
+            data-testid="guest-leaderboard-lock"
+            className="p-4 rounded-2xl bg-amber-50/70 border-2 border-amber-200 text-center flex flex-col items-center gap-2"
+          >
+            <span className="text-2xl" role="img" aria-label="Khóa">
+              🔒
+            </span>
+            <p className="text-xs font-bold text-amber-900 leading-relaxed">
+              Bảng vinh danh chỉ ghi nhận và xếp hạng thành tích từ tài khoản học sinh thật.
+            </p>
+            <button
+              type="button"
+              data-testid="leaderboard-login-cta-btn"
+              onClick={onOpenAuthModal}
+              className="btn-3d text-xs font-black px-4 py-2 rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 text-slate-900 border-2 border-white border-b-4 border-b-amber-600 shadow-md transition-transform hover:scale-105 active:scale-95"
             >
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="text-base font-black w-5 text-center shrink-0">
-                  {item.medal}
-                </span>
-                <span className="text-xl shrink-0">{item.emoji}</span>
-                <span className="text-xs sm:text-sm font-black text-slate-800 truncate">
-                  {item.name}
+              Đăng nhập để vào bảng vàng
+            </button>
+          </div>
+        ) : leaderboard.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {leaderboard.map((item) => (
+              <div
+                key={`${item.rank}-${item.name}`}
+                className={`flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border-2 transition-all ${
+                  item.isUser
+                    ? 'bg-amber-100/80 border-amber-400 shadow-sm'
+                    : 'bg-slate-50 border-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className="text-base font-black w-5 text-center shrink-0">
+                    {item.medal}
+                  </span>
+                  <span className="text-xl shrink-0">{item.emoji}</span>
+                  <span className="text-xs sm:text-sm font-black text-slate-800 truncate">
+                    {item.name}
+                  </span>
+                </div>
+                <span className="text-xs font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 whitespace-nowrap shrink-0 inline-flex items-center gap-1">
+                  <span>{item.stars}</span>
+                  <span>⭐</span>
                 </span>
               </div>
-              <span className="text-xs font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 whitespace-nowrap shrink-0 inline-flex items-center gap-1">
-                <span>{item.stars}</span>
-                <span>⭐</span>
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
 
-        {!isAuthenticated && (
-          <p className="text-[11px] font-bold text-amber-700 text-center bg-amber-50 rounded-xl py-1.5 px-2 border border-amber-200">
-            💡 Đăng nhập để đưa tên bé lên Bảng vinh danh!
+            {leaderboard[0]?.stars === 0 ? (
+              <p className="text-[11px] font-bold text-slate-500 text-center bg-slate-50 rounded-xl py-1.5 px-2 border border-slate-200 mt-1">
+                💡 Bé hãy chinh phục các ải toán để tích lũy Sao tỏa sáng trên Bảng vàng nhé!
+              </p>
+            ) : (
+              <p className="text-[11px] font-bold text-amber-800 text-center bg-amber-50 rounded-xl py-1.5 px-2 border border-amber-200 mt-1">
+                🎉 Bé {childName} đang giữ vị trí Top 1 với {totalStars ?? todayStars} ⭐!
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs font-bold text-slate-500 text-center py-3">
+            Chưa có dữ liệu học sinh vinh danh.
           </p>
         )}
       </div>
