@@ -24,7 +24,7 @@ describe('useAuthStore', () => {
     expect(state.user?.email).toBe('ba.nam@gmail.com');
     expect(state.user?.fullName).toBe('Ba Nam');
     expect(state.user?.provider).toBe('google');
-    expect(state.user?.children.length).toBeGreaterThan(0);
+    expect(state.user?.children).toEqual([]);
   });
 
   it('allows adding a new child profile to parent account', async () => {

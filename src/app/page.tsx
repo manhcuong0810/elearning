@@ -21,6 +21,7 @@ import { CompanionSidebar } from '@/components/dashboard/CompanionSidebar';
 import { ActivitiesSidebar } from '@/components/dashboard/ActivitiesSidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { GUEST_CHILD_PROFILE } from '@/types/auth';
+import { CreateChildModal } from '@/components/profile/CreateChildModal';
 
 export default function HomePage() {
   const curriculum = useMemo(() => loadGrade1MathData(), []);
@@ -43,15 +44,24 @@ export default function HomePage() {
       : GUEST_CHILD_PROFILE;
   });
 
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const addChildProfile = useAuthStore((state) => state.addChildProfile);
+
   useEffect(() => {
-    if (isAuthenticated && user?.children && user.children.length > 0) {
-      if (
-        activeProfile.id === 'guest' ||
-        !user.children.some((c) => c.id === activeProfile.id)
-      ) {
-        setActiveProfile(user.children[0]);
+    if (isAuthenticated && user) {
+      if (!user.children || user.children.length === 0) {
+        setIsOnboardingOpen(true);
+      } else {
+        setIsOnboardingOpen(false);
+        if (
+          activeProfile.id === 'guest' ||
+          !user.children.some((c) => c.id === activeProfile.id)
+        ) {
+          setActiveProfile(user.children[0]);
+        }
       }
     } else if (!isAuthenticated && activeProfile.id !== 'guest') {
+      setIsOnboardingOpen(false);
       setActiveProfile(GUEST_CHILD_PROFILE);
     }
   }, [isAuthenticated, user]);
@@ -567,6 +577,18 @@ export default function HomePage() {
           setActiveTab('parent-portal');
         }}
         audioManager={defaultAudioManager}
+      />
+
+      {/* Onboarding: First Child Profile Creation for New Parents */}
+      <CreateChildModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onCreate={(childData) => {
+          const newChild = addChildProfile(childData);
+          setActiveProfile(newChild);
+          setIsOnboardingOpen(false);
+        }}
+        isFirstChild={true}
       />
     </div>
   );

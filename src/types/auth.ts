@@ -59,6 +59,7 @@ export interface GoogleAuthPayload {
   email: string;
   fullName: string;
   avatarUrl?: string;
+  initialChildren?: ChildProfile[];
 }
 
 export interface AuthState {

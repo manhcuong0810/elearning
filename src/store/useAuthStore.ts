@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
             fullName,
             avatarUrl: payload?.avatarUrl || '👩‍👧',
             provider: 'google',
-            children: DEFAULT_CHILDREN,
+            children: payload?.initialChildren || [],
             createdAt: new Date().toISOString(),
           };
 
@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthState>()(
           fullName: email.split('@')[0],
           avatarUrl: '👨‍👩‍👧',
           provider: 'email',
-          children: DEFAULT_CHILDREN,
+          children: [],
           createdAt: new Date().toISOString(),
         };
 
@@ -131,7 +131,7 @@ export const useAuthStore = create<AuthState>()(
                 studyMinutesToday: 0,
               },
             ]
-          : DEFAULT_CHILDREN;
+          : [];
 
         const newUser: ParentUser = {
           id: `user_${Date.now()}`,

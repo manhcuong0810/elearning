@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useProgressStore } from '@/store/useProgressStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { CreateChildModal } from '@/components/profile/CreateChildModal';
 import { AudioManager, defaultAudioManager } from '@/lib/audio-manager';
 
 export type NavigationTab = 'adventure-map' | 'arena' | 'avatar-room' | 'parent-portal';
@@ -45,6 +46,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
+  const addChildProfile = useAuthStore((state) => state.addChildProfile);
 
   const effectiveProfiles =
     profiles ||
@@ -61,6 +63,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   const [isMuted, setIsMuted] = useState<boolean>(() => audioManager.isMuted());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isCreateChildModalOpen, setIsCreateChildModalOpen] = useState<boolean>(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false);
   const [authPromptMessage, setAuthPromptMessage] = useState<string | undefined>(
     undefined
@@ -394,6 +397,23 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                     </button>
                   );
                 })}
+
+                {/* Add new child button for parents */}
+                {isAuthenticated && (
+                  <button
+                    type="button"
+                    data-testid="add-child-profile-btn"
+                    onClick={() => {
+                      audioManager.playSfx('click');
+                      setIsProfileModalOpen(false);
+                      setIsCreateChildModalOpen(true);
+                    }}
+                    className="btn-3d w-full min-h-[48px] py-2 px-4 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 border-2 border-white border-b-4 border-b-sky-700 text-white font-black text-sm shadow-md flex items-center justify-center gap-2 mt-2"
+                  >
+                    <span>➕</span>
+                    <span>Thêm Hồ Sơ Bé Mới</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -413,6 +433,17 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
           setAuthPromptMessage(undefined);
         }}
         initialPromptMessage={authPromptMessage}
+      />
+
+      {/* Create Child Profile Modal */}
+      <CreateChildModal
+        isOpen={isCreateChildModalOpen}
+        onClose={() => setIsCreateChildModalOpen(false)}
+        onCreate={(childData) => {
+          const newChild = addChildProfile(childData);
+          onSelectProfile?.(newChild);
+        }}
+        isFirstChild={effectiveProfiles.length === 0 || effectiveProfiles[0].id === 'guest'}
       />
     </header>
   );

@@ -703,24 +703,24 @@ git commit -m "feat: integrate main application navigation, home page and parent
 - Consumes: Google Identity Services SDK (`https://accounts.google.com/gsi/client`), `useAuthStore` (`addChildProfile`, `user.children`).
 - Produces: Luồng Onboarding tự động mở khi phụ huynh mới đăng ký; giao diện chọn avatar linh vật, chọn mã PIN 4 hình vẽ; hỗ trợ kết nối Google Client ID chính thức qua `.env.local`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
   - Viết `tests/unit/create-child-modal.test.tsx` kiểm thử form tạo hồ sơ bé (tên bé, chọn avatar linh vật, chọn 4 mã PIN hình vẽ, submit).
   - Viết `tests/integration/onboarding-flow.test.tsx` kiểm thử luồng phụ huynh mới tạo tài khoản -> tự động mở `CreateChildModal` -> tạo bé xong thì hiển thị bé vừa tạo lên Header.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
   - Chạy `npx vitest run tests/unit/create-child-modal.test.tsx tests/integration/onboarding-flow.test.tsx` -> Xác nhận FAIL.
 
-- [ ] **Step 3: Implement CreateChildModal & update useAuthStore**
+- [x] **Step 3: Implement CreateChildModal & update useAuthStore**
   - Đảm bảo tài khoản mới tạo (Google hoặc Email) khởi đầu với `children: []`.
   - Xây dựng `CreateChildModal.tsx` với giao diện 3D Cartoon Bouncy, bộ sưu tập avatar linh vật (🦁, 🐰, 🐼, 🐯, 🐱, 🦉), bảng chọn 4 mã PIN hình vẽ trực quan cho trẻ Lớp 1.
   - Tích hợp nạp script Google GSI (`https://accounts.google.com/gsi/client`) và tạo `.env.example`.
 
-- [ ] **Step 4: Integrate into MainHeader & HomePage**
+- [x] **Step 4: Integrate into MainHeader & HomePage**
   - Bổ sung nút "➕ Thêm bé mới" vào danh sách hồ sơ phụ huynh.
   - Tự động kích hoạt `CreateChildModal` khi phụ huynh đăng nhập lần đầu mà chưa có bé nào.
 
-- [ ] **Step 5: Run all tests to verify they pass**
+- [x] **Step 5: Run all tests to verify they pass**
   - Chạy `npm test` xác nhận toàn bộ test suites PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
   - Commit mã nguồn với Conventional Commits `feat(auth): integrate Google GSI API and child onboarding profile creation`.

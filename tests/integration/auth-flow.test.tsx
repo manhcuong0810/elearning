@@ -53,8 +53,25 @@ describe('Auth Flow Integration', () => {
       expect(useAuthStore.getState().user?.fullName).toBe('Ba Văn A');
     });
 
-    // 6. Child profile in header now switches to parent's actual family child
-    expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Bin');
+    // 6. Onboarding modal automatically appears for new parent with 0 children
+    await waitFor(() => {
+      expect(screen.getByTestId('create-child-modal')).toBeDefined();
+    });
+
+    // Create first child
+    fireEvent.change(screen.getByTestId('child-name-input'), {
+      target: { value: 'Bé Tít' },
+    });
+    fireEvent.click(screen.getByTestId('pin-option-🍎'));
+    fireEvent.click(screen.getByTestId('pin-option-⭐'));
+    fireEvent.click(screen.getByTestId('pin-option-🦆'));
+    fireEvent.click(screen.getByTestId('pin-option-🌈'));
+    fireEvent.click(screen.getByTestId('submit-create-child-btn'));
+
+    // Child profile in header now switches to created child
+    await waitFor(() => {
+      expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Tít');
+    });
 
     // 7. Logout and confirm return to Guest profile
     fireEvent.click(screen.getByTestId('parent-user-menu-btn'));

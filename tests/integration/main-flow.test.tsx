@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import HomePage from '@/app/page';
 import { useAuthStore } from '@/store/useAuthStore';
+import { DEFAULT_CHILDREN } from '@/types/auth';
 import { useProgressStore } from '@/store/useProgressStore';
 
 describe('Full Learning Platform Integration', () => {
@@ -134,6 +135,7 @@ describe('Full Learning Platform Integration', () => {
     await useAuthStore.getState().loginWithGoogle({
       email: 'parent@gmail.com',
       fullName: 'Mẹ Lan Anh',
+      initialChildren: DEFAULT_CHILDREN,
     });
 
     render(<HomePage />);
