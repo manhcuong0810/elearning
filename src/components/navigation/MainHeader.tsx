@@ -9,33 +9,15 @@ import { AudioManager, defaultAudioManager } from '@/lib/audio-manager';
 
 export type NavigationTab = 'adventure-map' | 'arena' | 'avatar-room' | 'parent-portal';
 
-export interface ChildProfile {
-  id: string;
-  name: string;
-  gradeLabel: string;
-  avatarEmoji: string;
-  pinIcons: string[];
-  studyMinutesToday: number;
-}
+import {
+  ChildProfile,
+  GUEST_CHILD_PROFILE,
+  DEFAULT_CHILDREN,
+} from '@/types/auth';
 
-export const DEFAULT_FAMILY_PROFILES: ChildProfile[] = [
-  {
-    id: 'child_1',
-    name: 'Bé Bin',
-    gradeLabel: 'Lớp 1A',
-    avatarEmoji: '🦁',
-    pinIcons: ['🍎', '⭐', '🦆', '🌈'],
-    studyMinutesToday: 25,
-  },
-  {
-    id: 'child_2',
-    name: 'Bé Na',
-    gradeLabel: 'Lớp 1B',
-    avatarEmoji: '🐰',
-    pinIcons: ['🍓', '🌙', '🦋', '🌸'],
-    studyMinutesToday: 18,
-  },
-];
+export type { ChildProfile };
+export { GUEST_CHILD_PROFILE, DEFAULT_CHILDREN };
+export const DEFAULT_FAMILY_PROFILES = DEFAULT_CHILDREN;
 
 export interface MainHeaderProps {
   activeTab: NavigationTab;
@@ -49,8 +31,8 @@ export interface MainHeaderProps {
 export const MainHeader: React.FC<MainHeaderProps> = ({
   activeTab,
   onSelectTab,
-  activeProfile = DEFAULT_FAMILY_PROFILES[0],
-  profiles = DEFAULT_FAMILY_PROFILES,
+  activeProfile,
+  profiles,
   onSelectProfile,
   audioManager = defaultAudioManager,
 }) => {
@@ -64,10 +46,25 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
 
+  const effectiveProfiles =
+    profiles ||
+    (isAuthenticated && user?.children && user.children.length > 0
+      ? user.children
+      : [GUEST_CHILD_PROFILE]);
+
+  const effectiveActiveProfile =
+    activeProfile ||
+    (isAuthenticated && user?.children && user.children.length > 0
+      ? user.children[0]
+      : GUEST_CHILD_PROFILE);
+
   const [isMuted, setIsMuted] = useState<boolean>(() => audioManager.isMuted());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false);
+  const [authPromptMessage, setAuthPromptMessage] = useState<string | undefined>(
+    undefined
+  );
 
   const handleTabClick = (tab: NavigationTab) => {
     audioManager.playSfx('click');
@@ -153,20 +150,37 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
             data-testid="active-profile-badge"
             onClick={() => {
               audioManager.playSfx('click');
-              setIsProfileModalOpen(true);
+              if (!isAuthenticated) {
+                setAuthPromptMessage(
+                  'Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để tạo hồ sơ riêng cho bé và đặt mã PIN nhé!'
+                );
+                setIsAuthModalOpen(true);
+              } else {
+                setIsProfileModalOpen(true);
+              }
             }}
             className="btn-3d min-h-[48px] px-3.5 py-1.5 rounded-2xl bg-gradient-to-b from-sky-50 to-sky-100 border-2 border-sky-300 border-b-4 border-b-sky-400 flex items-center gap-2"
-            aria-label={`Đổi hồ sơ bé: hiện tại là ${activeProfile.name}`}
+            aria-label={
+              isAuthenticated
+                ? `Đổi hồ sơ bé: hiện tại là ${effectiveActiveProfile.name}`
+                : 'Đăng nhập để tạo hồ sơ bé'
+            }
           >
-            <span className="text-xl sm:text-2xl drop-shadow-sm" role="img" aria-hidden="true">
-              {activeProfile.avatarEmoji}
+            <span
+              className="text-xl sm:text-2xl drop-shadow-sm"
+              role="img"
+              aria-hidden="true"
+            >
+              {effectiveActiveProfile.avatarEmoji}
             </span>
             <div className="text-left">
               <span className="text-xs sm:text-sm font-black text-slate-800 block leading-tight">
-                {activeProfile.name}
+                {effectiveActiveProfile.name}
               </span>
               <span className="text-[10px] font-black text-sky-700 block leading-tight">
-                {activeProfile.gradeLabel} ▾
+                {isAuthenticated
+                  ? `${effectiveActiveProfile.gradeLabel} ▾`
+                  : 'Khách (Đăng nhập để thêm bé ▾)'}
               </span>
             </div>
           </button>
@@ -348,8 +362,8 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
               </p>
 
               <div className="flex flex-col gap-3">
-                {profiles.map((profile) => {
-                  const isSelected = profile.id === activeProfile.id;
+                {effectiveProfiles.map((profile) => {
+                  const isSelected = profile.id === effectiveActiveProfile.id;
                   return (
                     <button
                       key={profile.id}
@@ -394,7 +408,11 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       {/* Parent Auth Modal (Email/Password & Google Sign-In) */}
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setAuthPromptMessage(undefined);
+        }}
+        initialPromptMessage={authPromptMessage}
       />
     </header>
   );

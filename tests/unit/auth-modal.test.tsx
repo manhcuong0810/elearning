@@ -37,7 +37,7 @@ describe('AuthModal', () => {
     expect(screen.getByTestId('auth-password-input')).toBeDefined();
   });
 
-  it('calls loginWithGoogle and onSuccess when Google button is clicked', async () => {
+  it('opens Google sign-in dialog and completes login when confirmed', async () => {
     render(
       <AuthModal
         isOpen={true}
@@ -47,9 +47,16 @@ describe('AuthModal', () => {
     );
 
     fireEvent.click(screen.getByTestId('google-sign-in-btn'));
+    expect(screen.getByTestId('google-email-input')).toBeDefined();
+
+    fireEvent.change(screen.getByTestId('google-email-input'), {
+      target: { value: 'ba_me@gmail.com' },
+    });
+    fireEvent.click(screen.getByTestId('confirm-google-sign-in-btn'));
 
     await waitFor(() => {
       expect(useAuthStore.getState().isAuthenticated).toBe(true);
+      expect(useAuthStore.getState().user?.email).toBe('ba_me@gmail.com');
       expect(mockOnSuccess).toHaveBeenCalled();
       expect(defaultAudioManager.playSfx).toHaveBeenCalledWith('cheer');
     });

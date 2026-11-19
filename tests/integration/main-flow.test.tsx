@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import HomePage from '@/app/page';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useProgressStore } from '@/store/useProgressStore';
 
 describe('Full Learning Platform Integration', () => {
@@ -129,7 +130,12 @@ describe('Full Learning Platform Integration', () => {
     expect(screen.getByText(/Phép cộng phạm vi 10/i)).toBeDefined();
   });
 
-  it('supports switching child profiles via 4-icon PIN selector in MainHeader', () => {
+  it('supports switching child profiles via 4-icon PIN selector in MainHeader', async () => {
+    await useAuthStore.getState().loginWithGoogle({
+      email: 'parent@gmail.com',
+      fullName: 'Mẹ Lan Anh',
+    });
+
     render(<HomePage />);
 
     // Open profile switcher modal

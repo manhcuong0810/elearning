@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Stage } from '@/types/curriculum';
 import { loadGrade1MathData } from '@/lib/curriculum-loader';
 import { defaultAudioManager } from '@/lib/audio-manager';
@@ -19,14 +19,42 @@ import { AvatarRoom } from '@/components/avatar/AvatarRoom';
 import { ParentalGateModal } from '@/components/parent/ParentalGateModal';
 import { CompanionSidebar } from '@/components/dashboard/CompanionSidebar';
 import { ActivitiesSidebar } from '@/components/dashboard/ActivitiesSidebar';
+import { useAuthStore } from '@/store/useAuthStore';
+import { GUEST_CHILD_PROFILE } from '@/types/auth';
 
 export default function HomePage() {
   const curriculum = useMemo(() => loadGrade1MathData(), []);
 
   const [activeTab, setActiveTab] = useState<NavigationTab>('adventure-map');
-  const [activeProfile, setActiveProfile] = useState<ChildProfile>(
-    DEFAULT_FAMILY_PROFILES[0]
-  );
+
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const familyProfiles = useMemo(() => {
+    if (isAuthenticated && user?.children && user.children.length > 0) {
+      return user.children;
+    }
+    return [GUEST_CHILD_PROFILE];
+  }, [isAuthenticated, user]);
+
+  const [activeProfile, setActiveProfile] = useState<ChildProfile>(() => {
+    return isAuthenticated && user?.children?.[0]
+      ? user.children[0]
+      : GUEST_CHILD_PROFILE;
+  });
+
+  useEffect(() => {
+    if (isAuthenticated && user?.children && user.children.length > 0) {
+      if (
+        activeProfile.id === 'guest' ||
+        !user.children.some((c) => c.id === activeProfile.id)
+      ) {
+        setActiveProfile(user.children[0]);
+      }
+    } else if (!isAuthenticated && activeProfile.id !== 'guest') {
+      setActiveProfile(GUEST_CHILD_PROFILE);
+    }
+  }, [isAuthenticated, user]);
 
   // Active stage state inside Adventure Map tab
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
@@ -463,7 +491,7 @@ export default function HomePage() {
         activeTab={activeTab}
         onSelectTab={handleSelectNavigationTab}
         activeProfile={activeProfile}
-        profiles={DEFAULT_FAMILY_PROFILES}
+        profiles={familyProfiles}
         onSelectProfile={setActiveProfile}
         audioManager={defaultAudioManager}
       />

@@ -13,14 +13,37 @@ describe('useAuthStore', () => {
     expect(state.isAuthenticated).toBe(false);
   });
 
-  it('authenticates successfully via loginWithGoogle', async () => {
-    const user = await useAuthStore.getState().loginWithGoogle();
+  it('authenticates successfully via loginWithGoogle with custom payload', async () => {
+    const user = await useAuthStore.getState().loginWithGoogle({
+      email: 'ba.nam@gmail.com',
+      fullName: 'Ba Nam',
+    });
     const state = useAuthStore.getState();
 
     expect(state.isAuthenticated).toBe(true);
-    expect(state.user?.email).toContain('@gmail.com');
+    expect(state.user?.email).toBe('ba.nam@gmail.com');
+    expect(state.user?.fullName).toBe('Ba Nam');
     expect(state.user?.provider).toBe('google');
-    expect(user.fullName).toBeDefined();
+    expect(state.user?.children.length).toBeGreaterThan(0);
+  });
+
+  it('allows adding a new child profile to parent account', async () => {
+    await useAuthStore.getState().loginWithGoogle({
+      email: 'ba.nam@gmail.com',
+      fullName: 'Ba Nam',
+    });
+
+    const newChild = useAuthStore.getState().addChildProfile({
+      name: 'Bé Tít',
+      gradeLabel: 'Lớp 1',
+      avatarEmoji: '🐼',
+      pinIcons: ['🍎', '🚀', '⭐', '🎈'],
+    });
+
+    expect(newChild.id).toBeDefined();
+    expect(newChild.name).toBe('Bé Tít');
+    const state = useAuthStore.getState();
+    expect(state.user?.children.some((c) => c.name === 'Bé Tít')).toBe(true);
   });
 
   it('registers and logs in via registerWithEmail', async () => {

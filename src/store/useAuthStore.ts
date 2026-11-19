@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthState, ParentUser } from '@/types/auth';
+import {
+  AuthState,
+  ParentUser,
+  GoogleAuthPayload,
+  ChildProfile,
+  DEFAULT_CHILDREN,
+} from '@/types/auth';
 
 const STORAGE_KEY = 'elearning-parent-auth-storage';
 
@@ -12,16 +18,21 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      loginWithGoogle: async (): Promise<ParentUser> => {
+      loginWithGoogle: async (
+        payload?: GoogleAuthPayload
+      ): Promise<ParentUser> => {
         set({ isLoading: true, error: null });
         try {
-          // Simulate Google OAuth response
+          const email = payload?.email?.trim() || 'phuhuynh@gmail.com';
+          const fullName = payload?.fullName?.trim() || 'Phụ Huynh';
+
           const googleUser: ParentUser = {
-            id: 'google_parent_1',
-            email: 'parent.lananh@gmail.com',
-            fullName: 'Mẹ Lan Anh',
-            avatarUrl: '👩‍👧',
+            id: `google_${Date.now()}`,
+            email,
+            fullName,
+            avatarUrl: payload?.avatarUrl || '👩‍👧',
             provider: 'google',
+            children: DEFAULT_CHILDREN,
             createdAt: new Date().toISOString(),
           };
 
@@ -49,7 +60,6 @@ export const useAuthStore = create<AuthState>()(
       ): Promise<ParentUser> => {
         set({ isLoading: true, error: null });
 
-        // Basic validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email || !emailRegex.test(email)) {
           const err = new Error('Email không hợp lệ. Vui lòng kiểm tra lại!');
@@ -69,6 +79,7 @@ export const useAuthStore = create<AuthState>()(
           fullName: email.split('@')[0],
           avatarUrl: '👨‍👩‍👧',
           provider: 'email',
+          children: DEFAULT_CHILDREN,
           createdAt: new Date().toISOString(),
         };
 
@@ -85,7 +96,8 @@ export const useAuthStore = create<AuthState>()(
       registerWithEmail: async (
         fullName: string,
         email: string,
-        password: string
+        password: string,
+        initialChildName?: string
       ): Promise<ParentUser> => {
         set({ isLoading: true, error: null });
 
@@ -108,12 +120,26 @@ export const useAuthStore = create<AuthState>()(
           throw err;
         }
 
+        const initialChildren: ChildProfile[] = initialChildName
+          ? [
+              {
+                id: `child_${Date.now()}`,
+                name: initialChildName.trim(),
+                gradeLabel: 'Lớp 1',
+                avatarEmoji: '🦁',
+                pinIcons: ['🍎', '⭐', '🦆', '🌈'],
+                studyMinutesToday: 0,
+              },
+            ]
+          : DEFAULT_CHILDREN;
+
         const newUser: ParentUser = {
           id: `user_${Date.now()}`,
           fullName: fullName.trim(),
           email,
           avatarUrl: '👨‍👩‍👧',
           provider: 'email',
+          children: initialChildren,
           createdAt: new Date().toISOString(),
         };
 
@@ -125,6 +151,27 @@ export const useAuthStore = create<AuthState>()(
         });
 
         return newUser;
+      },
+
+      addChildProfile: (childData) => {
+        const currentUser = get().user;
+        const newChild: ChildProfile = {
+          ...childData,
+          id: `child_${Date.now()}`,
+          studyMinutesToday: 0,
+        };
+
+        if (currentUser) {
+          const updatedChildren = [...(currentUser.children || []), newChild];
+          set({
+            user: {
+              ...currentUser,
+              children: updatedChildren,
+            },
+          });
+        }
+
+        return newChild;
       },
 
       logout: () => {

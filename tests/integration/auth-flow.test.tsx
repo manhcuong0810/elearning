@@ -20,33 +20,47 @@ describe('Auth Flow Integration', () => {
     useAuthStore.getState().logout();
   });
 
-  it('allows parent to open auth modal, log in via Google, and log out', async () => {
+  it('shows Guest profile when unauthenticated, prompts to log in, and supports dynamic Google Sign-In', async () => {
     render(<HomePage />);
 
-    // Header has login button when unauthenticated
-    const loginBtn = screen.getByTestId('auth-open-modal-btn');
-    expect(loginBtn).toBeDefined();
+    // 1. Unauthenticated state: Shows Bé Học Thử (Khách), not default family kids!
+    const profileBadge = screen.getByTestId('active-profile-badge');
+    expect(profileBadge.textContent).toContain('Bé Học Thử');
+    expect(profileBadge.textContent).toContain('Khách');
 
-    // Click to open AuthModal
-    fireEvent.click(loginBtn);
+    // 2. Clicking profile badge when unauthenticated prompts parent to login
+    fireEvent.click(profileBadge);
     expect(screen.getByTestId('auth-modal')).toBeDefined();
 
-    // Log in via Google button
+    // 3. Click Google Sign-In button -> opens interactive Google account input
     fireEvent.click(screen.getByTestId('google-sign-in-btn'));
+    expect(screen.getByTestId('google-email-input')).toBeDefined();
 
-    // Modal closes and header now shows parent user profile menu
+    // 4. Enter parent's real Google email and name
+    fireEvent.change(screen.getByTestId('google-email-input'), {
+      target: { value: 'nguyen.van.a@gmail.com' },
+    });
+    fireEvent.change(screen.getByTestId('google-name-input'), {
+      target: { value: 'Ba Văn A' },
+    });
+    fireEvent.click(screen.getByTestId('confirm-google-sign-in-btn'));
+
+    // 5. Successfully authenticated with that exact user data
     await waitFor(() => {
       expect(screen.queryByTestId('auth-modal')).toBeNull();
       expect(screen.getByTestId('parent-user-menu-btn')).toBeDefined();
+      expect(useAuthStore.getState().user?.email).toBe('nguyen.van.a@gmail.com');
+      expect(useAuthStore.getState().user?.fullName).toBe('Ba Văn A');
     });
 
-    // Click parent user menu and logout
-    fireEvent.click(screen.getByTestId('parent-user-menu-btn'));
-    const logoutBtn = screen.getByTestId('auth-logout-btn');
-    fireEvent.click(logoutBtn);
+    // 6. Child profile in header now switches to parent's actual family child
+    expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Bin');
 
-    // State returns to unauthenticated
-    expect(screen.getByTestId('auth-open-modal-btn')).toBeDefined();
+    // 7. Logout and confirm return to Guest profile
+    fireEvent.click(screen.getByTestId('parent-user-menu-btn'));
+    fireEvent.click(screen.getByTestId('auth-logout-btn'));
+
+    expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Học Thử');
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });
 });
