@@ -45,6 +45,7 @@ export default function HomePage() {
   });
 
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const addChildProfile = useAuthStore((state) => state.addChildProfile);
 
   useEffect(() => {
@@ -504,6 +505,9 @@ export default function HomePage() {
         profiles={familyProfiles}
         onSelectProfile={setActiveProfile}
         audioManager={defaultAudioManager}
+        isAuthModalOpen={isAuthModalOpen}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onCloseAuthModal={() => setIsAuthModalOpen(false)}
       />
 
       <main className="flex-1 py-6 px-2 sm:px-4">
@@ -531,6 +535,9 @@ export default function HomePage() {
                 {/* Cột phải: Nhiệm vụ ngày, Rương may mắn & Bảng vinh danh */}
                 <div className="hidden lg:block sticky top-24">
                   <ActivitiesSidebar
+                    isAuthenticated={isAuthenticated}
+                    onOpenAuthModal={() => setIsAuthModalOpen(true)}
+                    childName={activeProfile.name}
                     todayStars={Math.min(5, totalStarsEarned)}
                     stagesCompletedToday={unlockedStages.length > 1 ? 1 : 0}
                     arenaMatchesToday={0}

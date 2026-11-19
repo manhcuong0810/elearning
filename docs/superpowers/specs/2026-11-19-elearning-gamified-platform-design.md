@@ -192,3 +192,19 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
 ## 7. Quyết định giao cho Đội ngũ Lập trình (Left to Builder)
 - Thiết kế chi tiết các tài nguyên đồ họa (SVG icon, bảng màu vui tươi pastel cho trẻ nhỏ).
 - Cấu trúc thư mục mã nguồn và cấu hình CI/CD, bộ test tự động (TDD).
+
+---
+
+## 8. Trải Nghiệm Người Dùng: Trạng Thái Khách (Guest) vs Đã Đăng Nhập (Member)
+1. **Trạng Thái Khách (Guest / Chưa Đăng Nhập)**:
+   - **Mục tiêu**: Cho phép phụ huynh và bé học thử ngay mà không bị rào cản form đăng ký.
+   - **Hồ sơ hiển thị**: `🎒 Bé Học Thử (Khách)` kèm nút `👤 Đăng Nhập` nổi bật trên Header.
+   - **Bản đồ học tập & Đấu trường**: Bé vẫn có thể chơi thử các ải toán, đấu trường và boss.
+   - **Nhiệm vụ & Rương quà**: Ẩn các thẻ nhiệm vụ hàng ngày và rương báu mở xu; thay thế bằng Card **"Nhiệm Vụ & Rương Quà (Khóa)"** với nút CTA `🚀 Đăng nhập để mở khóa` nhằm khuyến khích phụ huynh tạo tài khoản để tích lũy xu và sao.
+   - **Bảng vinh danh**: Đổi nhãn người chơi thành `Bé Học Thử (Khách)`.
+
+2. **Trạng Thái Đã Đăng Nhập (Member)**:
+   - **Xác thực**: Hỗ trợ Google Sign-In (qua Google Identity Services token client) và Email/Mật khẩu.
+   - **Avatar & Danh tính**: Tự động hiển thị ảnh đại diện Google (qua tag `<img>` an toàn với `referrerPolicy="no-referrer"`) hoặc emoji thân thiện, kèm họ tên phụ huynh.
+   - **Onboarding Bé Đầu Tiên**: Phụ huynh mới tạo tài khoản (chưa có bé nào) sẽ tự động mở modal tạo hồ sơ bé đầu tiên (chọn tên, avatar động vật, mã PIN 4 hình ảnh).
+   - **Mở khóa toàn diện**: Toàn bộ Nhiệm Vụ Hôm Nay (nhận xu khi hoàn thành) và Rương Báu May Mắn được mở khóa đầy đủ. Bảng vinh danh tuần hiển thị `[Tên bé] (Bạn)`.

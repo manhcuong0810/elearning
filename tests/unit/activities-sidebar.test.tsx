@@ -19,9 +19,10 @@ describe('ActivitiesSidebar', () => {
     vi.clearAllMocks();
   });
 
-  it('renders daily quests, mystery chest, and mini leaderboard', () => {
+  it('renders daily quests, mystery chest, and mini leaderboard when authenticated', () => {
     render(
       <ActivitiesSidebar
+        isAuthenticated={true}
         todayStars={4}
         stagesCompletedToday={1}
         arenaMatchesToday={0}
@@ -36,6 +37,36 @@ describe('ActivitiesSidebar', () => {
     // Check quest titles
     expect(screen.getByText(/Thu hoạch 5 Ngôi sao/i)).toBeDefined();
     expect(screen.getByText(/Vượt qua 1 ải toán/i)).toBeDefined();
+  });
+
+  it('renders guest lock banner and hides daily quests & mystery chest when not authenticated', () => {
+    const mockOnOpenAuthModal = vi.fn();
+    render(
+      <ActivitiesSidebar
+        isAuthenticated={false}
+        todayStars={2}
+        stagesCompletedToday={0}
+        arenaMatchesToday={0}
+        onClaimReward={mockOnClaimReward}
+        onOpenAuthModal={mockOnOpenAuthModal}
+      />
+    );
+
+    // Guest lock card should be visible
+    expect(screen.getByTestId('guest-activities-lock')).toBeDefined();
+    expect(screen.getByText(/Đăng nhập để mở khóa/i)).toBeDefined();
+
+    // Quests and Mystery chest should be hidden for guests
+    expect(screen.queryByTestId('daily-quests-card')).toBeNull();
+    expect(screen.queryByTestId('mystery-chest-btn')).toBeNull();
+
+    // Leaderboard is still visible for social proof
+    expect(screen.getByTestId('mini-leaderboard')).toBeDefined();
+
+    // Clicking CTA button triggers auth modal
+    const ctaBtn = screen.getByTestId('guest-login-cta-btn');
+    fireEvent.click(ctaBtn);
+    expect(mockOnOpenAuthModal).toHaveBeenCalled();
   });
 
   it('allows claiming completed quest rewards and triggers sfx', () => {

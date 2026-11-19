@@ -724,3 +724,37 @@ git commit -m "feat: integrate main application navigation, home page and parent
 
 - [x] **Step 6: Commit**
   - Commit mã nguồn với Conventional Commits `feat(auth): integrate Google GSI API and child onboarding profile creation`.
+
+---
+
+## Task 13: Phân Định Trạng Thái Khách (Guest) vs Đăng Nhập (Member) & Sửa Hiển Thị Avatar URL
+
+- File: `src/components/navigation/MainHeader.tsx`, `src/components/dashboard/ActivitiesSidebar.tsx`, `src/app/page.tsx`
+- Test: `tests/unit/activities-sidebar.test.tsx`
+
+**Interfaces:**
+- Consumes: `useAuthStore` (`isAuthenticated`, `user`), `ActivitiesSidebarProps` (`isAuthenticated`, `onOpenAuthModal`, `childName`).
+- Produces: 
+  - Khắc phục lỗi avatar Google URL dài hiển thị dưới dạng chuỗi thô trên thanh Header (chuyển sang thẻ `<img>` với `referrerPolicy="no-referrer"` và fallback emoji).
+  - Phân tách rõ ràng giữa Khách (Guest) và Thành viên (Member): Khi chưa đăng nhập, ẩn Daily Quests & Mystery Chest; thay thế bằng Thẻ "Nhiệm Vụ & Rương Quà" có nút CTA "Đăng nhập để mở khóa".
+  - Mini Leaderboard phản ánh chính xác trạng thái người dùng (`Bé Học Thử (Khách)` khi chưa đăng nhập, hoặc `${childName} (Bạn)` khi đã đăng nhập).
+
+- [x] **Step 1: Write failing tests**
+  - Viết test trong `tests/unit/activities-sidebar.test.tsx` kiểm thử trạng thái `isAuthenticated={false}` phải hiển thị card `guest-activities-lock`, ẩn `daily-quests-card` và `mystery-chest-btn`, bấm CTA mở modal đăng nhập.
+
+- [x] **Step 2: Run tests to verify they fail**
+  - Chạy `npx vitest run tests/unit/activities-sidebar.test.tsx` -> Xác nhận FAIL.
+
+- [x] **Step 3: Implement Guest Lock Card & Leaderboard personalization**
+  - Bổ sung `guest-activities-lock` vào `ActivitiesSidebar.tsx`.
+  - Phân tách hiển thị leaderboard cho khách vs thành viên.
+
+- [x] **Step 4: Wire up in MainHeader & HomePage**
+  - Khắc phục hiển thị avatar URL của Google bằng `<img>` trong `MainHeader.tsx`.
+  - Truyền `isAuthModalOpen`, `onOpenAuthModal`, `onCloseAuthModal` từ `HomePage` xuống `MainHeader` và `ActivitiesSidebar`.
+
+- [x] **Step 5: Run all tests to verify they pass**
+  - Chạy `npm test` xác nhận 18/18 test suites (91/91 tests) PASS.
+
+- [x] **Step 6: Commit**
+  - Commit mã nguồn với Conventional Commits `feat(ui): partition guest vs member activities and fix google avatar url rendering`.

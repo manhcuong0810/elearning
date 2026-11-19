@@ -27,6 +27,9 @@ export interface MainHeaderProps {
   profiles?: ChildProfile[];
   onSelectProfile?: (profile: ChildProfile) => void;
   audioManager?: AudioManager;
+  isAuthModalOpen?: boolean;
+  onOpenAuthModal?: () => void;
+  onCloseAuthModal?: () => void;
 }
 
 export const MainHeader: React.FC<MainHeaderProps> = ({
@@ -36,6 +39,9 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
   profiles,
   onSelectProfile,
   audioManager = defaultAudioManager,
+  isAuthModalOpen: propsIsAuthModalOpen,
+  onOpenAuthModal,
+  onCloseAuthModal,
 }) => {
   const stageStars = useProgressStore((state) => state.stageStars);
   const totalCoins = useProgressStore((state) => state.totalCoins);
@@ -62,12 +68,26 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
 
   const [isMuted, setIsMuted] = useState<boolean>(() => audioManager.isMuted());
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [internalAuthModalOpen, setInternalAuthModalOpen] = useState<boolean>(false);
   const [isCreateChildModalOpen, setIsCreateChildModalOpen] = useState<boolean>(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState<boolean>(false);
   const [authPromptMessage, setAuthPromptMessage] = useState<string | undefined>(
     undefined
   );
+
+  const isAuthModalOpen =
+    propsIsAuthModalOpen !== undefined ? propsIsAuthModalOpen : internalAuthModalOpen;
+
+  const openAuthModal = (promptMsg?: string) => {
+    if (promptMsg) setAuthPromptMessage(promptMsg);
+    onOpenAuthModal?.();
+    setInternalAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    onCloseAuthModal?.();
+    setInternalAuthModalOpen(false);
+  };
 
   const handleTabClick = (tab: NavigationTab) => {
     audioManager.playSfx('click');
@@ -154,10 +174,9 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
             onClick={() => {
               audioManager.playSfx('click');
               if (!isAuthenticated) {
-                setAuthPromptMessage(
+                openAuthModal(
                   'Ba Mẹ hãy đăng nhập hoặc tạo tài khoản để tạo hồ sơ riêng cho bé và đặt mã PIN nhé!'
                 );
-                setIsAuthModalOpen(true);
               } else {
                 setIsProfileModalOpen(true);
               }
@@ -249,7 +268,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
               data-testid="auth-open-modal-btn"
               onClick={() => {
                 audioManager.playSfx('click');
-                setIsAuthModalOpen(true);
+                openAuthModal();
               }}
               className="btn-3d min-h-[48px] px-3.5 py-1.5 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 border-2 border-white border-b-4 border-b-sky-700 text-white font-black text-xs sm:text-sm shadow-md flex items-center gap-1.5 hover:brightness-105 active:scale-95"
             >
@@ -266,24 +285,45 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
                   setIsUserMenuOpen(!isUserMenuOpen);
                 }}
                 className="btn-3d min-h-[48px] px-3 py-1.5 rounded-2xl bg-gradient-to-b from-sky-50 to-sky-100 border-2 border-sky-300 border-b-4 border-b-sky-400 text-slate-800 font-black text-xs sm:text-sm shadow-sm flex items-center gap-2"
-                aria-label={`Tài khoản phụ huynh: ${user?.fullName}`}
+                aria-label={`Tài khoản phụ huynh: ${user?.fullName || user?.email}`}
               >
-                <span className="text-xl">{user?.avatarUrl || '👩‍👧'}</span>
-                <span className="hidden md:inline font-black text-xs text-sky-900 truncate max-w-[100px]">
-                  {user?.fullName || 'Phụ Huynh'}
+                {user?.avatarUrl?.startsWith('http') ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user?.fullName || 'Avatar'}
+                    className="w-7 h-7 rounded-full object-cover border-2 border-sky-400 shadow-sm"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="text-xl">{user?.avatarUrl || '👩‍👧'}</span>
+                )}
+                <span className="hidden md:inline font-black text-xs text-sky-900 truncate max-w-[120px]">
+                  {user?.fullName || user?.email?.split('@')[0] || 'Phụ Huynh'}
                 </span>
                 <span className="text-[10px] text-sky-600">▾</span>
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border-3 border-sky-200 py-2 z-50 flex flex-col gap-1">
-                  <div className="px-3.5 py-1.5 border-b border-slate-100 text-left">
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                      Tài khoản phụ huynh
-                    </span>
-                    <span className="text-xs font-black text-slate-800 truncate block">
-                      {user?.email}
-                    </span>
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border-3 border-sky-200 py-2 z-50 flex flex-col gap-1">
+                  <div className="px-3.5 py-2 border-b border-slate-100 text-left flex items-center gap-2.5">
+                    {user?.avatarUrl?.startsWith('http') ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt="Avatar"
+                        className="w-8 h-8 rounded-full object-cover border border-sky-300"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <span className="text-2xl">{user?.avatarUrl || '👩‍👧'}</span>
+                    )}
+                    <div className="truncate flex-1">
+                      <span className="text-xs font-black text-slate-800 truncate block">
+                        {user?.fullName || 'Phụ Huynh'}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 truncate block">
+                        {user?.email}
+                      </span>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -429,7 +469,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => {
-          setIsAuthModalOpen(false);
+          closeAuthModal();
           setAuthPromptMessage(undefined);
         }}
         initialPromptMessage={authPromptMessage}
