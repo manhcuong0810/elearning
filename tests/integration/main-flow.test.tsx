@@ -90,6 +90,57 @@ describe('Full Learning Platform Integration', () => {
     expect(screen.getByTestId('adventure-map')).toBeDefined();
   });
 
+  it('upgrades Stage 2 (Nông Trại Vui Vẻ) from 2 stars to 3 stars when replaying and displays 3 stars on map', () => {
+    // 1. Initial state: stage_2 already has 2 stars
+    useProgressStore.getState().completeStage('stage_1', { stars: 3, earnedCoins: 15, earnedExp: 30 }, 'stage_2');
+    useProgressStore.getState().completeStage('stage_2', { stars: 2, earnedCoins: 10, earnedExp: 20 });
+    expect(useProgressStore.getState().stageStars['stage_2']).toBe(2);
+
+    render(<HomePage />);
+
+    // Click Stage 2 on map
+    const stage2Node = screen.getByTestId('stage-node-stage_2');
+    fireEvent.click(stage2Node);
+
+    expect(screen.getByTestId('stage-learning-session')).toBeDefined();
+    expect(screen.getByText(/Nông Trại Vui Vẻ/i)).toBeDefined();
+
+    // Question 1: COUNTING (options: 6, 7, 8 -> correct is 7)
+    fireEvent.click(screen.getByRole('button', { name: '7' }));
+    fireEvent.click(screen.getByTestId('stage-next-question-btn'));
+
+    // Question 2: DRAG_DROP (8 carrots into basket)
+    for (let i = 0; i < 8; i++) {
+      const items = screen.getAllByTestId('draggable-source-item');
+      fireEvent.click(items[0]);
+    }
+    // Proceed to Q3
+    fireEvent.click(screen.getByTestId('stage-next-question-btn'));
+
+    // Question 3: MULTIPLE_CHOICE (options: 3, 7, 9 -> correct is 9)
+    fireEvent.click(screen.getByRole('button', { name: '9' }));
+
+    // Finish stage
+    fireEvent.click(screen.getByTestId('stage-next-question-btn'));
+
+    // Modal should show 3 Stars
+    expect(screen.getByTestId('stage-completion-modal')).toBeDefined();
+    expect(screen.getByText(/3 Sao/i)).toBeDefined();
+
+    // Click "Tiếp Tục Phiêu Lưu 🏝️"
+    fireEvent.click(screen.getByTestId('stage-celebration-continue-btn'));
+
+    // Returns to map
+    expect(screen.getByTestId('adventure-map')).toBeDefined();
+
+    // Store has 3 stars for stage_2
+    expect(useProgressStore.getState().stageStars['stage_2']).toBe(3);
+
+    // Map node for stage_2 shows 3 stars aria-label
+    const updatedStage2Node = screen.getByTestId('stage-node-stage_2');
+    expect(updatedStage2Node.getAttribute('aria-label')).toContain('3 sao');
+  });
+
   it('opens BossBattleScreen when an unlocked Boss stage is selected on AdventureMap', () => {
     // Unlock boss_c1 in store
     useProgressStore.getState().completeStage(

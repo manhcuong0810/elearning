@@ -154,6 +154,30 @@ const createInitialData = (childId = 'guest') => ({
   chestRewardCoins: null as number | null,
 });
 
+function persistCurrentChildSnapshot(getFn: () => ProgressStoreState): void {
+  const currentId = getFn().currentChildId;
+  if (!currentId) return;
+  const currentKey = getProfileStorageKey(currentId);
+  const currentPayload = JSON.stringify({
+    state: {
+      unlockedStages: getFn().unlockedStages,
+      stageStars: getFn().stageStars,
+      totalCoins: getFn().totalCoins,
+      totalExp: getFn().totalExp,
+      inventory: getFn().inventory,
+      equippedItems: getFn().equippedItems,
+      streakDays: getFn().streakDays,
+      lastStudyDate: getFn().lastStudyDate,
+      claimedQuestIds: getFn().claimedQuestIds,
+      claimedQuestDate: getFn().claimedQuestDate,
+      lastChestOpenedDate: getFn().lastChestOpenedDate,
+      chestRewardCoins: getFn().chestRewardCoins,
+    },
+    version: 0,
+  });
+  safeLocalStorage.setItem(currentKey, currentPayload);
+}
+
 export const useProgressStore = create<ProgressStoreState>()(
   persist(
     (set, get) => ({
@@ -204,6 +228,9 @@ export const useProgressStore = create<ProgressStoreState>()(
 
         // Record study day for real consecutive streak
         get().recordStudyDay();
+
+        // Immediately persist child snapshot
+        persistCurrentChildSnapshot(get);
       },
 
       recordStudyDay: (dateStr?: string): void => {
@@ -321,6 +348,7 @@ export const useProgressStore = create<ProgressStoreState>()(
           totalExp: state.totalExp + safeExp,
         });
 
+        persistCurrentChildSnapshot(get);
         return true;
       },
 
@@ -338,6 +366,7 @@ export const useProgressStore = create<ProgressStoreState>()(
           totalCoins: state.totalCoins + safeCoins,
         });
 
+        persistCurrentChildSnapshot(get);
         return true;
       },
 
@@ -351,25 +380,7 @@ export const useProgressStore = create<ProgressStoreState>()(
 
         // Save current child progress before switching
         if (currentId && currentId !== targetChildId) {
-          const currentKey = getProfileStorageKey(currentId);
-          const currentPayload = JSON.stringify({
-            state: {
-              unlockedStages: get().unlockedStages,
-              stageStars: get().stageStars,
-              totalCoins: get().totalCoins,
-              totalExp: get().totalExp,
-              inventory: get().inventory,
-              equippedItems: get().equippedItems,
-              streakDays: get().streakDays,
-              lastStudyDate: get().lastStudyDate,
-              claimedQuestIds: get().claimedQuestIds,
-              claimedQuestDate: get().claimedQuestDate,
-              lastChestOpenedDate: get().lastChestOpenedDate,
-              chestRewardCoins: get().chestRewardCoins,
-            },
-            version: 0,
-          });
-          safeLocalStorage.setItem(currentKey, currentPayload);
+          persistCurrentChildSnapshot(get);
         }
 
         // Load target child progress

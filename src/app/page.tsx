@@ -78,6 +78,7 @@ export default function HomePage() {
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [correctAnswersCount, setCorrectAnswersCount] = useState<number>(0);
+  const [questionResults, setQuestionResults] = useState<Record<string, boolean>>({});
   const [isStageCompletedModalOpen, setIsStageCompletedModalOpen] =
     useState<boolean>(false);
   const [lastStageReward, setLastStageReward] = useState<{
@@ -161,10 +162,18 @@ export default function HomePage() {
     setSelectedStage(stage);
     setCurrentQuestionIndex(0);
     setCorrectAnswersCount(0);
+    setQuestionResults({});
     setIsStageCompletedModalOpen(false);
   };
 
-  const handleQuestionAnswered = (isCorrect: boolean) => {
+  const handleQuestionAnswered = (isCorrect: boolean, question?: Question) => {
+    const qId = question?.id ?? selectedStage?.questions[currentQuestionIndex]?.id;
+    if (qId) {
+      setQuestionResults((prev) => ({
+        ...prev,
+        [qId]: isCorrect,
+      }));
+    }
     if (isCorrect) {
       setCorrectAnswersCount((prev) => prev + 1);
     }
@@ -181,7 +190,8 @@ export default function HomePage() {
     }
 
     // Completed all questions in the normal stage
-    const effectiveCorrect = Math.max(1, correctAnswersCount);
+    const correctFromResults = Object.values(questionResults).filter(Boolean).length;
+    const effectiveCorrect = Math.max(correctAnswersCount, correctFromResults, 1);
     const stars =
       effectiveCorrect >= totalQuestions
         ? 3

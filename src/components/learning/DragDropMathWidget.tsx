@@ -51,7 +51,11 @@ export const DragDropMathWidget: React.FC<DragDropMathWidgetProps> = ({
     if (disabled || !itemId) return;
     setDroppedIds((prev) => {
       if (prev.includes(itemId)) return prev;
-      return [...prev, itemId];
+      const next = [...prev, itemId];
+      if (next.length === targetCount) {
+        onAnswer(true);
+      }
+      return next;
     });
     setReturnedItemId(null);
     setLastDropStatus('dropped-in-target');
@@ -60,7 +64,13 @@ export const DragDropMathWidget: React.FC<DragDropMathWidgetProps> = ({
 
   const returnItemToSource = (itemId: string) => {
     if (disabled || !itemId) return;
-    setDroppedIds((prev) => prev.filter((id) => id !== itemId));
+    setDroppedIds((prev) => {
+      const next = prev.filter((id) => id !== itemId);
+      if (prev.length === targetCount && next.length !== targetCount) {
+        onAnswer(false);
+      }
+      return next;
+    });
     setReturnedItemId(itemId);
     setLastDropStatus('returned-to-origin');
     audioManager.playSfx('click');
