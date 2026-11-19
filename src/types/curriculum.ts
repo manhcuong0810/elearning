@@ -34,6 +34,10 @@ export interface InteractivePayload {
   [key: string]: unknown;
 }
 
+export type CountingPayload = InteractivePayload;
+
+export type DragDropPayload = InteractivePayload;
+
 export interface FeedbackAudio {
   correct?: string;
   wrong?: string;

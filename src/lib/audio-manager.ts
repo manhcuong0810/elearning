@@ -312,3 +312,4 @@ export class AudioManager {
  * Singleton instance of AudioManager for convenient usage across the app
  */
 export const audioManager = new AudioManager();
+export const defaultAudioManager = audioManager;
