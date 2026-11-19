@@ -326,7 +326,7 @@ export const ArenaMatchScreen: React.FC<ArenaMatchScreenProps> = ({
             type="button"
             data-testid="arena-start-search-btn"
             onClick={handleStartSearch}
-            className="min-h-[56px] min-w-[220px] px-8 py-4 rounded-2xl bg-kid-green hover:bg-green-600 text-white font-extrabold text-xl shadow-lg border-b-4 border-green-700 active:translate-y-0.5 transition-all"
+            className="btn-3d btn-3d-green min-h-[56px] min-w-[220px] px-8 py-4 rounded-2xl text-white font-black text-2xl shadow-xl"
           >
             🚀 Tìm bạn cùng thi tài
           </button>
@@ -336,7 +336,7 @@ export const ArenaMatchScreen: React.FC<ArenaMatchScreenProps> = ({
               type="button"
               data-testid="arena-exit-btn"
               onClick={onExit}
-              className="min-h-[56px] px-6 py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-lg border-2 border-slate-300"
+              className="btn-3d btn-3d-white min-h-[56px] px-6 py-4 rounded-2xl text-slate-700 font-black text-lg shadow-md"
             >
               Về Bản Đồ
             </button>
@@ -465,7 +465,7 @@ export const ArenaMatchScreen: React.FC<ArenaMatchScreenProps> = ({
             type="button"
             data-testid="arena-play-again-btn"
             onClick={handleStartSearch}
-            className="min-h-[56px] px-8 py-4 rounded-2xl bg-kid-green hover:bg-green-600 text-white font-extrabold text-xl shadow-lg border-b-4 border-green-700 active:translate-y-0.5 transition-all"
+            className="btn-3d btn-3d-green min-h-[56px] px-8 py-4 rounded-2xl text-white font-black text-xl shadow-xl"
           >
             🔄 Đua thêm trận nữa
           </button>
@@ -475,7 +475,7 @@ export const ArenaMatchScreen: React.FC<ArenaMatchScreenProps> = ({
               type="button"
               data-testid="arena-podium-exit-btn"
               onClick={onExit}
-              className="min-h-[56px] px-6 py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-lg border-2 border-slate-300"
+              className="btn-3d btn-3d-white min-h-[56px] px-6 py-4 rounded-2xl text-slate-700 font-black text-lg shadow-md"
             >
               Về Bản Đồ
             </button>

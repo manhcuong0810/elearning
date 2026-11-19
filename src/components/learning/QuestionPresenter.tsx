@@ -104,12 +104,12 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
     return (
       <div className="flex flex-col items-center gap-6 w-full" data-testid="multiple-choice-widget">
         {typeof targetCount === 'number' && targetCount > 0 && (
-          <div className="w-full bg-amber-50/70 border-2 border-amber-200 rounded-3xl p-5 flex flex-wrap items-center justify-center gap-4">
+          <div className="w-full bg-gradient-to-b from-amber-50 to-amber-100/80 border-4 border-amber-300 rounded-[2rem] p-6 flex flex-wrap items-center justify-center gap-4 shadow-inner">
             {Array.from({ length: targetCount }, (_, i) => (
               <div
                 key={`${question.id}-mc-visual-${i}`}
                 data-testid="mc-visual-item"
-                className="p-2 bg-white rounded-2xl shadow-sm"
+                className="p-3 bg-white rounded-2xl shadow-md border-2 border-amber-200"
               >
                 {renderItemVector(itemType)}
               </div>
@@ -126,12 +126,12 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
                 type="button"
                 disabled={disabled || feedbackState === 'correct'}
                 onClick={() => handleAnswerSubmission(option.isCorrect, option)}
-                className={`min-h-[64px] min-w-[64px] py-4 px-6 rounded-2xl text-2xl font-extrabold transition-all duration-150 shadow-md border-b-4 active:translate-y-0.5 ${
+                className={`btn-3d min-h-[64px] min-w-[64px] py-4 px-6 rounded-2xl text-3xl font-black ${
                   isSelected
                     ? option.isCorrect
-                      ? 'bg-kid-green text-white border-green-600 scale-105'
-                      : 'bg-amber-400 text-slate-900 border-amber-600'
-                    : 'bg-white hover:bg-sky-50 text-slate-800 border-slate-300'
+                      ? 'btn-3d-green scale-105 shadow-xl'
+                      : 'btn-3d-orange'
+                    : 'btn-3d-white hover:bg-sky-50'
                 }`}
               >
                 {option.text}
@@ -146,15 +146,15 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
   return (
     <div
       data-testid="question-presenter"
-      className="w-full max-w-2xl mx-auto bg-white rounded-3xl shadow-xl border-4 border-amber-200 p-6 sm:p-8 flex flex-col gap-6"
+      className="w-full max-w-2xl mx-auto bg-white rounded-[2.5rem] shadow-2xl border-4 border-amber-300 border-b-[10px] border-b-amber-500 p-6 sm:p-8 flex flex-col gap-6"
     >
-      {/* Header with Audio Prompt Button (>48x48px) and Prompt Text */}
-      <div className="flex items-center gap-4 bg-amber-50/90 p-4 rounded-2xl border border-amber-200">
+      {/* 3D Header with Audio Prompt Button (>48x48px) and Prompt Text */}
+      <div className="flex items-center gap-4 bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 p-4 sm:p-5 rounded-3xl border-2 border-amber-300 shadow-sm">
         <AudioPromptButton
           promptAudioUrl={question.promptAudioUrl}
           audioManager={audioManager}
         />
-        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 leading-snug">
+        <h2 className="text-xl sm:text-2xl font-black text-slate-800 leading-snug">
           {question.promptText}
         </h2>
       </div>
@@ -167,15 +167,15 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
         <div
           data-testid="question-feedback-banner"
           role="status"
-          className={`w-full p-4 rounded-2xl text-center font-extrabold text-lg transition-all duration-200 ${
+          className={`w-full p-4 sm:p-5 rounded-2xl text-center font-black text-lg sm:text-xl shadow-lg border-b-4 animate-in fade-in zoom-in-95 duration-150 ${
             feedbackState === 'correct'
-              ? 'bg-emerald-100 text-emerald-900 border-2 border-emerald-400'
-              : 'bg-amber-100 text-amber-900 border-2 border-amber-400'
+              ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-950 border-emerald-400 border-b-emerald-600'
+              : 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-950 border-amber-400 border-b-amber-600'
           }`}
         >
           {feedbackState === 'correct'
-            ? '🌟 Giỏi quá! Bé trả lời chính xác rồi! Tuyệt vời!'
-            : '💪 Gần đúng rồi! Bé bình tĩnh đếm kỹ và thử lại nhé, cố lên!'}
+            ? '🌟 Giỏi quá! Bé trả lời chính xác rồi! Tuyệt vời! 🎉'
+            : '💪 Gần đúng rồi! Bé bình tĩnh đếm kỹ và thử lại nhé, cố lên! 🌈'}
         </div>
       )}
     </div>

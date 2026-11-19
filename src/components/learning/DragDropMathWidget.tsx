@@ -240,7 +240,7 @@ export const DragDropMathWidget: React.FC<DragDropMathWidgetProps> = ({
         data-testid="drag-drop-submit-button"
         disabled={disabled}
         onClick={handleSubmit}
-        className="min-h-[56px] min-w-[200px] px-8 py-4 rounded-2xl bg-kid-green hover:bg-green-500 active:scale-95 text-white font-extrabold text-xl shadow-lg border-b-4 border-green-700 transition-all duration-150 disabled:opacity-60"
+        className="btn-3d btn-3d-green min-h-[56px] min-w-[220px] px-8 py-4 rounded-2xl text-white font-black text-xl shadow-xl transition-all duration-150 disabled:opacity-60"
       >
         Kiểm tra đáp án ({droppedIds.length})
       </button>

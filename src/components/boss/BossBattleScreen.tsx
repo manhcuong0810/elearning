@@ -259,9 +259,9 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
           type="button"
           data-testid="claim-boss-reward-btn"
           onClick={handleClaimVictory}
-          className="min-h-[56px] px-8 py-4 rounded-2xl bg-kid-green hover:bg-green-600 text-white font-extrabold text-xl shadow-lg border-b-4 border-green-700 active:translate-y-0.5 transition-all"
+          className="btn-3d btn-3d-green min-h-[56px] px-8 py-4 rounded-2xl text-white font-black text-2xl shadow-xl"
         >
-          Nhận Kho Báu Ngay!
+          Nhận Kho Báu Ngay! 🎁
         </button>
       </div>
     );
@@ -271,13 +271,13 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
     return (
       <div
         data-testid="boss-encourage-retry-screen"
-        className="w-full max-w-2xl mx-auto bg-gradient-to-b from-sky-50 to-amber-50 rounded-3xl p-6 sm:p-10 shadow-xl border-4 border-sky-300 flex flex-col items-center text-center gap-6"
+        className="w-full max-w-2xl mx-auto bg-gradient-to-b from-sky-50 to-amber-50 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border-4 border-sky-300 border-b-[10px] border-b-sky-500 flex flex-col items-center text-center gap-6"
       >
-        <div className="w-24 h-24 rounded-full bg-amber-100 border-4 border-amber-300 flex items-center justify-center text-5xl shadow-md">
+        <div className="w-24 h-24 rounded-3xl bg-amber-100 border-4 border-amber-300 flex items-center justify-center text-5xl shadow-md animate-bounce-gentle">
           🦉
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800">
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-800">
           🌟 Sắp Chinh Phục Được Rồi! 🌟
         </h2>
 
@@ -292,7 +292,7 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
             type="button"
             data-testid="boss-retry-btn"
             onClick={handleRetryBattle}
-            className="min-h-[56px] px-8 py-4 rounded-2xl bg-kid-yellow hover:bg-amber-400 text-slate-900 font-extrabold text-xl shadow-lg border-b-4 border-amber-500 active:translate-y-0.5 transition-all"
+            className="btn-3d btn-3d-yellow min-h-[56px] px-8 py-4 rounded-2xl text-amber-950 font-black text-xl shadow-xl"
           >
             🔄 Thử lại ngay
           </button>
@@ -302,7 +302,7 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
               type="button"
               data-testid="boss-exit-btn"
               onClick={onExit}
-              className="min-h-[56px] px-6 py-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-lg shadow border-2 border-slate-300 transition-all"
+              className="btn-3d btn-3d-white min-h-[56px] px-6 py-4 rounded-2xl text-slate-700 font-black text-lg shadow-md"
             >
               Về Bản Đồ
             </button>

@@ -509,10 +509,10 @@ export const AvatarRoom: React.FC = () => {
                   defaultAudioManager.playSfx('click');
                   setSelectedCategory(catKey);
                 }}
-                className={`min-w-[48px] min-h-[48px] px-4 py-2.5 rounded-2xl font-extrabold text-sm md:text-base transition-all ${
+                className={`btn-3d min-w-[48px] min-h-[48px] px-4 py-2.5 rounded-2xl font-black text-sm md:text-base transition-all ${
                   isActive
-                    ? 'bg-purple-600 text-white shadow-md scale-105'
-                    : 'bg-white text-purple-900 border-2 border-purple-200 hover:border-purple-400'
+                    ? 'btn-3d-purple scale-105'
+                    : 'btn-3d-white'
                 }`}
               >
                 {CATEGORY_LABELS[catKey]}
@@ -532,9 +532,9 @@ export const AvatarRoom: React.FC = () => {
             <div
               key={item.id}
               data-testid={`shop-card-${item.id}`}
-              className={`flex flex-col justify-between p-5 rounded-3xl border-4 bg-white shadow-sm transition-transform hover:-translate-y-0.5 ${
+              className={`flex flex-col justify-between p-5 rounded-3xl border-4 bg-white shadow-md transition-transform hover:-translate-y-1 ${
                 isEquipped
-                  ? 'border-emerald-400 ring-2 ring-emerald-200'
+                  ? 'border-emerald-400 ring-4 ring-emerald-200/60'
                   : isOwned
                   ? 'border-sky-300'
                   : 'border-amber-200'
@@ -542,18 +542,18 @@ export const AvatarRoom: React.FC = () => {
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="p-3 rounded-2xl bg-amber-50 border-2 border-amber-200">
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-50 to-amber-100 border-2 border-amber-300 shadow-sm animate-bounce-gentle">
                     {renderItemIconSvg(item.iconType)}
                   </div>
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-900 font-black text-sm">
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-400 text-amber-950 font-black text-sm shadow-sm">
                     🪙 {item.cost} Xu
                   </span>
                 </div>
 
-                <h2 className="text-lg font-extrabold text-purple-950 mb-1">
+                <h2 className="text-xl font-black text-purple-950 mb-1">
                   {item.name}
                 </h2>
-                <p className="text-sm text-slate-600 font-medium mb-4">
+                <p className="text-sm text-slate-600 font-bold mb-4">
                   {item.description}
                 </p>
               </div>
@@ -564,7 +564,7 @@ export const AvatarRoom: React.FC = () => {
                     type="button"
                     data-testid={`buy-item-${item.id}`}
                     onClick={() => handleBuyItem(item)}
-                    className="w-full min-w-[48px] min-h-[48px] px-4 py-3 rounded-2xl font-extrabold text-base bg-kid-yellow hover:bg-amber-400 text-amber-950 border-b-4 border-amber-500 active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                    className="btn-3d btn-3d-yellow w-full min-w-[48px] min-h-[48px] px-4 py-3 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-md"
                   >
                     <span>🛒 Đổi Quà ({item.cost} Xu)</span>
                   </button>
@@ -573,10 +573,10 @@ export const AvatarRoom: React.FC = () => {
                     type="button"
                     data-testid={`equip-item-${item.id}`}
                     onClick={() => handleToggleEquip(item)}
-                    className={`w-full min-w-[48px] min-h-[48px] px-4 py-3 rounded-2xl font-extrabold text-base border-b-4 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 ${
+                    className={`btn-3d w-full min-w-[48px] min-h-[48px] px-4 py-3 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-md ${
                       isEquipped
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-700'
-                        : 'bg-sky-400 hover:bg-sky-500 text-sky-950 border-sky-600'
+                        ? 'btn-3d-green'
+                        : 'btn-3d-blue'
                     }`}
                   >
                     <span>

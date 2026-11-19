@@ -165,7 +165,7 @@ export default function HomePage() {
                 setSelectedStage(null);
                 setIsStageCompletedModalOpen(false);
               }}
-              className="min-h-[48px] min-w-[48px] px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-sm border-2 border-slate-300"
+              className="btn-3d btn-3d-white min-h-[48px] min-w-[48px] px-4 py-2 rounded-2xl text-slate-700 font-black text-sm"
             >
               ⬅️ Về Bản Đồ
             </button>
@@ -200,7 +200,7 @@ export default function HomePage() {
             type="button"
             data-testid="stage-next-question-btn"
             onClick={handleNextOrFinishNormalStage}
-            className="min-h-[56px] px-8 py-4 rounded-2xl bg-kid-green hover:bg-green-600 text-white font-extrabold text-lg shadow-lg border-b-4 border-green-700 active:translate-y-0.5 transition-all"
+            className="btn-3d btn-3d-green min-h-[56px] px-8 py-4 rounded-2xl text-white font-black text-xl shadow-xl"
           >
             {currentQuestionIndex + 1 < questions.length
               ? 'Câu tiếp theo ➡️'
@@ -214,28 +214,28 @@ export default function HomePage() {
             data-testid="stage-completion-modal"
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
           >
-            <div className="w-full max-w-md bg-gradient-to-b from-amber-50 to-white rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-amber-400 flex flex-col items-center text-center gap-5">
-              <div className="text-5xl animate-bounce">🌟🌟🌟</div>
+            <div className="w-full max-w-md bg-gradient-to-b from-amber-50 to-white rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border-4 border-amber-400 border-b-[10px] border-b-amber-600 flex flex-col items-center text-center gap-5">
+              <div className="text-6xl animate-bounce">🌟🌟🌟</div>
 
-              <h2 className="text-2xl sm:text-3xl font-black text-amber-900">
-                Hoan Hô {activeProfile.name}!
+              <h2 className="text-2xl sm:text-3xl font-black text-amber-950">
+                Hoan Hô {activeProfile.name}! 🎉
               </h2>
 
-              <p className="text-base font-bold text-slate-700">
+              <p className="text-base font-black text-slate-700">
                 Bé đã hoàn thành xuất sắc ải{' '}
                 <span className="text-amber-800 underline">{stage.name}</span> và mở khóa chặng tiếp theo!
               </p>
 
-              <div className="flex flex-wrap items-center justify-center gap-3 bg-white px-5 py-3 rounded-2xl border-2 border-amber-300">
-                <span className="font-extrabold text-amber-800">
+              <div className="flex flex-wrap items-center justify-center gap-3 bg-amber-100/70 px-5 py-3 rounded-2xl border-2 border-amber-300">
+                <span className="font-black text-amber-900 text-lg">
                   ⭐ +{lastStageReward.stars} Sao
                 </span>
-                <span className="font-extrabold text-amber-800">
+                <span className="font-black text-amber-900 text-lg">
                   🪙 +{lastStageReward.coins} Xu
                 </span>
-                <span className="font-extrabold text-emerald-800">
+                <span className="font-black text-emerald-900 text-lg">
                   ⚡ +{lastStageReward.exp} EXP
                 </span>
               </div>
@@ -248,7 +248,7 @@ export default function HomePage() {
                   setIsStageCompletedModalOpen(false);
                   setSelectedStage(null);
                 }}
-                className="w-full min-h-[56px] px-6 py-4 rounded-2xl bg-kid-yellow hover:bg-amber-400 text-slate-900 font-extrabold text-xl shadow-lg border-b-4 border-amber-500 active:translate-y-0.5 transition-all"
+                className="btn-3d btn-3d-yellow w-full min-h-[56px] px-6 py-4 rounded-2xl text-amber-950 font-black text-xl shadow-xl"
               >
                 Tiếp Tục Phiêu Lưu 🏝️
               </button>
