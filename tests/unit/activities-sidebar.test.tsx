@@ -162,6 +162,35 @@ describe('ActivitiesSidebar', () => {
     expect(screen.queryByText(/Bé Em \(Bạn\)/i)).toBeNull();
   });
 
+  it('displays correct grade label on leaderboard badge and filters family profiles by grade', () => {
+    const familyProfiles = [
+      { id: 'c1', name: 'Moon', avatarEmoji: '🌙', gradeLabel: 'Lớp 3' },
+      { id: 'c2', name: 'Bé Bi', avatarEmoji: '⭐', gradeLabel: 'Lớp 1' },
+      { id: 'c3', name: 'Bé Bắp', avatarEmoji: '🌽', gradeLabel: 'Lớp 3' },
+    ];
+
+    render(
+      <ActivitiesSidebar
+        isAuthenticated={true}
+        childName="Moon"
+        childEmoji="🌙"
+        gradeLabel="Lớp 3"
+        totalStars={35}
+        familyProfiles={familyProfiles}
+        onClaimReward={mockOnClaimReward}
+      />
+    );
+
+    // Leaderboard badge should display "Lớp 3"
+    const gradeBadge = screen.getByTestId('leaderboard-grade-badge');
+    expect(gradeBadge.textContent).toBe('Lớp 3');
+
+    // Moon (Bạn) and Bé Bắp (Lớp 3) should appear, but Bé Bi (Lớp 1) should be filtered out
+    expect(screen.getByText(/Moon \(Bạn\)/i)).toBeDefined();
+    expect(screen.getByText(/Bé Bắp/i)).toBeDefined();
+    expect(screen.queryByText(/Bé Bi/i)).toBeNull();
+  });
+
   it('preserves claimed quests and opened chest status on remount (preventing duplicate claims on page reload)', () => {
     const { unmount } = render(
       <ActivitiesSidebar

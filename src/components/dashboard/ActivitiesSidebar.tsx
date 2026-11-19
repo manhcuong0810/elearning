@@ -13,8 +13,9 @@ export interface ActivitiesSidebarProps {
   onOpenAuthModal?: () => void;
   childName?: string;
   childEmoji?: string;
+  gradeLabel?: string;
   totalStars?: number;
-  familyProfiles?: { id: string; name: string; avatarEmoji: string }[];
+  familyProfiles?: { id: string; name: string; avatarEmoji: string; gradeLabel?: string }[];
 }
 
 interface QuestItem {
@@ -44,6 +45,7 @@ export function ActivitiesSidebar({
   onOpenAuthModal,
   childName,
   childEmoji = '👧',
+  gradeLabel = 'Lớp 1',
   totalStars,
   familyProfiles,
 }: ActivitiesSidebarProps) {
@@ -111,9 +113,13 @@ export function ActivitiesSidebar({
     // Nếu đã đăng nhập:
     const effectiveUserStars = totalStars ?? todayStars ?? 0;
 
-    // 1. Trường hợp có danh sách hồ sơ bé trong gia đình (tài khoản thực)
+    // 1. Trường hợp có danh sách hồ sơ bé trong gia đình (lọc theo lớp hiện tại)
     if (familyProfiles && familyProfiles.length > 0) {
-      const items = familyProfiles.map((p) => {
+      const sameGradeProfiles = familyProfiles.filter(
+        (p) => !p.gradeLabel || p.gradeLabel === gradeLabel || p.name === childName
+      );
+
+      const items = sameGradeProfiles.map((p) => {
         const isCurrent = p.name === childName;
         let stars = isCurrent ? effectiveUserStars : 0;
 
@@ -174,7 +180,7 @@ export function ActivitiesSidebar({
     }
 
     return [];
-  }, [isAuthenticated, totalStars, todayStars, childName, childEmoji, familyProfiles]);
+  }, [isAuthenticated, totalStars, todayStars, childName, childEmoji, gradeLabel, familyProfiles]);
 
   return (
     <aside
@@ -357,7 +363,12 @@ export function ActivitiesSidebar({
               Vinh Danh Tuần
             </h3>
           </div>
-          <span className="text-[11px] font-bold text-slate-400">Lớp 1</span>
+          <span
+            data-testid="leaderboard-grade-badge"
+            className="text-[11px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full shadow-xs"
+          >
+            {gradeLabel || 'Lớp 1'}
+          </span>
         </div>
 
         {!isAuthenticated ? (
@@ -366,7 +377,7 @@ export function ActivitiesSidebar({
               🌟
             </span>
             <p className="text-xs font-bold text-amber-900 leading-relaxed">
-              Bảng vinh danh chỉ ghi nhận thành tích từ học sinh thật. Hãy đăng nhập để cùng bé bắt đầu học và ghi danh lên Bảng vàng nhé!
+              Bảng vinh danh chỉ ghi nhận thành tích từ học sinh thật. Hãy đăng nhập để cùng bé bắt đầu học và ghi danh lên Bảng vàng {gradeLabel || 'Lớp 1'} nhé!
             </p>
             {onOpenAuthModal && (
               <button

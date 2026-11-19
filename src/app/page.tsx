@@ -599,6 +599,7 @@ export default function HomePage() {
                     onOpenAuthModal={() => openAuthWithPrompt()}
                     childName={isAuthenticated ? activeProfile.name : undefined}
                     childEmoji={isAuthenticated ? activeProfile.avatarEmoji : undefined}
+                    gradeLabel={isAuthenticated ? (activeProfile.gradeLabel || 'Lớp 1') : 'Lớp 1'}
                     todayStars={isAuthenticated ? Math.min(5, effectiveTotalStars) : 0}
                     totalStars={effectiveTotalStars}
                     familyProfiles={isAuthenticated ? familyProfiles : []}
