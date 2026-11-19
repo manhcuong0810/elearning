@@ -17,6 +17,8 @@ import { BossBattleScreen, BossVictoryRewards } from '@/components/boss/BossBatt
 import { ArenaMatchScreen } from '@/components/arena/ArenaMatchScreen';
 import { AvatarRoom } from '@/components/avatar/AvatarRoom';
 import { ParentalGateModal } from '@/components/parent/ParentalGateModal';
+import { CompanionSidebar } from '@/components/dashboard/CompanionSidebar';
+import { ActivitiesSidebar } from '@/components/dashboard/ActivitiesSidebar';
 
 export default function HomePage() {
   const curriculum = useMemo(() => loadGrade1MathData(), []);
@@ -47,6 +49,7 @@ export default function HomePage() {
   const totalCoins = useProgressStore((state) => state.totalCoins);
   const totalExp = useProgressStore((state) => state.totalExp);
   const completeStage = useProgressStore((state) => state.completeStage);
+  const addRewards = useProgressStore((state) => state.addRewards);
 
   const totalStarsEarned = Object.values(stageStars).reduce(
     (sum, s) => sum + s,
@@ -469,10 +472,36 @@ export default function HomePage() {
         {activeTab === 'adventure-map' && (
           <>
             {!selectedStage ? (
-              <AdventureMap
-                curriculum={curriculum}
-                onSelectStage={handleSelectStage}
-              />
+              <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] xl:grid-cols-[300px_1fr_320px] gap-6 items-start px-2 sm:px-4">
+                {/* Cột trái: Bạn đồng hành Cú Mèo & Tiến độ cấp độ */}
+                <div className="hidden lg:block sticky top-24">
+                  <CompanionSidebar
+                    profile={activeProfile}
+                    totalExp={totalExp}
+                    streakDays={3}
+                  />
+                </div>
+
+                {/* Cột giữa: Bản đồ thám hiểm các ải */}
+                <div className="w-full min-w-0">
+                  <AdventureMap
+                    curriculum={curriculum}
+                    onSelectStage={handleSelectStage}
+                  />
+                </div>
+
+                {/* Cột phải: Nhiệm vụ ngày, Rương may mắn & Bảng vinh danh */}
+                <div className="hidden lg:block sticky top-24">
+                  <ActivitiesSidebar
+                    todayStars={Math.min(5, totalStarsEarned)}
+                    stagesCompletedToday={unlockedStages.length > 1 ? 1 : 0}
+                    arenaMatchesToday={0}
+                    onClaimReward={(coins) => {
+                      addRewards(coins, 0);
+                    }}
+                  />
+                </div>
+              </div>
             ) : selectedStage.isBoss ? (
               <BossBattleScreen
                 stage={selectedStage}
