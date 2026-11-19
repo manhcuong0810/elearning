@@ -146,15 +146,25 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
   - Cấu hình an toàn: `z-[9999]`, padding trên/dưới `py-8 sm:py-12`, giới hạn `max-h-[85vh]` kèm `overflow-y-auto` để đảm bảo không bao giờ bị cắt cụt phần đầu (Top) hay đáy trên mọi kích cỡ màn hình.
 
 ### 5.4. Kiến Trúc Xác Thực Tài Khoản Phụ Huynh & Đăng Nhập Google (Auth Architecture)
-- **Mô hình người dùng**:
-  - `ParentUser`: `{ id, email, fullName, avatarUrl, provider: 'google' | 'email' | 'guest', createdAt }`.
-  - `AuthSession`: Quản lý phiên đăng nhập của phụ huynh, lưu trữ an toàn trong localStorage/cookies.
-- **Phương thức đăng nhập**:
-  - **1-Click Google Sign-In**: Đăng nhập nhanh qua tài khoản Google của phụ huynh, tự động trích xuất tên, email, ảnh đại diện Google.
-  - **Email & Mật khẩu**: Cho phép phụ huynh đăng ký tài khoản độc lập với mật khẩu bảo mật (tối thiểu 6 ký tự).
+- **Mô hình người dùng & Hồ sơ gia đình**:
+  - `ParentUser`: `{ id, email, fullName, avatarUrl, provider: 'google' | 'email' | 'guest', children: ChildProfile[], createdAt }`.
+  - `ChildProfile`: `{ id, name, gradeLabel, avatarEmoji, pinIcons: string[], studyMinutesToday: number }`.
+  - **Tài khoản mới tạo**: Bắt đầu với mảng con rỗng (`children: []`).
+- **Luồng Đăng Nhập Google qua Google Identity Services (GSI) SDK**:
+  - Tải SDK chính thức `https://accounts.google.com/gsi/client` phía Client.
+  - Sử dụng Google OAuth 2.0 Token Client (`google.accounts.oauth2.initTokenClient`) hoặc Credential Client (`google.accounts.id.initialize`) kết nối trực tiếp với `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+  - Sau khi người dùng cấp quyền trên popup của Google, hệ thống gọi Google Userinfo API (`https://www.googleapis.com/oauth2/v3/userinfo`) hoặc giải mã Google JWT để lấy thông tin tài khoản thật (email, họ tên, avatar).
+- **Luồng Onboarding Tạo Hồ Sơ Bé Đầu Tiên (Child Profile Creation)**:
+  - Khi phụ huynh đăng ký hoặc đăng nhập tài khoản lần đầu (chưa có con trong `children: []`), hệ thống tự động kích hoạt Modal Onboarding: **"Tạo Hồ Sơ Bé Đầu Tiên" (`CreateChildModal`)**.
+  - Form thiết lập bao gồm:
+    1. **Tên bé**: (vd: Bé Bống, Bé Bo...).
+    2. **Khối lớp**: Lớp 1 (mặc định), có thể mở rộng Lớp 2-5.
+    3. **Bộ sưu tập Avatar linh vật**: Sư tử 🦁, Thỏ 🐰, Gấu trúc 🐼, Hổ con 🐯, Mèo con 🐱, Cú thông thái 🦉...
+    4. **Mã PIN 4 biểu tượng vui nhộn**: Chọn 4 icon ngộ nghĩnh (🍎, ⭐, 🦆, 🌈, 🍓, 🚀...) để bé tự nhớ và chuyển hồ sơ dễ dàng.
+  - Phụ huynh có thể tạo thêm con thứ 2, thứ 3 bất cứ lúc nào qua nút `"➕ Thêm bé mới"` trong menu quản lý hồ sơ.
 - **Chế độ Học Thử (Guest Mode)**:
-  - Người dùng mới hoặc các bé chưa cần đăng nhập vẫn có thể trải nghiệm toàn bộ bài học và tính năng.
-  - Khi phụ huynh đăng nhập hoặc đăng ký tài khoản, hệ thống tự động liên kết tiến độ và hồ sơ con hiện có vào tài khoản mới.
+  - Người dùng mới chưa đăng nhập sẽ học dưới dạng `🎒 Bé Học Thử (Khách)`.
+  - Khi bấm vào hồ sơ hoặc các tính năng cá nhân hóa, hệ thống sẽ lịch sự mời phụ huynh đăng nhập để tạo hồ sơ riêng và lưu thành tích cho bé.
 
 ---
 

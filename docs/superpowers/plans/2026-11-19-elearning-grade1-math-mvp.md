@@ -684,3 +684,43 @@ git commit -m "feat: integrate main application navigation, home page and parent
 
 - [x] **Step 6: Commit**
   - Commit mã nguồn với Conventional Commits `feat(auth): add parent authentication with email and google sign-in`.
+
+---
+
+### Task 12: Tích Hợp Google Identity Services (GSI) API & Luồng Onboarding Tạo Hồ Sơ Bé Mới
+
+**Files:**
+- Create: `src/components/profile/CreateChildModal.tsx`
+- Create: `.env.example`
+- Modify: `src/store/useAuthStore.ts` (Tài khoản mới tạo khởi đầu với `children: []`)
+- Modify: `src/components/auth/AuthModal.tsx` (GSI Client SDK integration)
+- Modify: `src/components/navigation/MainHeader.tsx` (Nút "➕ Thêm bé mới" & trigger Onboarding khi chưa có con)
+- Modify: `src/app/page.tsx`
+- Test: `tests/unit/create-child-modal.test.tsx`
+- Test: `tests/integration/onboarding-flow.test.tsx`
+
+**Interfaces:**
+- Consumes: Google Identity Services SDK (`https://accounts.google.com/gsi/client`), `useAuthStore` (`addChildProfile`, `user.children`).
+- Produces: Luồng Onboarding tự động mở khi phụ huynh mới đăng ký; giao diện chọn avatar linh vật, chọn mã PIN 4 hình vẽ; hỗ trợ kết nối Google Client ID chính thức qua `.env.local`.
+
+- [ ] **Step 1: Write failing tests**
+  - Viết `tests/unit/create-child-modal.test.tsx` kiểm thử form tạo hồ sơ bé (tên bé, chọn avatar linh vật, chọn 4 mã PIN hình vẽ, submit).
+  - Viết `tests/integration/onboarding-flow.test.tsx` kiểm thử luồng phụ huynh mới tạo tài khoản -> tự động mở `CreateChildModal` -> tạo bé xong thì hiển thị bé vừa tạo lên Header.
+
+- [ ] **Step 2: Run tests to verify they fail**
+  - Chạy `npx vitest run tests/unit/create-child-modal.test.tsx tests/integration/onboarding-flow.test.tsx` -> Xác nhận FAIL.
+
+- [ ] **Step 3: Implement CreateChildModal & update useAuthStore**
+  - Đảm bảo tài khoản mới tạo (Google hoặc Email) khởi đầu với `children: []`.
+  - Xây dựng `CreateChildModal.tsx` với giao diện 3D Cartoon Bouncy, bộ sưu tập avatar linh vật (🦁, 🐰, 🐼, 🐯, 🐱, 🦉), bảng chọn 4 mã PIN hình vẽ trực quan cho trẻ Lớp 1.
+  - Tích hợp nạp script Google GSI (`https://accounts.google.com/gsi/client`) và tạo `.env.example`.
+
+- [ ] **Step 4: Integrate into MainHeader & HomePage**
+  - Bổ sung nút "➕ Thêm bé mới" vào danh sách hồ sơ phụ huynh.
+  - Tự động kích hoạt `CreateChildModal` khi phụ huynh đăng nhập lần đầu mà chưa có bé nào.
+
+- [ ] **Step 5: Run all tests to verify they pass**
+  - Chạy `npm test` xác nhận toàn bộ test suites PASS.
+
+- [ ] **Step 6: Commit**
+  - Commit mã nguồn với Conventional Commits `feat(auth): integrate Google GSI API and child onboarding profile creation`.
