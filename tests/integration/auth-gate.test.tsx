@@ -52,4 +52,32 @@ describe('Auth Gate Enforcement (Mandatory Login)', () => {
     expect(screen.queryByTestId('parent-dashboard')).toBeNull();
     expect(screen.getByTestId('auth-modal')).toBeDefined();
   });
+
+  it('ensures that unauthenticated guests see zero stars, zero coins, and no leftover progress', () => {
+    // Simulate leftover stars in localStorage from an old session
+    window.localStorage.setItem(
+      'math-g1-progress-storage',
+      JSON.stringify({
+        state: {
+          stageStars: { stage_1: 2 },
+          totalCoins: 20,
+          totalExp: 50,
+        },
+      })
+    );
+
+    render(<HomePage />);
+
+    // Adventure map stars must be 0 for guest
+    expect(screen.getByTestId('map-total-stars').textContent).toBe('0');
+    expect(screen.getByTestId('map-total-coins').textContent).toBe('0');
+
+    // Stage 1 must show 0 filled stars for guest
+    const stage1Node = screen.getByTestId('stage-node-stage_1');
+    expect(stage1Node.getAttribute('aria-label')).toContain('0 sao');
+
+    // Header progress counters must be completely hidden
+    expect(screen.queryByTestId('header-total-stars')).toBeNull();
+    expect(screen.queryByTestId('header-total-coins')).toBeNull();
+  });
 });

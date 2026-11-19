@@ -98,10 +98,28 @@ export default function HomePage() {
   const completeStage = useProgressStore((state) => state.completeStage);
   const addRewards = useProgressStore((state) => state.addRewards);
 
-  const totalStarsEarned = Object.values(stageStars).reduce(
-    (sum, s) => sum + s,
+  // Isolate and clean progress for unauthenticated guests
+  const effectiveTotalStars = isAuthenticated
+    ? Object.values(stageStars).reduce((sum, s) => sum + s, 0)
+    : 0;
+  const effectiveTotalCoins = isAuthenticated ? totalCoins : 0;
+  const effectiveTotalExp = isAuthenticated ? totalExp : 0;
+  const effectiveStreakDays = isAuthenticated ? streakDays : 0;
+  const completedStagesCount = isAuthenticated
+    ? Object.keys(stageStars).length
+    : 0;
+  const totalCurriculumStagesCount = curriculum.chapters.reduce(
+    (sum, c) => sum + c.stages.length,
     0
   );
+
+  useEffect(() => {
+    if (isAuthenticated && activeProfile && activeProfile.id !== 'guest') {
+      useProgressStore.getState().loadChildProgress(activeProfile.id);
+    } else {
+      useProgressStore.getState().loadChildProgress('guest');
+    }
+  }, [isAuthenticated, activeProfile?.id]);
 
   const handleSelectNavigationTab = (tab: NavigationTab) => {
     if (!isAuthenticated && tab !== 'adventure-map') {
@@ -407,7 +425,7 @@ export default function HomePage() {
                 data-testid="parent-stat-completed-stages"
                 className="text-2xl font-black text-amber-950"
               >
-                {completedStagesCount} / 5 ải
+                {completedStagesCount} / {totalCurriculumStagesCount} ải
               </span>
               <span className="text-xs font-semibold text-amber-700 block mt-1">
                 Đã mở khóa {unlockedStages.length} chặng
@@ -422,10 +440,10 @@ export default function HomePage() {
                 data-testid="parent-stat-total-stars"
                 className="text-2xl font-black text-yellow-950"
               >
-                ⭐ {totalStarsEarned} Sao
+                ⭐ {effectiveTotalStars} Sao
               </span>
               <span className="text-xs font-semibold text-yellow-700 block mt-1">
-                Tích lũy {totalCoins} Xu &amp; {totalExp} EXP
+                Tích lũy {effectiveTotalCoins} Xu &amp; {effectiveTotalExp} EXP
               </span>
             </div>
 
@@ -551,8 +569,8 @@ export default function HomePage() {
                 <div className="hidden lg:block sticky top-24">
                   <CompanionSidebar
                     profile={activeProfile}
-                    totalExp={totalExp}
-                    streakDays={streakDays}
+                    totalExp={effectiveTotalExp}
+                    streakDays={effectiveStreakDays}
                     isAuthenticated={isAuthenticated}
                     onOpenAuthModal={() => openAuthWithPrompt()}
                   />
@@ -577,12 +595,12 @@ export default function HomePage() {
                   <ActivitiesSidebar
                     isAuthenticated={isAuthenticated}
                     onOpenAuthModal={() => openAuthWithPrompt()}
-                    childName={activeProfile.name}
-                    childEmoji={activeProfile.avatarEmoji}
-                    todayStars={Math.min(5, totalStarsEarned)}
-                    totalStars={totalStarsEarned}
-                    familyProfiles={familyProfiles}
-                    stagesCompletedToday={unlockedStages.length > 1 ? 1 : 0}
+                    childName={isAuthenticated ? activeProfile.name : undefined}
+                    childEmoji={isAuthenticated ? activeProfile.avatarEmoji : undefined}
+                    todayStars={isAuthenticated ? Math.min(5, effectiveTotalStars) : 0}
+                    totalStars={effectiveTotalStars}
+                    familyProfiles={isAuthenticated ? familyProfiles : []}
+                    stagesCompletedToday={isAuthenticated && unlockedStages.length > 1 ? 1 : 0}
                     arenaMatchesToday={0}
                   />
                 </div>

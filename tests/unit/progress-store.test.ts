@@ -200,4 +200,34 @@ describe('Progress Store (useProgressStore)', () => {
     expect(useProgressStore.getState().streakDays).toBe(1);
     expect(useProgressStore.getState().lastStudyDate).toBe('2026-11-20');
   });
+
+  it('should isolate progress between different child profiles and guest', () => {
+    const store = useProgressStore.getState();
+
+    // Load child 1 (Bé Bống) and earn 3 stars on stage_1
+    store.loadChildProgress('child_bong');
+    store.completeStage('stage_1', { stars: 3, earnedCoins: 15, earnedExp: 30 });
+    expect(useProgressStore.getState().getStageStars('stage_1')).toBe(3);
+    expect(useProgressStore.getState().totalCoins).toBe(15);
+
+    // Switch to child 2 (Bé Na) -> starts clean with 0 stars and 0 coins
+    useProgressStore.getState().loadChildProgress('child_na');
+    expect(useProgressStore.getState().getStageStars('stage_1')).toBe(0);
+    expect(useProgressStore.getState().totalCoins).toBe(0);
+
+    // Bé Na earns 2 stars on stage_1
+    useProgressStore.getState().completeStage('stage_1', { stars: 2, earnedCoins: 10, earnedExp: 20 });
+    expect(useProgressStore.getState().getStageStars('stage_1')).toBe(2);
+    expect(useProgressStore.getState().totalCoins).toBe(10);
+
+    // Switch to guest -> clean with 0 stars and 0 coins
+    useProgressStore.getState().loadChildProgress('guest');
+    expect(useProgressStore.getState().getStageStars('stage_1')).toBe(0);
+    expect(useProgressStore.getState().totalCoins).toBe(0);
+
+    // Switch back to Bé Bống -> restored 3 stars and 15 coins
+    useProgressStore.getState().loadChildProgress('child_bong');
+    expect(useProgressStore.getState().getStageStars('stage_1')).toBe(3);
+    expect(useProgressStore.getState().totalCoins).toBe(15);
+  });
 });

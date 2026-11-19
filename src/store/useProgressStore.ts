@@ -5,6 +5,13 @@ import { StageCompletionReward } from '@/types/progress';
 
 const STORAGE_KEY = 'math-g1-progress-storage';
 
+export function getProfileStorageKey(childId?: string): string {
+  if (!childId || childId === 'guest') {
+    return 'math-g1-progress-storage_guest';
+  }
+  return `math-g1-progress-storage_${childId}`;
+}
+
 /**
  * Extracts ordered stage IDs from the Grade 1 Math curriculum
  */
@@ -92,6 +99,7 @@ const safeLocalStorage: StateStorage = {
 };
 
 export interface ProgressStoreState {
+  currentChildId: string;
   unlockedStages: string[];
   stageStars: Record<string, number>;
   totalCoins: number;
@@ -126,10 +134,12 @@ export interface ProgressStoreState {
     dateStr?: string
   ) => boolean;
   openMysteryChest: (rewardCoins: number, dateStr?: string) => boolean;
+  loadChildProgress: (childId: string) => void;
   reset: () => void;
 }
 
-const createInitialData = () => ({
+const createInitialData = (childId = 'guest') => ({
+  currentChildId: childId,
   unlockedStages: getInitialUnlockedStages(),
   stageStars: {} as Record<string, number>,
   totalCoins: 0,
@@ -331,15 +341,75 @@ export const useProgressStore = create<ProgressStoreState>()(
         return true;
       },
 
+      loadChildProgress: (childId: string): void => {
+        const targetChildId = childId || 'guest';
+        const currentId = get().currentChildId;
+
+        if (currentId === targetChildId) {
+          return;
+        }
+
+        // Save current child progress before switching
+        if (currentId && currentId !== targetChildId) {
+          const currentKey = getProfileStorageKey(currentId);
+          const currentPayload = JSON.stringify({
+            state: {
+              unlockedStages: get().unlockedStages,
+              stageStars: get().stageStars,
+              totalCoins: get().totalCoins,
+              totalExp: get().totalExp,
+              inventory: get().inventory,
+              equippedItems: get().equippedItems,
+              streakDays: get().streakDays,
+              lastStudyDate: get().lastStudyDate,
+              claimedQuestIds: get().claimedQuestIds,
+              claimedQuestDate: get().claimedQuestDate,
+              lastChestOpenedDate: get().lastChestOpenedDate,
+              chestRewardCoins: get().chestRewardCoins,
+            },
+            version: 0,
+          });
+          safeLocalStorage.setItem(currentKey, currentPayload);
+        }
+
+        // Load target child progress
+        const targetKey = getProfileStorageKey(targetChildId);
+        const savedRaw = safeLocalStorage.getItem(targetKey);
+
+        if (typeof savedRaw === 'string') {
+          try {
+            const parsed = JSON.parse(savedRaw);
+            const targetState = parsed.state || parsed;
+            set({
+              ...createInitialData(targetChildId),
+              ...targetState,
+              currentChildId: targetChildId,
+            });
+            return;
+          } catch {
+            // Ignore parse error and fall back to initial
+          }
+        }
+
+        // Target child has no saved data yet -> clean initial data
+        set(createInitialData(targetChildId));
+      },
+
       reset: (): void => {
+        const curId = get().currentChildId;
         safeLocalStorage.removeItem(STORAGE_KEY);
-        set(createInitialData());
+        if (curId) {
+          safeLocalStorage.removeItem(getProfileStorageKey(curId));
+        }
+        safeLocalStorage.removeItem('math-g1-progress-storage_guest');
+        set(createInitialData('guest'));
       },
     }),
     {
       name: STORAGE_KEY,
       storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({
+        currentChildId: state.currentChildId,
         unlockedStages: state.unlockedStages,
         stageStars: state.stageStars,
         totalCoins: state.totalCoins,

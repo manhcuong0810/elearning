@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useProgressStore } from '@/store/useProgressStore';
 import {
   AuthState,
   ParentUser,
@@ -42,6 +43,10 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+
+          if (googleUser.children && googleUser.children.length > 0) {
+            useProgressStore.getState().loadChildProgress(googleUser.children[0].id);
+          }
 
           return googleUser;
         } catch (err: unknown) {
@@ -169,12 +174,16 @@ export const useAuthStore = create<AuthState>()(
               children: updatedChildren,
             },
           });
+          if (updatedChildren.length === 1) {
+            useProgressStore.getState().loadChildProgress(newChild.id);
+          }
         }
 
         return newChild;
       },
 
       logout: () => {
+        useProgressStore.getState().reset();
         set({
           user: null,
           isAuthenticated: false,

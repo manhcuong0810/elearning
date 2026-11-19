@@ -25,10 +25,11 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
   const totalCoins = useProgressStore((state) => state.totalCoins);
   const totalExp = useProgressStore((state) => state.totalExp);
 
-  const totalStarsEarned = Object.values(stageStars).reduce(
-    (sum, s) => sum + s,
-    0
-  );
+  const totalStarsEarned = isAuthenticated
+    ? Object.values(stageStars).reduce((sum, s) => sum + s, 0)
+    : 0;
+  const effectiveCoins = isAuthenticated ? totalCoins : 0;
+  const effectiveExp = isAuthenticated ? totalExp : 0;
 
   // Find the current active stage (first unlocked stage with < 3 stars, or the latest unlocked)
   const allStages = data.chapters.flatMap((c) => c.stages);
@@ -151,7 +152,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                 ⭐ {totalStarsEarned} Sao
               </span>
               <span className="text-sm font-black text-amber-600">
-                🪙 {totalCoins} Xu
+                🪙 {effectiveCoins} Xu
               </span>
             </div>
             <div className="w-32 h-2.5 bg-emerald-100 rounded-full overflow-hidden border border-emerald-300">
@@ -166,8 +167,8 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
         {/* Hidden test-id hooks for test compatibility */}
         <div className="hidden" aria-hidden="true">
           <span data-testid="map-total-stars">{totalStarsEarned}</span>
-          <span data-testid="map-total-coins">{totalCoins}</span>
-          <span data-testid="map-total-exp">{totalExp}</span>
+          <span data-testid="map-total-coins">{effectiveCoins}</span>
+          <span data-testid="map-total-exp">{effectiveExp}</span>
         </div>
       </div>
 
@@ -245,8 +246,8 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
               <div className="flex flex-col items-center gap-10 relative py-4 z-10">
                 {chapter.stages.map((stage, stageIdx) => {
                   const isUnlocked = unlockedStages.includes(stage.id);
-                  const stars = stageStars[stage.id] ?? 0;
-                  const isCurrentActive = stage.id === currentActiveStageId;
+                  const stars = isAuthenticated ? (stageStars[stage.id] ?? 0) : 0;
+                  const isCurrentActive = isAuthenticated && stage.id === currentActiveStageId;
 
                   // Smooth alternating S-curve offset
                   const offsetClass =
