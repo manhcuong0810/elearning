@@ -49,31 +49,31 @@ export const DragDropMathWidget: React.FC<DragDropMathWidgetProps> = ({
 
   const moveItemToTarget = (itemId: string) => {
     if (disabled || !itemId) return;
-    setDroppedIds((prev) => {
-      if (prev.includes(itemId)) return prev;
-      const next = [...prev, itemId];
-      if (next.length === targetCount) {
-        onAnswer(true);
-      }
-      return next;
-    });
+    if (droppedIds.includes(itemId)) return;
+
+    const next = [...droppedIds, itemId];
+    setDroppedIds(next);
     setReturnedItemId(null);
     setLastDropStatus('dropped-in-target');
     audioManager.playSfx('pop');
+
+    if (next.length === targetCount) {
+      onAnswer(true);
+    }
   };
 
   const returnItemToSource = (itemId: string) => {
     if (disabled || !itemId) return;
-    setDroppedIds((prev) => {
-      const next = prev.filter((id) => id !== itemId);
-      if (prev.length === targetCount && next.length !== targetCount) {
-        onAnswer(false);
-      }
-      return next;
-    });
+    const wasTarget = droppedIds.length === targetCount;
+    const next = droppedIds.filter((id) => id !== itemId);
+    setDroppedIds(next);
     setReturnedItemId(itemId);
     setLastDropStatus('returned-to-origin');
     audioManager.playSfx('click');
+
+    if (wasTarget && next.length !== targetCount) {
+      onAnswer(false);
+    }
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLButtonElement>, itemId: string) => {
