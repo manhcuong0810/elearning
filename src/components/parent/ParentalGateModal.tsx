@@ -57,9 +57,9 @@ export const ParentalGateModal: React.FC<ParentalGateModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="parental-gate-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[9999] overflow-y-auto flex items-start sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 min-h-screen py-8 sm:py-12"
     >
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-sky-300 flex flex-col gap-5">
+      <div className="relative w-full max-w-md my-auto max-h-[85vh] overflow-y-auto bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-sky-300 flex flex-col gap-5">
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100 text-sky-900 text-xs font-extrabold uppercase tracking-wider">
             🔒 Cổng Bảo Vệ Phụ Huynh

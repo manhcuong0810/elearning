@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useProgressStore } from '@/store/useProgressStore';
 import { AudioManager, defaultAudioManager } from '@/lib/audio-manager';
 
@@ -248,71 +249,78 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       </div>
 
       {/* Child Profile Switcher Modal (4-Icon PIN Family Account selector) */}
-      {isProfileModalOpen && (
-        <div
-          data-testid="profile-switcher-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Chọn hồ sơ học sinh"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-        >
-          <div className="w-full max-w-md bg-gradient-to-b from-amber-50 via-white to-amber-50 rounded-3xl p-6 sm:p-7 shadow-2xl border-4 border-amber-300 flex flex-col gap-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-                <span>👧👦</span>
-                <span>Chọn Hồ Sơ Của Bé</span>
-              </h2>
-              <button
-                type="button"
-                data-testid="close-profile-modal-btn"
-                onClick={() => setIsProfileModalOpen(false)}
-                className="btn-3d min-w-[48px] min-h-[48px] rounded-2xl bg-slate-100 text-slate-700 font-black border-2 border-slate-300 border-b-4"
-              >
-                ✕
-              </button>
-            </div>
+      {isProfileModalOpen && (() => {
+        const modalElement = (
+          <div
+            data-testid="profile-switcher-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Chọn hồ sơ học sinh"
+            className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6 flex items-start sm:items-center justify-center min-h-screen py-8 sm:py-12 animate-in fade-in duration-200"
+          >
+            <div className="relative w-full max-w-md my-auto max-h-[85vh] overflow-y-auto bg-gradient-to-b from-amber-50 via-white to-amber-50 rounded-3xl p-6 sm:p-7 shadow-2xl border-4 border-amber-300 flex flex-col gap-5">
+              <div className="flex items-center justify-between sticky top-0 bg-amber-50/90 backdrop-blur-xs py-1 z-10">
+                <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+                  <span>👧👦</span>
+                  <span>Chọn Hồ Sơ Của Bé</span>
+                </h2>
+                <button
+                  type="button"
+                  data-testid="close-profile-modal-btn"
+                  onClick={() => setIsProfileModalOpen(false)}
+                  className="btn-3d min-w-[48px] min-h-[48px] rounded-2xl bg-slate-100 text-slate-700 font-black border-2 border-slate-300 border-b-4 flex items-center justify-center text-lg hover:bg-slate-200"
+                >
+                  ✕
+                </button>
+              </div>
 
-            <p className="text-sm font-bold text-slate-600">
-              Mỗi bé có mã PIN 4 biểu tượng ngộ nghĩnh riêng trong tài khoản Gia đình:
-            </p>
+              <p className="text-sm font-bold text-slate-600">
+                Mỗi bé có mã PIN 4 biểu tượng ngộ nghĩnh riêng trong tài khoản Gia đình:
+              </p>
 
-            <div className="flex flex-col gap-3">
-              {profiles.map((profile) => {
-                const isSelected = profile.id === activeProfile.id;
-                return (
-                  <button
-                    key={profile.id}
-                    type="button"
-                    data-testid={`select-profile-${profile.id}`}
-                    onClick={() => handleProfileChoose(profile)}
-                    className={`btn-3d min-h-[64px] w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
-                      isSelected
-                        ? 'bg-amber-100 border-amber-400 border-b-4 border-b-amber-600 ring-2 ring-amber-300'
-                        : 'bg-white hover:bg-sky-50 border-slate-200 border-b-4 border-b-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-4xl drop-shadow-sm">{profile.avatarEmoji}</span>
-                      <div className="text-left">
-                        <span className="font-black text-slate-800 text-lg block leading-tight">
-                          {profile.name} ({profile.gradeLabel})
-                        </span>
-                        <span className="text-xs font-bold text-slate-500 block mt-0.5">
-                          Mã hình: {profile.pinIcons.join(' ')}
-                        </span>
+              <div className="flex flex-col gap-3">
+                {profiles.map((profile) => {
+                  const isSelected = profile.id === activeProfile.id;
+                  return (
+                    <button
+                      key={profile.id}
+                      type="button"
+                      data-testid={`select-profile-${profile.id}`}
+                      onClick={() => handleProfileChoose(profile)}
+                      className={`btn-3d min-h-[64px] w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${
+                        isSelected
+                          ? 'bg-amber-100 border-amber-400 border-b-4 border-b-amber-600 ring-2 ring-amber-300'
+                          : 'bg-white hover:bg-sky-50 border-slate-200 border-b-4 border-b-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-4xl drop-shadow-sm">{profile.avatarEmoji}</span>
+                        <div className="text-left">
+                          <span className="font-black text-slate-800 text-lg block leading-tight">
+                            {profile.name} ({profile.gradeLabel})
+                          </span>
+                          <span className="text-xs font-bold text-slate-500 block mt-0.5">
+                            Mã hình: {profile.pinIcons.join(' ')}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    <span className="px-3 py-1.5 rounded-full bg-kid-yellow text-slate-900 text-xs font-black shadow-sm">
-                      {isSelected ? 'Đang học' : 'Chọn bé'}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span className="px-3 py-1.5 rounded-full bg-kid-yellow text-slate-900 text-xs font-black shadow-sm">
+                        {isSelected ? 'Đang học' : 'Chọn bé'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+
+        if (typeof document !== 'undefined' && document.body) {
+          return createPortal(modalElement, document.body);
+        }
+        return modalElement;
+      })()}
     </header>
   );
 };
