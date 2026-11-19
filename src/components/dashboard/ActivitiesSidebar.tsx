@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { defaultAudioManager } from '@/lib/audio-manager';
+import { useProgressStore } from '@/store/useProgressStore';
 
 export interface ActivitiesSidebarProps {
   todayStars?: number;
   stagesCompletedToday?: number;
   arenaMatchesToday?: number;
-  onClaimReward: (coins: number) => void;
+  onClaimReward?: (coins: number) => void;
   isAuthenticated?: boolean;
   onOpenAuthModal?: () => void;
   childName?: string;
@@ -49,9 +50,14 @@ export function ActivitiesSidebar({
   childName,
   totalStars,
 }: ActivitiesSidebarProps) {
-  const [claimedQuests, setClaimedQuests] = useState<Record<string, boolean>>({});
-  const [isChestOpened, setIsChestOpened] = useState(false);
-  const [chestReward, setChestReward] = useState<number | null>(null);
+  const isQuestClaimed = useProgressStore((state) => state.isQuestClaimed);
+  const isChestOpenedToday = useProgressStore((state) => state.isChestOpenedToday);
+  const claimQuest = useProgressStore((state) => state.claimQuest);
+  const openMysteryChest = useProgressStore((state) => state.openMysteryChest);
+  const chestRewardCoins = useProgressStore((state) => state.chestRewardCoins);
+
+  const isChestOpened = isChestOpenedToday();
+  const effectiveChestReward = chestRewardCoins ?? 20;
 
   const quests: QuestItem[] = [
     {
@@ -81,19 +87,22 @@ export function ActivitiesSidebar({
   ];
 
   const handleClaimQuest = (quest: QuestItem) => {
-    if (claimedQuests[quest.id] || quest.current < quest.target) return;
-    defaultAudioManager.playSfx('cheer');
-    setClaimedQuests((prev) => ({ ...prev, [quest.id]: true }));
-    onClaimReward(quest.rewardCoins);
+    if (isQuestClaimed(quest.id) || quest.current < quest.target) return;
+    const success = claimQuest(quest.id, quest.rewardCoins, 10);
+    if (success) {
+      defaultAudioManager.playSfx('cheer');
+      onClaimReward?.(quest.rewardCoins);
+    }
   };
 
   const handleOpenChest = () => {
     if (isChestOpened) return;
-    defaultAudioManager.playSfx('cheer');
     const reward = Math.floor(Math.random() * 21) + 15; // 15 - 35 coins
-    setChestReward(reward);
-    setIsChestOpened(true);
-    onClaimReward(reward);
+    const success = openMysteryChest(reward);
+    if (success) {
+      defaultAudioManager.playSfx('cheer');
+      onClaimReward?.(reward);
+    }
   };
 
   const leaderboard: LeaderboardItem[] = useMemo(() => {
@@ -191,7 +200,7 @@ export function ActivitiesSidebar({
             <div className="flex flex-col gap-3">
               {quests.map((quest) => {
                 const isCompleted = quest.current >= quest.target;
-                const isClaimed = claimedQuests[quest.id];
+                const isClaimed = isQuestClaimed(quest.id);
                 const progressPercent = Math.min(
                   100,
                   Math.round((quest.current / quest.target) * 100)
@@ -270,7 +279,7 @@ export function ActivitiesSidebar({
               onClick={handleOpenChest}
               aria-label={
                 isChestOpened
-                  ? `Đã mở rương báu (+${chestReward} xu)`
+                  ? `Đã mở rương báu (+${effectiveChestReward} xu)`
                   : 'Mở rương kho báu may mắn'
               }
               className={`w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-md border-3 border-white/60 shadow-inner flex items-center justify-center text-5xl cursor-pointer transition-transform duration-200 ${
@@ -286,7 +295,7 @@ export function ActivitiesSidebar({
 
             {isChestOpened ? (
               <div className="mt-3 bg-white/20 px-3.5 py-1.5 rounded-full border border-white/40 text-xs font-black text-amber-200">
-                🎉 Đã mở rương báu! (+{chestReward} xu)
+                🎉 Đã mở rương báu! (+{effectiveChestReward} xu)
               </div>
             ) : (
               <p className="text-xs font-bold text-purple-100 mt-2.5">

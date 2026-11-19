@@ -868,3 +868,54 @@ git commit -m "feat: integrate main application navigation, home page and parent
 
 - [x] **Step 7: Commit**
   - Commit mã nguồn với Conventional Commits `feat(ui): clean guest headers, fix leaderboard single line, and upgrade magical garden map`.
+
+---
+
+## Task 16: Lưu Trữ Nhiệm Vụ & Rương Quà Bằng LocalStorage (useProgressStore) và Chuẩn Hóa Hồ Sơ Trẻ Em Phụ Huynh
+
+- Files:
+  - `src/store/useProgressStore.ts`
+  - `src/components/dashboard/ActivitiesSidebar.tsx`
+  - `src/components/navigation/MainHeader.tsx`
+  - `src/app/page.tsx`
+- Tests:
+  - `tests/unit/progress-store.test.ts`
+  - `tests/unit/activities-sidebar.test.tsx`
+  - `tests/integration/main-flow.test.tsx`
+
+**Interfaces:**
+- Consumes: `useProgressStore`, `useAuthStore` (`user.children`), `ActivitiesSidebarProps`.
+- Produces:
+  - `useProgressStore`:
+    - Thêm `claimedQuestIds: string[]`, `claimedQuestDate: string | null`, `lastChestOpenedDate: string | null`, `chestRewardCoins: number | null` vào state và cấu hình `partialize` của `persist` (localStorage).
+    - Thêm các methods: `isQuestClaimed`, `isChestOpenedToday`, `claimQuest`, `openMysteryChest`.
+    - Tự động làm mới nhiệm vụ và rương khi sang ngày mới, nhưng giữ nguyên trạng thái đã nhận khi reload trang trong cùng một ngày.
+  - `ActivitiesSidebar`:
+    - Loại bỏ local `useState` cho nhiệm vụ và rương, đồng bộ trực tiếp với `useProgressStore`.
+    - Sau khi reload trang, các nhiệm vụ đã nhận vẫn hiển thị "✓ Đã nhận thưởng", rương vẫn hiển thị "🎉 Đã mở rương báu" với đúng số xu đã nhận, ngăn chặn việc nhận trùng lặp.
+  - `Parent Dashboard`:
+    - Loại bỏ danh sách con giả lập hardcoded (`DEFAULT_FAMILY_PROFILES`), chỉ hiển thị đúng các bé mà phụ huynh thực sự đã tạo trong tài khoản (`familyProfiles = user?.children || []`).
+
+- [x] **Step 1: Write/Update failing tests**
+  - Viết test trong `tests/unit/progress-store.test.ts` kiểm tra lưu trữ và ngăn trùng lặp nhận nhiệm vụ / mở rương trong ngày.
+  - Viết test trong `tests/unit/activities-sidebar.test.tsx` kiểm tra giữ nguyên trạng thái sau khi remount / reload.
+  - Viết test trong `tests/integration/main-flow.test.tsx` kiểm tra Cổng Phụ Huynh chỉ hiển thị đúng hồ sơ bé do phụ huynh tạo.
+
+- [x] **Step 2: Run tests to verify they fail**
+  - Chạy `npx vitest run tests/unit/progress-store.test.ts` và xác nhận test FAIL (`isQuestClaimed is not a function`).
+
+- [x] **Step 3: Implement Store Persistence & Actions in useProgressStore**
+  - Bổ sung state và actions cho quests & mystery chest trong `useProgressStore.ts`, đồng thời cấu hình lưu trữ localStorage qua `partialize`.
+
+- [x] **Step 4: Update ActivitiesSidebar Component**
+  - Đồng bộ `isQuestClaimed`, `claimQuest`, `isChestOpenedToday`, `openMysteryChest` trực tiếp từ `useProgressStore`.
+
+- [x] **Step 5: Fix Parent Portal Child Profile Switcher in page.tsx**
+  - Thay thế `DEFAULT_FAMILY_PROFILES.map` bằng `familyProfiles.map`, đảm bảo phụ huynh chỉ thấy đúng danh sách bé của mình.
+
+- [x] **Step 6: Run all tests & build to verify they pass**
+  - Chạy `npm test` xác nhận toàn bộ 20 test suites (102/102 tests) PASS.
+  - Chạy `npm run build` xác nhận Next.js 15 App Router build thành công 100%.
+
+- [x] **Step 7: Commit**
+  - Commit mã nguồn với Conventional Commits `fix(store): persist daily quests and chest to localstorage and fix parent portal child profiles`.

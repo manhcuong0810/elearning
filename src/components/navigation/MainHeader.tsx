@@ -28,7 +28,7 @@ export interface MainHeaderProps {
   onSelectProfile?: (profile: ChildProfile) => void;
   audioManager?: AudioManager;
   isAuthModalOpen?: boolean;
-  onOpenAuthModal?: () => void;
+  onOpenAuthModal?: (promptMessage?: string) => void;
   onCloseAuthModal?: () => void;
   authPromptMessage?: string;
 }

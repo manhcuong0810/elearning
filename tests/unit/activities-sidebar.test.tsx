@@ -104,4 +104,43 @@ describe('ActivitiesSidebar', () => {
     expect(mockOnClaimReward).toHaveBeenCalledWith(expect.any(Number));
     expect(screen.getByText(/Đã mở rương báu/i)).toBeDefined();
   });
+
+  it('preserves claimed quests and opened chest status on remount (preventing duplicate claims on page reload)', () => {
+    const { unmount } = render(
+      <ActivitiesSidebar
+        todayStars={5}
+        stagesCompletedToday={1}
+        arenaMatchesToday={0}
+        onClaimReward={mockOnClaimReward}
+      />
+    );
+
+    // Claim quest
+    const claimButtons = screen.getAllByRole('button', { name: /nhận thưởng/i });
+    fireEvent.click(claimButtons[0]);
+
+    // Open chest
+    const chestBtn = screen.getByTestId('mystery-chest-btn');
+    fireEvent.click(chestBtn);
+
+    expect(screen.getByText(/Đã mở rương báu/i)).toBeDefined();
+
+    // Simulate page reload by unmounting and re-rendering
+    unmount();
+
+    render(
+      <ActivitiesSidebar
+        todayStars={5}
+        stagesCompletedToday={1}
+        arenaMatchesToday={0}
+        onClaimReward={mockOnClaimReward}
+      />
+    );
+
+    // After reload: chest must STILL be opened!
+    expect(screen.getByText(/Đã mở rương báu/i)).toBeDefined();
+
+    // Claimed quest button must show "✓ Đã nhận" and NOT "Nhận thưởng"
+    expect(screen.getAllByText(/✓ Đã nhận/i).length).toBeGreaterThan(0);
+  });
 });

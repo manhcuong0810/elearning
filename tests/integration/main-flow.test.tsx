@@ -164,4 +164,56 @@ describe('Full Learning Platform Integration', () => {
     fireEvent.click(screen.getByTestId('select-profile-child_2'));
     expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Na');
   });
+
+  it('renders only the parent single child in Parent Portal when only 1 child exists', async () => {
+    // Reset and log in with single child
+    useProgressStore.getState().reset();
+    await useAuthStore.getState().loginWithGoogle({
+      email: 'singleparent@gmail.com',
+      fullName: 'Bố Minh Trí',
+      initialChildren: [
+        {
+          id: 'child_only_1',
+          name: 'Bé Khôi Nguyên',
+          gradeLabel: 'Lớp 1A',
+          avatarEmoji: '🦁',
+          pinIcons: ['⭐', '🚀', '🐱', '🌈'],
+          studyMinutesToday: 15,
+        },
+      ],
+    });
+
+    render(<HomePage />);
+
+    // Click Parent Portal
+    fireEvent.click(screen.getByTestId('nav-parent-portal'));
+
+    // Answer Parental Gate
+    const challengeBox = screen.getByTestId('parental-gate-challenge-text');
+    const challengeText = challengeBox.textContent || '';
+    const match = /^(\d+)\s*([+×x*\-−])\s*(\d+)\s*=\s*\?$/.exec(challengeText.trim());
+    const a = Number(match![1]);
+    const op = match![2];
+    const b = Number(match![3]);
+    let ans = 0;
+    if (op === '+') ans = a + b;
+    else if (op === '-' || op === '−') ans = a - b;
+    else ans = a * b;
+
+    fireEvent.change(screen.getByTestId('parental-gate-input'), { target: { value: `${ans}` } });
+    fireEvent.click(screen.getByTestId('parental-gate-submit-btn'));
+
+    expect(screen.getByTestId('parent-dashboard')).toBeDefined();
+
+    // Must show Bé Khôi Nguyên
+    expect(screen.getByTestId('parent-switch-profile-child_only_1')).toBeDefined();
+    expect(screen.getAllByText('Bé Khôi Nguyên').length).toBeGreaterThan(0);
+
+    // Must NOT show mock children Bé Bin, Bé Na, Bé Bống
+    expect(screen.queryByTestId('parent-switch-profile-child_1')).toBeNull();
+    expect(screen.queryByTestId('parent-switch-profile-child_2')).toBeNull();
+    expect(screen.queryByTestId('parent-switch-profile-child_3')).toBeNull();
+    expect(screen.queryByText('Bé Bin')).toBeNull();
+    expect(screen.queryByText('Bé Na')).toBeNull();
+  });
 });

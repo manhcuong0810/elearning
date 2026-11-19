@@ -9,7 +9,6 @@ import {
   MainHeader,
   NavigationTab,
   ChildProfile,
-  DEFAULT_FAMILY_PROFILES,
 } from '@/components/navigation/MainHeader';
 import { AdventureMap } from '@/components/map/AdventureMap';
 import { QuestionPresenter } from '@/components/learning/QuestionPresenter';
@@ -376,7 +375,7 @@ export default function HomePage() {
 
             {/* Child Profile Switcher inside Parent Dashboard */}
             <div className="flex items-center gap-2">
-              {DEFAULT_FAMILY_PROFILES.map((profile) => {
+              {familyProfiles.map((profile) => {
                 const isSelected = profile.id === activeProfile.id;
                 return (
                   <button
@@ -453,7 +452,7 @@ export default function HomePage() {
                 {activeProfile.avatarEmoji} {activeProfile.name}
               </span>
               <span className="text-xs font-semibold text-purple-700 block mt-1">
-                {activeProfile.gradeLabel} • PIN: {activeProfile.pinIcons.join('')}
+                {activeProfile.gradeLabel || 'Lớp 1'} • PIN: {activeProfile.pinIcons?.join('') || '⭐'}
               </span>
             </div>
           </div>
@@ -583,9 +582,6 @@ export default function HomePage() {
                     totalStars={totalStarsEarned}
                     stagesCompletedToday={unlockedStages.length > 1 ? 1 : 0}
                     arenaMatchesToday={0}
-                    onClaimReward={(coins) => {
-                      addRewards(coins, 0);
-                    }}
                   />
                 </div>
               </div>

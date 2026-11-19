@@ -109,6 +109,73 @@ describe('Progress Store (useProgressStore)', () => {
     expect(rawPersisted).toContain('"totalCoins":25');
   });
 
+  it('should claim daily quests, prevent duplicate claims on the same day, and persist to localStorage', () => {
+    const store = useProgressStore.getState();
+    const dateStr = '2026-11-19';
+
+    expect(store.isQuestClaimed('stars_5', dateStr)).toBe(false);
+
+    // Claim quest
+    const claimed = store.claimQuest('stars_5', 15, 10, dateStr);
+    expect(claimed).toBe(true);
+
+    const updated = useProgressStore.getState();
+    expect(updated.totalCoins).toBe(15);
+    expect(updated.totalExp).toBe(10);
+    expect(updated.isQuestClaimed('stars_5', dateStr)).toBe(true);
+
+    // Attempt duplicate claim on same day -> must return false and not add coins
+    const duplicateClaim = updated.claimQuest('stars_5', 15, 10, dateStr);
+    expect(duplicateClaim).toBe(false);
+    expect(useProgressStore.getState().totalCoins).toBe(15);
+
+    // Verify localStorage persistence
+    const rawPersisted = window.localStorage.getItem('math-g1-progress-storage');
+    expect(rawPersisted).not.toBeNull();
+    expect(rawPersisted).toContain('stars_5');
+    expect(rawPersisted).toContain('2026-11-19');
+
+    // On a new day (2026-11-20), quest is available again
+    const nextDay = '2026-11-20';
+    expect(useProgressStore.getState().isQuestClaimed('stars_5', nextDay)).toBe(false);
+    const claimedNextDay = useProgressStore.getState().claimQuest('stars_5', 15, 10, nextDay);
+    expect(claimedNextDay).toBe(true);
+    expect(useProgressStore.getState().totalCoins).toBe(30);
+  });
+
+  it('should open daily mystery chest, prevent duplicate opening on the same day, and persist to localStorage', () => {
+    const store = useProgressStore.getState();
+    const dateStr = '2026-11-19';
+
+    expect(store.isChestOpenedToday(dateStr)).toBe(false);
+
+    // Open chest
+    const opened = store.openMysteryChest(25, dateStr);
+    expect(opened).toBe(true);
+
+    const updated = useProgressStore.getState();
+    expect(updated.totalCoins).toBe(25);
+    expect(updated.isChestOpenedToday(dateStr)).toBe(true);
+    expect(updated.chestRewardCoins).toBe(25);
+
+    // Attempt duplicate opening on same day
+    const duplicateOpen = updated.openMysteryChest(30, dateStr);
+    expect(duplicateOpen).toBe(false);
+    expect(useProgressStore.getState().totalCoins).toBe(25);
+
+    // Verify localStorage persistence
+    const rawPersisted = window.localStorage.getItem('math-g1-progress-storage');
+    expect(rawPersisted).not.toBeNull();
+    expect(rawPersisted).toContain('"lastChestOpenedDate":"2026-11-19"');
+
+    // On a new day (2026-11-20), chest can be opened again
+    const nextDay = '2026-11-20';
+    expect(useProgressStore.getState().isChestOpenedToday(nextDay)).toBe(false);
+    const openedNextDay = useProgressStore.getState().openMysteryChest(20, nextDay);
+    expect(openedNextDay).toBe(true);
+    expect(useProgressStore.getState().totalCoins).toBe(45);
+  });
+
   it('should track real streak days and update based on consecutive study dates', () => {
     const store = useProgressStore.getState();
     expect(store.streakDays).toBe(0);

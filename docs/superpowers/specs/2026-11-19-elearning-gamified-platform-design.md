@@ -166,6 +166,11 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
   - Người dùng mới chưa đăng nhập sẽ học dưới dạng `🎒 Bé Học Thử (Khách)`.
   - Khi bấm vào hồ sơ hoặc các tính năng cá nhân hóa, hệ thống sẽ lịch sự mời phụ huynh đăng nhập để tạo hồ sơ riêng và lưu thành tích cho bé.
 
+- **Lưu trữ dữ liệu tiến độ & Không gian lận (Real Data & LocalStorage Persistence)**:
+  - Mọi chỉ số tiến độ (Sao, Xu, EXP, Ải mở khóa, Kho đồ, Chuỗi học tập `streakDays`) được đồng bộ liên tục vào `localStorage` qua Zustand `persist` middleware.
+  - **Nhiệm vụ ngày & Rương may mắn**: Trạng thái `claimedQuestIds`, `claimedQuestDate`, `lastChestOpenedDate`, `chestRewardCoins` được lưu trữ an toàn trong `useProgressStore`. Khi phụ huynh hoặc bé tải lại trang (reload/F5), các phần thưởng đã nhận không bị reset, ngăn chặn hoàn toàn việc nhận thưởng vô hạn.
+  - **Cổng Phụ Huynh Thực Tế (Parent Portal Profiles)**: Bộ chuyển đổi hồ sơ trong Cổng Phụ Huynh hiển thị chính xác danh sách con thực tế (`familyProfiles = user.children`), tuyệt đối không hiển thị danh sách con giả lập (`DEFAULT_FAMILY_PROFILES`) khi đã có tài khoản thực.
+
 ---
 
 ## 6. Lộ trình Triển khai Chi tiết

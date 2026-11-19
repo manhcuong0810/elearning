@@ -100,6 +100,10 @@ export interface ProgressStoreState {
   equippedItems: string[];
   streakDays: number;
   lastStudyDate: string | null;
+  claimedQuestIds: string[];
+  claimedQuestDate: string | null;
+  lastChestOpenedDate: string | null;
+  chestRewardCoins: number | null;
   isStageUnlocked: (stageId: string) => boolean;
   getStageStars: (stageId: string) => number;
   getTotalStars: () => number;
@@ -113,6 +117,15 @@ export interface ProgressStoreState {
   purchaseItem: (itemId: string, cost: number) => boolean;
   equipItem: (itemId: string) => void;
   unequipItem: (itemId: string) => void;
+  isQuestClaimed: (questId: string, dateStr?: string) => boolean;
+  isChestOpenedToday: (dateStr?: string) => boolean;
+  claimQuest: (
+    questId: string,
+    rewardCoins: number,
+    rewardExp?: number,
+    dateStr?: string
+  ) => boolean;
+  openMysteryChest: (rewardCoins: number, dateStr?: string) => boolean;
   reset: () => void;
 }
 
@@ -125,6 +138,10 @@ const createInitialData = () => ({
   equippedItems: [] as string[],
   streakDays: 0,
   lastStudyDate: null as string | null,
+  claimedQuestIds: [] as string[],
+  claimedQuestDate: null as string | null,
+  lastChestOpenedDate: null as string | null,
+  chestRewardCoins: null as number | null,
 });
 
 export const useProgressStore = create<ProgressStoreState>()(
@@ -254,6 +271,66 @@ export const useProgressStore = create<ProgressStoreState>()(
         }));
       },
 
+      isQuestClaimed: (questId: string, dateStr?: string): boolean => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        const state = get();
+        if (state.claimedQuestDate !== todayStr) {
+          return false;
+        }
+        return state.claimedQuestIds.includes(questId);
+      },
+
+      isChestOpenedToday: (dateStr?: string): boolean => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        const state = get();
+        return state.lastChestOpenedDate === todayStr;
+      },
+
+      claimQuest: (
+        questId: string,
+        rewardCoins: number,
+        rewardExp?: number,
+        dateStr?: string
+      ): boolean => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        const state = get();
+        const isNewDay = state.claimedQuestDate !== todayStr;
+        const currentIds = isNewDay ? [] : state.claimedQuestIds;
+
+        if (currentIds.includes(questId)) {
+          return false;
+        }
+
+        const safeCoins = Math.max(0, rewardCoins);
+        const safeExp = Math.max(0, rewardExp ?? 0);
+
+        set({
+          claimedQuestDate: todayStr,
+          claimedQuestIds: [...currentIds, questId],
+          totalCoins: state.totalCoins + safeCoins,
+          totalExp: state.totalExp + safeExp,
+        });
+
+        return true;
+      },
+
+      openMysteryChest: (rewardCoins: number, dateStr?: string): boolean => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        const state = get();
+        if (state.lastChestOpenedDate === todayStr) {
+          return false;
+        }
+
+        const safeCoins = Math.max(0, rewardCoins);
+        set({
+          lastChestOpenedDate: todayStr,
+          chestRewardCoins: safeCoins,
+          totalCoins: state.totalCoins + safeCoins,
+        });
+
+        return true;
+      },
+
       reset: (): void => {
         safeLocalStorage.removeItem(STORAGE_KEY);
         set(createInitialData());
@@ -271,6 +348,10 @@ export const useProgressStore = create<ProgressStoreState>()(
         equippedItems: state.equippedItems,
         streakDays: state.streakDays,
         lastStudyDate: state.lastStudyDate,
+        claimedQuestIds: state.claimedQuestIds,
+        claimedQuestDate: state.claimedQuestDate,
+        lastChestOpenedDate: state.lastChestOpenedDate,
+        chestRewardCoins: state.chestRewardCoins,
       }),
     }
   )
