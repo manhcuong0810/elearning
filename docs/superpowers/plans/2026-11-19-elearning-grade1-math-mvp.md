@@ -598,9 +598,48 @@ Ghép nối toàn bộ hệ thống vào `src/app/page.tsx` với navigation bar
 Run: `npx vitest run tests/integration/main-flow.test.tsx`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/parent/ src/components/navigation/ src/app/ tests/integration/main-flow.test.tsx
 git commit -m "feat: integrate main application navigation, home page and parental gate"
 ```
+
+---
+
+### Task 10: Nâng Cấp Giao Diện 3D Cartoon Bouncy & Bố Cục 3 Cột (UI/UX Refinement)
+
+**Files:**
+- Create: `src/components/dashboard/CompanionSidebar.tsx`
+- Create: `src/components/dashboard/ActivitiesSidebar.tsx`
+- Modify: `src/components/navigation/MainHeader.tsx` (React createPortal & viewport-safe modal)
+- Modify: `src/components/parent/ParentalGateModal.tsx` (viewport-safe modal)
+- Modify: `src/app/page.tsx` (Tích hợp bố cục 3 cột cho bản đồ)
+- Test: `tests/unit/companion-sidebar.test.tsx`
+- Test: `tests/unit/activities-sidebar.test.tsx`
+
+**Interfaces:**
+- Consumes: `useProgressStore` (totalExp, totalStars, unlockedStages, addRewards), `defaultAudioManager`, `ChildProfile`.
+- Produces: 3-column layout trên màn hình máy tính/tablet, bạn đồng hành Cú Mèo tương tác, nhiệm vụ ngày nhận xu, rương may mắn và bảng vinh danh bạn bè.
+
+- [x] **Step 1: Write the failing tests**
+  - Viết `tests/unit/companion-sidebar.test.tsx` kiểm thử hiển thị linh vật Cú Mèo, bong bóng hội thoại, click đổi câu thoại + phát audio, thẻ cấp độ EXP.
+  - Viết `tests/unit/activities-sidebar.test.tsx` kiểm thử hiển thị thẻ nhiệm vụ ngày, nhận thưởng xu, mở rương may mắn, bảng xếp hạng bạn bè.
+
+- [x] **Step 2: Run tests to verify they fail**
+  - Chạy `npx vitest run tests/unit/companion-sidebar.test.tsx tests/unit/activities-sidebar.test.tsx` -> Xác nhận FAIL (component chưa tồn tại).
+
+- [x] **Step 3: Implement CompanionSidebar and ActivitiesSidebar**
+  - Xây dựng `CompanionSidebar.tsx` với linh vật nhún nhảy, bong bóng thoại, thanh tiến độ kinh nghiệm EXP theo cấp độ.
+  - Xây dựng `ActivitiesSidebar.tsx` với danh sách nhiệm vụ có thanh tiến trình, nút nhận thưởng xu nảy 3D, rương kho báu mở nhận xu bất ngờ và bảng xếp hạng tuần.
+
+- [x] **Step 4: Integrate 3-Column Layout into HomePage & Fix Viewport Clipping**
+  - Ghép 2 thanh bên vào `src/app/page.tsx` xung quanh bản đồ học tập trên desktop/tablet.
+  - Khắc phục lỗi Containing Block do `backdrop-blur-md` trên Header bằng cách đưa `profile-switcher-modal` sang `createPortal(..., document.body)`.
+  - Tích hợp `max-h-[85vh]` và `overflow-y-auto` đảm bảo đỉnh modal không bao giờ bị cắt cụt.
+
+- [x] **Step 5: Run all tests to verify they pass**
+  - Chạy `npm test` -> Xác nhận toàn bộ 13 test files (75/75 tests) PASS.
+
+- [x] **Step 6: Commit**
+  - Commit mã nguồn: `180d013` (feat: 3-column layout) và `6082d52` (fix: portal modals).

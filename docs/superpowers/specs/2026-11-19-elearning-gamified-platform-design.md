@@ -127,6 +127,24 @@ Mục tiêu của dự án là xây dựng một nền tảng Web E-Learning sin
 }
 ```
 
+### 5.3. Thiết Kế Giao Diện & Bố Cục 3 Cột Sống Động (3D Cartoon Bouncy UI)
+- **Phong cách thị giác (Visual Style)**: 3D Cartoon Bouncy lấy cảm hứng từ Duolingo và Khan Academy Kids. Các nút bấm và thẻ bài dày dặn, có đổ bóng 3D (`btn-3d`), hiệu ứng nhún nảy khi click/hover, góc bo tròn mềm mại (`rounded-3xl`), tông màu kẹo ngọt tươi sáng (`kid-yellow`, `kid-green`, `kid-blue`).
+- **Bố cục 3 cột (Three-Column Living World Layout)** trên Desktop/Tablet:
+  - **Cột Trái (Góc Bạn Đồng Hành - CompanionSidebar)**:
+    - Linh vật Cú Mèo 3D hoạt họa, bé click vào Cú sẽ nhảy múa, phát âm thanh vui nhộn và hiển thị lời chào động viên.
+    - Thẻ cấp độ (Level 1-4) & thanh tiến độ EXP của bé.
+    - Huy hiệu chuỗi ngày học tập chăm chỉ (Streak).
+  - **Cột Giữa (Bản Đồ Thám Hiểm - AdventureMap)**:
+    - Bản đồ uốn lượn qua các ải toán với đường ray nối sinh động.
+  - **Cột Phải (Nhiệm Vụ & Hoạt Động - ActivitiesSidebar)**:
+    - Nhiệm vụ hằng ngày (Daily Quests) kèm nút bấm nhận thưởng xu nảy 3D.
+    - Rương báu may mắn hàng ngày (Daily Mystery Chest) lắc lư phát sáng, mở nhận xu bất ngờ.
+    - Bảng vinh danh tuần (Mini Leaderboard) tạo động lực thi đua cùng bạn bè.
+- **Kiến trúc Modal An toàn Viewport (Viewport-Safe Modal Architecture)**:
+  - Vì thanh điều hướng `<header>` sử dụng hiệu ứng làm mờ nền `backdrop-blur-md` (`backdrop-filter`), CSS sẽ tạo Containing Block làm sai lệch tọa độ của các phần tử `position: fixed`.
+  - Toàn bộ modal (Chọn hồ sơ bé `profile-switcher-modal`, Cổng phụ huynh `parental-gate-modal`) bắt buộc sử dụng **React `createPortal`** gắn trực tiếp vào `document.body`.
+  - Cấu hình an toàn: `z-[9999]`, padding trên/dưới `py-8 sm:py-12`, giới hạn `max-h-[85vh]` kèm `overflow-y-auto` để đảm bảo không bao giờ bị cắt cụt phần đầu (Top) hay đáy trên mọi kích cỡ màn hình.
+
 ---
 
 ## 6. Lộ trình Triển khai Chi tiết
