@@ -107,6 +107,43 @@ describe('Full Learning Platform Integration', () => {
     expect(screen.getAllByText(/Quái Vật Kẹo Ngọt/i).length).toBeGreaterThan(0);
   });
 
+  it('claims treasure rewards and returns to Adventure Map when "Nhận Kho Báu Ngay!" is clicked on Boss victory screen', () => {
+    // Unlock boss_c1 in store
+    useProgressStore.getState().completeStage(
+      'stage_2',
+      { stars: 3, earnedCoins: 15, earnedExp: 30 },
+      'boss_c1'
+    );
+
+    render(<HomePage />);
+
+    // Click Boss node on map
+    const bossNode = screen.getByTestId('stage-node-boss_c1');
+    fireEvent.click(bossNode);
+
+    expect(screen.getByTestId('boss-battle-screen')).toBeDefined();
+
+    // Answer questions to defeat boss (correct answers: 5, 5, 4)
+    // Q1: 3 + 2 = ? -> 5
+    fireEvent.click(screen.getByText('5'));
+    // Q2: 4 + 1 = ? -> 5
+    fireEvent.click(screen.getByText('5'));
+    // Q3: 2 + 2 = ? -> 4
+    fireEvent.click(screen.getByText('4'));
+
+    // Boss HP reaches 0 -> Victory screen appears!
+    expect(screen.getByTestId('boss-victory-screen')).toBeDefined();
+    expect(screen.getByText(/Bé đã giải đúng các phép toán và kết bạn thành công với/i)).toBeDefined();
+
+    // Click "Nhận Kho Báu Ngay! 🎁"
+    const claimBtn = screen.getByTestId('claim-boss-reward-btn');
+    fireEvent.click(claimBtn);
+
+    // Must return back to the Adventure Map!
+    expect(screen.getByTestId('adventure-map')).toBeDefined();
+    expect(screen.queryByTestId('boss-victory-screen')).toBeNull();
+  });
+
   it('switches cleanly between Adventure Map, Arena 1vs1, and Avatar Room tabs', () => {
     render(<HomePage />);
 

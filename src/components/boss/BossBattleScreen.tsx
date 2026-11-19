@@ -171,8 +171,6 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
 
       if (nextHp <= 0) {
         setBattlePhase('victory');
-        setVictoryNotified(true);
-        onVictory(calculateRewards(nextCorrect));
         return;
       }
 
@@ -215,6 +213,7 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
     if (!victoryNotified) {
       setVictoryNotified(true);
       onVictory(calculateRewards(correctCount));
+      onExit?.();
     }
   };
 

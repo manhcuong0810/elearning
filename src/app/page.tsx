@@ -219,6 +219,8 @@ export default function HomePage() {
       earnedCoins: rewards?.coins ?? 45,
       earnedExp: rewards?.exp ?? 90,
     });
+    defaultAudioManager.playSfx('cheer');
+    setSelectedStage(null);
   };
 
   const renderNormalStageLearningSession = (stage: Stage) => {

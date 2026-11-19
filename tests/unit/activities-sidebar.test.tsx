@@ -60,11 +60,11 @@ describe('ActivitiesSidebar', () => {
     expect(screen.queryByTestId('daily-quests-card')).toBeNull();
     expect(screen.queryByTestId('mystery-chest-btn')).toBeNull();
 
-    // Leaderboard shows standard weekly learners without (Bạn)
+    // Leaderboard shows guest prompt with zero mock learners
     expect(screen.getByTestId('mini-leaderboard')).toBeDefined();
-    expect(screen.queryByTestId('guest-leaderboard-lock')).toBeNull();
-    expect(screen.getByText(/Bé Bo/i)).toBeDefined();
-    expect(screen.getByText(/Bé Tuấn Minh/i)).toBeDefined();
+    expect(screen.getByText(/Bảng vinh danh chỉ ghi nhận thành tích từ học sinh thật/i)).toBeDefined();
+    expect(screen.queryByText(/Bé Bo/i)).toBeNull();
+    expect(screen.queryByText(/Bé Tuấn Minh/i)).toBeNull();
     expect(screen.queryByText(/\(Bạn\)/i)).toBeNull();
 
     // Clicking CTA button triggers auth modal
@@ -109,7 +109,7 @@ describe('ActivitiesSidebar', () => {
     expect(screen.getByText(/Đã mở rương báu/i)).toBeDefined();
   });
 
-  it('renders leaderboard with logged in child tagged with (Bạn) at correct ranking', () => {
+  it('renders leaderboard with logged in child tagged with (Bạn) and zero mock learners', () => {
     render(
       <ActivitiesSidebar
         isAuthenticated={true}
@@ -129,28 +129,37 @@ describe('ActivitiesSidebar', () => {
     expect(screen.getByText(/Bé Khôi Nguyên \(Bạn\)/i)).toBeDefined();
     expect(screen.getByText('50')).toBeDefined();
 
-    // Other weekly learners are present
-    expect(screen.getByText(/Bé Bo/i)).toBeDefined();
-    expect(screen.queryByText(/Bé Bo \(Bạn\)/i)).toBeNull();
+    // Zero mock learners
+    expect(screen.queryByText(/Bé Bo/i)).toBeNull();
+    expect(screen.queryByText(/Bé Tuấn Minh/i)).toBeNull();
+    expect(screen.queryByText(/Bé Bảo An/i)).toBeNull();
+    expect(screen.queryByText(/Bé Mai Chi/i)).toBeNull();
   });
 
-  it('tags existing learner with (Bạn) if logged in child name matches an existing weekly learner', () => {
+  it('renders family profiles on leaderboard and marks active child with (Bạn)', () => {
+    const familyProfiles = [
+      { id: 'c1', name: 'Bé Anh', avatarEmoji: '👦' },
+      { id: 'c2', name: 'Bé Em', avatarEmoji: '👧' },
+    ];
+
     render(
       <ActivitiesSidebar
         isAuthenticated={true}
-        childName="Bé Bo"
-        childEmoji="🐯"
-        totalStars={48}
+        childName="Bé Anh"
+        childEmoji="👦"
+        totalStars={12}
         todayStars={3}
         stagesCompletedToday={1}
         arenaMatchesToday={0}
+        familyProfiles={familyProfiles}
         onClaimReward={mockOnClaimReward}
       />
     );
 
-    // Bé Bo should have (Bạn)
-    expect(screen.getByText(/Bé Bo \(Bạn\)/i)).toBeDefined();
-    expect(screen.getByText('48')).toBeDefined();
+    // Active child should have (Bạn)
+    expect(screen.getByText(/Bé Anh \(Bạn\)/i)).toBeDefined();
+    expect(screen.getByText(/Bé Em/i)).toBeDefined();
+    expect(screen.queryByText(/Bé Em \(Bạn\)/i)).toBeNull();
   });
 
   it('preserves claimed quests and opened chest status on remount (preventing duplicate claims on page reload)', () => {
