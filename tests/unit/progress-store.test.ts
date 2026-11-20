@@ -254,4 +254,54 @@ describe('Progress Store (useProgressStore)', () => {
     useProgressStore.getState().loadChildProgress('child_minh');
     expect(useProgressStore.getState().studyMinutesToday).toBe(25);
   });
+
+  it('should reset daily activity counters on a new day, requiring doing exercises again before claiming', () => {
+    const store = useProgressStore.getState();
+    const day1 = '2026-11-19';
+    const day2 = '2026-11-20';
+
+    // Day 1: Complete 2 stages, earning 3 stars each = 6 stars, 2 stages
+    store.completeStage('stage_1', { stars: 3, earnedCoins: 15, earnedExp: 30 }, undefined, day1);
+    store.completeStage('stage_2', { stars: 3, earnedCoins: 15, earnedExp: 30 }, undefined, day1);
+    store.addStudyMinutes(20, day1);
+    store.recordArenaMatch(day1);
+
+    expect(useProgressStore.getState().dailyStagesCompleted).toBe(2);
+    expect(useProgressStore.getState().dailyStars).toBe(6);
+    expect(useProgressStore.getState().dailyArenaMatches).toBe(1);
+    expect(useProgressStore.getState().studyMinutesToday).toBe(20);
+
+    // Day 1: User claims daily quests
+    expect(useProgressStore.getState().claimQuest('stage_1', 20, 10, day1)).toBe(true);
+    expect(useProgressStore.getState().claimQuest('stars_5', 15, 10, day1)).toBe(true);
+    expect(useProgressStore.getState().isQuestClaimed('stage_1', day1)).toBe(true);
+    expect(useProgressStore.getState().isQuestClaimed('stars_5', day1)).toBe(true);
+
+    // Day 2 (TODAY): App opens on a new day
+    useProgressStore.getState().checkDailyReset(day2);
+
+    const refreshed = useProgressStore.getState();
+    // All daily counters must be reset to 0
+    expect(refreshed.dailyStagesCompleted).toBe(0);
+    expect(refreshed.dailyStars).toBe(0);
+    expect(refreshed.dailyArenaMatches).toBe(0);
+    expect(refreshed.studyMinutesToday).toBe(0);
+
+    // Daily quests are not yet claimed today, but also NOT completed (counters are 0)
+    expect(refreshed.isQuestClaimed('stage_1', day2)).toBe(false);
+    expect(refreshed.isQuestClaimed('stars_5', day2)).toBe(false);
+    // Cumulative stars and unlocked stages are still preserved
+    expect(refreshed.getTotalStars()).toBe(6);
+    expect(refreshed.isStageUnlocked('stage_1')).toBe(true);
+    expect(refreshed.isStageUnlocked('stage_2')).toBe(true);
+
+    // Day 2: User completes 1 stage today
+    useProgressStore.getState().completeStage('stage_1', { stars: 3, earnedCoins: 15, earnedExp: 30 }, undefined, day2);
+    expect(useProgressStore.getState().dailyStagesCompleted).toBe(1);
+    expect(useProgressStore.getState().dailyStars).toBe(3);
+
+    // Now quest 'stage_1' is completed for today and can be claimed
+    expect(useProgressStore.getState().claimQuest('stage_1', 20, 10, day2)).toBe(true);
+    expect(useProgressStore.getState().isQuestClaimed('stage_1', day2)).toBe(true);
+  });
 });

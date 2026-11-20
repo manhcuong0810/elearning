@@ -109,6 +109,10 @@ export interface ProgressStoreState {
   streakDays: number;
   lastStudyDate: string | null;
   studyMinutesToday: number;
+  dailyActivityDate: string | null;
+  dailyStars: number;
+  dailyStagesCompleted: number;
+  dailyArenaMatches: number;
   claimedQuestIds: string[];
   claimedQuestDate: string | null;
   lastChestOpenedDate: string | null;
@@ -119,10 +123,13 @@ export interface ProgressStoreState {
   completeStage: (
     stageId: string,
     result: StageCompletionReward,
-    nextStageId?: string
+    nextStageId?: string,
+    dateStr?: string
   ) => void;
   recordStudyDay: (dateStr?: string) => void;
-  addStudyMinutes: (minutes: number) => void;
+  addStudyMinutes: (minutes: number, dateStr?: string) => void;
+  checkDailyReset: (dateStr?: string) => void;
+  recordArenaMatch: (dateStr?: string) => void;
   addRewards: (coins: number, exp: number) => void;
   purchaseItem: (itemId: string, cost: number) => boolean;
   equipItem: (itemId: string) => void;
@@ -151,6 +158,10 @@ const createInitialData = (childId = 'guest') => ({
   streakDays: 0,
   lastStudyDate: null as string | null,
   studyMinutesToday: 0,
+  dailyActivityDate: null as string | null,
+  dailyStars: 0,
+  dailyStagesCompleted: 0,
+  dailyArenaMatches: 0,
   claimedQuestIds: [] as string[],
   claimedQuestDate: null as string | null,
   lastChestOpenedDate: null as string | null,
@@ -172,6 +183,10 @@ function persistCurrentChildSnapshot(getFn: () => ProgressStoreState): void {
       streakDays: getFn().streakDays,
       lastStudyDate: getFn().lastStudyDate,
       studyMinutesToday: getFn().studyMinutesToday ?? 0,
+      dailyActivityDate: getFn().dailyActivityDate,
+      dailyStars: getFn().dailyStars ?? 0,
+      dailyStagesCompleted: getFn().dailyStagesCompleted ?? 0,
+      dailyArenaMatches: getFn().dailyArenaMatches ?? 0,
       claimedQuestIds: getFn().claimedQuestIds,
       claimedQuestDate: getFn().claimedQuestDate,
       lastChestOpenedDate: getFn().lastChestOpenedDate,
@@ -199,11 +214,40 @@ export const useProgressStore = create<ProgressStoreState>()(
         return Object.values(get().stageStars).reduce((sum, s) => sum + s, 0);
       },
 
+      checkDailyReset: (dateStr?: string): void => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        const state = get();
+        if (state.dailyActivityDate !== todayStr) {
+          set({
+            dailyActivityDate: todayStr,
+            dailyStars: 0,
+            dailyStagesCompleted: 0,
+            dailyArenaMatches: 0,
+            studyMinutesToday: 0,
+            claimedQuestIds: state.claimedQuestDate === todayStr ? state.claimedQuestIds : [],
+          });
+          persistCurrentChildSnapshot(get);
+        }
+      },
+
+      recordArenaMatch: (dateStr?: string): void => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        get().checkDailyReset(todayStr);
+        set((state) => ({
+          dailyArenaMatches: (state.dailyArenaMatches || 0) + 1,
+        }));
+        persistCurrentChildSnapshot(get);
+      },
+
       completeStage: (
         stageId: string,
         result: StageCompletionReward,
-        nextStageId?: string
+        nextStageId?: string,
+        dateStr?: string
       ): void => {
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        get().checkDailyReset(todayStr);
+
         const clampedStars = Math.max(0, Math.min(3, Math.round(result.stars)));
         const earnedCoins = Math.max(0, result.earnedCoins);
         const earnedExp = Math.max(0, result.earnedExp);
@@ -227,11 +271,13 @@ export const useProgressStore = create<ProgressStoreState>()(
             },
             totalCoins: state.totalCoins + earnedCoins,
             totalExp: state.totalExp + earnedExp,
+            dailyStagesCompleted: (state.dailyStagesCompleted || 0) + 1,
+            dailyStars: (state.dailyStars || 0) + clampedStars,
           };
         });
 
         // Record study day for real consecutive streak
-        get().recordStudyDay();
+        get().recordStudyDay(todayStr);
 
         // Immediately persist child snapshot
         persistCurrentChildSnapshot(get);
@@ -270,8 +316,10 @@ export const useProgressStore = create<ProgressStoreState>()(
         });
       },
 
-      addStudyMinutes: (minutes: number): void => {
+      addStudyMinutes: (minutes: number, dateStr?: string): void => {
         if (minutes <= 0) return;
+        const todayStr = dateStr || new Date().toISOString().split('T')[0];
+        get().checkDailyReset(todayStr);
         set((state) => ({
           studyMinutesToday: (state.studyMinutesToday || 0) + minutes,
         }));
@@ -408,6 +456,7 @@ export const useProgressStore = create<ProgressStoreState>()(
               ...targetState,
               currentChildId: targetChildId,
             });
+            get().checkDailyReset();
             return;
           } catch {
             // Ignore parse error and fall back to initial
@@ -416,6 +465,7 @@ export const useProgressStore = create<ProgressStoreState>()(
 
         // Target child has no saved data yet -> clean initial data
         set(createInitialData(targetChildId));
+        get().checkDailyReset();
       },
 
       reset: (): void => {
@@ -442,6 +492,10 @@ export const useProgressStore = create<ProgressStoreState>()(
         streakDays: state.streakDays,
         lastStudyDate: state.lastStudyDate,
         studyMinutesToday: state.studyMinutesToday,
+        dailyActivityDate: state.dailyActivityDate,
+        dailyStars: state.dailyStars,
+        dailyStagesCompleted: state.dailyStagesCompleted,
+        dailyArenaMatches: state.dailyArenaMatches,
         claimedQuestIds: state.claimedQuestIds,
         claimedQuestDate: state.claimedQuestDate,
         lastChestOpenedDate: state.lastChestOpenedDate,

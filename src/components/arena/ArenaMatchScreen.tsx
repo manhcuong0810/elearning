@@ -213,6 +213,7 @@ export const ArenaMatchScreen: React.FC<ArenaMatchScreenProps> = ({
 
     // Immediately persist rewards to local progress store so offline/disconnects never lose coins/exp
     useProgressStore.getState().addRewards(coins, exp);
+    useProgressStore.getState().recordArenaMatch();
 
     setWinner(raceWinner);
     setEarnedRewards({ coins, exp });

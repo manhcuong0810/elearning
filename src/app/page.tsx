@@ -96,6 +96,9 @@ export default function HomePage() {
   const totalCoins = useProgressStore((state) => state.totalCoins);
   const totalExp = useProgressStore((state) => state.totalExp);
   const streakDays = useProgressStore((state) => state.streakDays);
+  const dailyStars = useProgressStore((state) => state.dailyStars);
+  const dailyStagesCompleted = useProgressStore((state) => state.dailyStagesCompleted);
+  const dailyArenaMatches = useProgressStore((state) => state.dailyArenaMatches);
   const completeStage = useProgressStore((state) => state.completeStage);
   const addRewards = useProgressStore((state) => state.addRewards);
 
@@ -120,6 +123,7 @@ export default function HomePage() {
     } else {
       useProgressStore.getState().loadChildProgress('guest');
     }
+    useProgressStore.getState().checkDailyReset();
   }, [isAuthenticated, activeProfile?.id]);
 
   const sessionStartTimeRef = useRef<number | null>(null);
@@ -645,11 +649,11 @@ export default function HomePage() {
                     childName={isAuthenticated ? activeProfile.name : undefined}
                     childEmoji={isAuthenticated ? activeProfile.avatarEmoji : undefined}
                     gradeLabel={isAuthenticated ? (activeProfile.gradeLabel || 'Lớp 1') : 'Lớp 1'}
-                    todayStars={isAuthenticated ? Math.min(5, effectiveTotalStars) : 0}
+                    todayStars={isAuthenticated ? dailyStars : 0}
                     totalStars={effectiveTotalStars}
                     familyProfiles={isAuthenticated ? familyProfiles : []}
-                    stagesCompletedToday={isAuthenticated && unlockedStages.length > 1 ? 1 : 0}
-                    arenaMatchesToday={0}
+                    stagesCompletedToday={isAuthenticated ? dailyStagesCompleted : 0}
+                    arenaMatchesToday={isAuthenticated ? dailyArenaMatches : 0}
                   />
                 </div>
               </div>
