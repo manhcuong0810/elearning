@@ -301,10 +301,6 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
     }
   };
 
-  const handleReadAloud = (text: string) => {
-    audioManager.playVoice('', { text });
-  };
-
   const handleResetChat = () => {
     audioManager.playSfx('click');
     setMessages([
@@ -434,19 +430,6 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
                     <div className="space-y-0.5">
                       {renderFormattedContent(msg.content)}
                     </div>
-                    {isBot && msg.id !== 'greeting' && (
-                      <div className="mt-2 flex items-center justify-end">
-                        <button
-                          type="button"
-                          onClick={() => handleReadAloud(msg.content)}
-                          title="Nghe đọc lời giải"
-                          aria-label="Nghe đọc lời giải"
-                          className="min-w-[32px] min-h-[32px] px-2 py-0.5 rounded-lg bg-amber-200/80 hover:bg-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1 transition-colors"
-                        >
-                          📢 Nghe đọc
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               );

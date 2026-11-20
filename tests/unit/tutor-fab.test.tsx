@@ -142,4 +142,29 @@ describe('Grade3TutorFab', () => {
       })
     );
   });
+
+  it('renders tutor responses strictly as formatted text message without voice/read-aloud button', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        reply: 'Lời giải bài toán: Ta lấy 24 : 4 = 6 (cm). Đáp số: 6 cm.',
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    render(<Grade3TutorFab />);
+    fireEvent.click(screen.getByTestId('grade3-tutor-fab-btn'));
+
+    const input = screen.getByPlaceholderText(/Nhập đề bài toán lớp 3/i);
+    fireEvent.change(input, { target: { value: 'Một hình vuông có chu vi 24cm, tính cạnh hình vuông' } });
+    fireEvent.click(screen.getByTestId('tutor-send-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Lời giải bài toán/i)).toBeDefined();
+    });
+
+    // Verify there is no "Nghe đọc" button or audio speech trigger
+    expect(screen.queryByText(/Nghe đọc/i)).toBeNull();
+    expect(screen.queryByTitle(/Nghe đọc lời giải/i)).toBeNull();
+  });
 });
