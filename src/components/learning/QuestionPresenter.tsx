@@ -55,15 +55,15 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
     if (isCorrect) {
       setFeedbackState('correct');
       audioManager.playSfx('correct');
-      if (question.feedbackAudio?.correct) {
-        audioManager.playVoice(question.feedbackAudio.correct);
-      }
+      audioManager.playVoice(question.feedbackAudio?.correct || '', {
+        text: 'Bé làm đúng rồi! Giỏi quá!',
+      });
     } else {
       setFeedbackState('wrong');
       audioManager.playSfx('wrong');
-      if (question.feedbackAudio?.wrong) {
-        audioManager.playVoice(question.feedbackAudio.wrong);
-      }
+      audioManager.playVoice(question.feedbackAudio?.wrong || '', {
+        text: 'Bé thử lại nhé, cố lên nào!',
+      });
       // Allow retry after a short cooldown if wrong
       lockTimerRef.current = setTimeout(() => {
         submissionLockRef.current = false;
@@ -152,6 +152,7 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
       <div className="flex items-center gap-4 bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 p-4 sm:p-5 rounded-3xl border-2 border-amber-300 shadow-sm">
         <AudioPromptButton
           promptAudioUrl={question.promptAudioUrl}
+          promptText={question.promptText}
           audioManager={audioManager}
         />
         <h2 className="text-xl sm:text-2xl font-black text-slate-800 leading-snug">

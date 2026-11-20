@@ -8,7 +8,7 @@ export type SfxType = 'correct' | 'wrong' | 'cheer' | 'pop' | 'click';
 export interface AudioDriver {
   play?: (sound: string) => void;
   playSfx?: (sfx: SfxType) => void;
-  playVoice?: (url: string) => void;
+  playVoice?: (url: string, options?: { text?: string; immediate?: boolean }) => void;
   stopVoice?: () => void;
   stopAll?: () => void;
   stop?: () => void;
@@ -36,6 +36,7 @@ export class HtmlAudioDriver implements AudioDriver {
   private activeAudios: Set<HTMLAudioElement> = new Set();
   private currentVoiceAudio: HTMLAudioElement | null = null;
   private sfxMap: Record<SfxType, string>;
+  private audioCtx: AudioContext | null = null;
 
   constructor(sfxMap?: Partial<Record<SfxType, string>>) {
     this.sfxMap = {
@@ -44,10 +45,135 @@ export class HtmlAudioDriver implements AudioDriver {
     };
   }
 
+  private getAudioContext(): AudioContext | null {
+    if (typeof window === 'undefined') return null;
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!this.audioCtx) {
+      try {
+        this.audioCtx = new AudioCtx();
+      } catch {
+        return null;
+      }
+    }
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume().catch(() => {});
+    }
+    return this.audioCtx;
+  }
+
+  private playSynthesizedSfx(sfx: SfxType): boolean {
+    const ctx = this.getAudioContext();
+    if (!ctx) return false;
+
+    const now = ctx.currentTime;
+
+    if (sfx === 'click') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.05);
+      return true;
+    }
+
+    if (sfx === 'pop') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.06);
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.06);
+      return true;
+    }
+
+    if (sfx === 'correct') {
+      // Cheerful bright 3-tone arpeggio: C5 (523Hz) -> E5 (659Hz) -> G5 (784Hz)
+      const notes = [523.25, 659.25, 783.99];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        const start = now + idx * 0.09;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.35, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.22);
+      });
+      return true;
+    }
+
+    if (sfx === 'wrong') {
+      // Gentle friendly 'uh-oh'
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.25);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+      return true;
+    }
+
+    if (sfx === 'cheer') {
+      // Triumphant victory fanfare: C5 -> E5 -> G5 -> C6
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        const start = now + idx * 0.1;
+        const dur = idx === 3 ? 0.35 : 0.15;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.4, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + dur);
+      });
+      return true;
+    }
+
+    return false;
+  }
+
   playSfx(sfx: SfxType): void {
-    if (typeof window === 'undefined' || typeof Audio === 'undefined') return;
+    if (typeof window === 'undefined') return;
+
+    let synthesized = false;
+    try {
+      synthesized = this.playSynthesizedSfx(sfx);
+    } catch {
+      synthesized = false;
+    }
+
+    if (synthesized) return;
+
     const url = this.sfxMap[sfx];
-    if (!url) return;
+    if (!url || typeof Audio === 'undefined') return;
 
     try {
       const audio = new Audio(url);
@@ -57,46 +183,67 @@ export class HtmlAudioDriver implements AudioDriver {
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          // Autoplay or playback error handled silently
           this.activeAudios.delete(audio);
         });
       }
     } catch {
-      // Audio instantiation or play error handled safely
+      // Audio play error handled safely
     }
   }
 
-  playVoice(url: string): void {
-    if (typeof window === 'undefined' || typeof Audio === 'undefined') return;
+  playVoice(url: string, options?: { text?: string; immediate?: boolean }): void {
+    if (typeof window === 'undefined') return;
     this.stopVoice();
 
-    try {
-      const audio = new Audio(url);
-      this.currentVoiceAudio = audio;
-      audio.onended = () => {
-        if (this.currentVoiceAudio === audio) {
-          this.currentVoiceAudio = null;
-        }
-      };
-      audio.onerror = () => {
-        if (this.currentVoiceAudio === audio) {
-          this.currentVoiceAudio = null;
-        }
-      };
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
+    // 1. If text is provided, use browser Web Speech API for natural Vietnamese reading
+    if (options?.text && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(options.text);
+        utterance.lang = 'vi-VN';
+        utterance.rate = 0.95;
+        utterance.pitch = 1.05;
+        window.speechSynthesis.speak(utterance);
+        return;
+      } catch {}
+    }
+
+    // 2. Play audio element if url is provided
+    if (url && typeof Audio !== 'undefined') {
+      try {
+        const audio = new Audio(url);
+        this.currentVoiceAudio = audio;
+        audio.onended = () => {
           if (this.currentVoiceAudio === audio) {
             this.currentVoiceAudio = null;
           }
-        });
+        };
+        audio.onerror = () => {
+          if (this.currentVoiceAudio === audio) {
+            this.currentVoiceAudio = null;
+          }
+        };
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            if (this.currentVoiceAudio === audio) {
+              this.currentVoiceAudio = null;
+            }
+          });
+        }
+      } catch {
+        this.currentVoiceAudio = null;
       }
-    } catch {
-      this.currentVoiceAudio = null;
     }
   }
 
   stopVoice(): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+
     if (this.currentVoiceAudio) {
       try {
         this.currentVoiceAudio.pause();
@@ -200,7 +347,7 @@ export class AudioManager {
    * Play voice prompt audio (promptAudioUrl).
    * Automatically stops previously playing voice audio and debounces rapid repeated clicks.
    */
-  playVoice(url: string, options?: { immediate?: boolean }): void {
+  playVoice(url: string, options?: { text?: string; immediate?: boolean }): void {
     if (this.muted) return;
 
     const now = Date.now();
@@ -208,7 +355,7 @@ export class AudioManager {
 
     if (isImmediate) {
       this.stopVoice();
-      this.executePlayVoice(url);
+      this.executePlayVoice(url, options);
       this.lastPlayVoiceTime = now;
       return;
     }
@@ -219,7 +366,7 @@ export class AudioManager {
     if (timeSinceLastPlay > this.debounceMs && !this.debounceTimer) {
       // First click: cancel any previous voice and play immediately (leading edge)
       this.stopVoice();
-      this.executePlayVoice(url);
+      this.executePlayVoice(url, options);
       this.lastPlayVoiceTime = now;
     } else {
       // Repeated rapid click (spamming button):
@@ -235,18 +382,22 @@ export class AudioManager {
       // Schedule playback once the spam clicking settles
       this.debounceTimer = setTimeout(() => {
         this.debounceTimer = null;
-        this.executePlayVoice(url);
+        this.executePlayVoice(url, options);
         this.lastPlayVoiceTime = Date.now();
       }, this.debounceMs);
     }
   }
 
-  private executePlayVoice(url: string): void {
+  private executePlayVoice(url: string, options?: { text?: string; immediate?: boolean }): void {
     if (this.muted) return;
     this.currentVoiceUrl = url;
 
     if (typeof this.driver.playVoice === 'function') {
-      this.driver.playVoice(url);
+      if (options) {
+        this.driver.playVoice(url, options);
+      } else {
+        this.driver.playVoice(url);
+      }
     } else if (typeof this.driver.play === 'function') {
       this.driver.play(url);
     }

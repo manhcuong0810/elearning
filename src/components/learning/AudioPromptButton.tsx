@@ -5,6 +5,7 @@ import { AudioManager, defaultAudioManager } from '@/lib/audio-manager';
 
 export interface AudioPromptButtonProps {
   promptAudioUrl: string;
+  promptText?: string;
   audioManager?: AudioManager;
   label?: string;
   className?: string;
@@ -12,6 +13,7 @@ export interface AudioPromptButtonProps {
 
 export const AudioPromptButton: React.FC<AudioPromptButtonProps> = ({
   promptAudioUrl,
+  promptText,
   audioManager = defaultAudioManager,
   label = 'Nghe câu hỏi',
   className = '',
@@ -19,12 +21,15 @@ export const AudioPromptButton: React.FC<AudioPromptButtonProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handleClick = () => {
-    if (!promptAudioUrl) return;
     setIsPlaying(true);
-    audioManager.playVoice(promptAudioUrl);
+    if (promptText) {
+      audioManager.playVoice(promptAudioUrl, { text: promptText });
+    } else {
+      audioManager.playVoice(promptAudioUrl);
+    }
     setTimeout(() => {
       setIsPlaying(false);
-    }, 600);
+    }, 1000);
   };
 
   return (
