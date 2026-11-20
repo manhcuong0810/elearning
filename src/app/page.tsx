@@ -21,6 +21,7 @@ import { ActivitiesSidebar } from '@/components/dashboard/ActivitiesSidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { GUEST_CHILD_PROFILE } from '@/types/auth';
 import { CreateChildModal } from '@/components/profile/CreateChildModal';
+import { Grade3TutorFab } from '@/components/tutor/Grade3TutorFab';
 
 export default function HomePage() {
   const curriculum = useMemo(() => loadGrade1MathData(), []);
@@ -713,6 +714,9 @@ export default function HomePage() {
         }}
         isFirstChild={true}
       />
+
+      {/* Grade 3 Math AI Tutor Floating Widget (DeepSeek) */}
+      <Grade3TutorFab audioManager={defaultAudioManager} />
     </div>
   );
 }

@@ -20,6 +20,82 @@ const DEFAULT_SUGGESTIONS = [
 const INITIAL_GREETING =
   'Chào bé! Cú Mèo là Gia Sư Toán Lớp 3 đây 🦉✨. Em đang gặp bài toán nào khó (rút về đơn vị, tìm x, chu vi, diện tích...) cần Cú Mèo giảng giải không nào?';
 
+const formatInline = (text: string): React.ReactNode => {
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={i} className="font-extrabold text-amber-950">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code
+          key={i}
+          className="px-1.5 py-0.5 rounded bg-amber-200/60 font-mono text-xs text-amber-950"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+};
+
+const renderFormattedContent = (content: string) => {
+  const lines = content.split('\n');
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith('### ')) {
+      return (
+        <h4 key={idx} className="font-black text-amber-950 mt-2 mb-1 text-sm sm:text-base">
+          {trimmed.replace(/^###\s+/, '')}
+        </h4>
+      );
+    }
+    if (trimmed.startsWith('## ')) {
+      return (
+        <h3 key={idx} className="font-black text-amber-950 mt-2.5 mb-1 text-base">
+          {trimmed.replace(/^##\s+/, '')}
+        </h3>
+      );
+    }
+
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      const bulletText = trimmed.replace(/^[-*]\s+/, '');
+      return (
+        <li key={idx} className="ml-4 list-disc text-slate-800">
+          {formatInline(bulletText)}
+        </li>
+      );
+    }
+
+    if (trimmed.startsWith('> ')) {
+      return (
+        <blockquote
+          key={idx}
+          className="my-1.5 pl-3 border-l-4 border-amber-400 bg-amber-50/80 py-1 text-xs sm:text-sm font-medium text-amber-900 rounded-r-lg"
+        >
+          {formatInline(trimmed.replace(/^>\s+/, ''))}
+        </blockquote>
+      );
+    }
+
+    if (!trimmed) {
+      return <div key={idx} className="h-1.5" />;
+    }
+
+    return (
+      <p key={idx} className="my-0.5">
+        {formatInline(line)}
+      </p>
+    );
+  });
+};
+
 interface Grade3TutorFabProps {
   audioManager?: AudioManager;
 }
@@ -233,7 +309,9 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
                         : 'bg-sky-500 text-white font-medium shadow-md'
                     }`}
                   >
-                    <p className="whitespace-pre-line">{msg.content}</p>
+                    <div className="space-y-0.5">
+                      {renderFormattedContent(msg.content)}
+                    </div>
                     {isBot && msg.id !== 'greeting' && (
                       <div className="mt-2 flex items-center justify-end">
                         <button
