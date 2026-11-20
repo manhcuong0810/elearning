@@ -7,6 +7,7 @@ export interface ChatMessageItem {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  image?: string;
   timestamp: number;
 }
 
@@ -18,7 +19,7 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 const INITIAL_GREETING =
-  'Chào bé! Cú Mèo là Gia Sư Toán Lớp 3 đây 🦉✨. Em đang gặp bài toán nào khó (rút về đơn vị, tìm x, chu vi, diện tích...) cần Cú Mèo giảng giải không nào?';
+  'Chào bé! Cú Mèo là Gia Sư Toán Lớp 3 đây 🦉✨. Em có thể gõ câu hỏi, bấm micro 🎙️ để đọc đề bài hoặc chụp ảnh 📷 gửi Cú Mèo hướng dẫn nhé!';
 
 const formatInline = (text: string): React.ReactNode => {
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
@@ -113,9 +114,14 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
     },
   ]);
   const [inputValue, setInputValue] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isListening, setIsListening] = useState<boolean>(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const scrollToBottom = () => {
     if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
@@ -128,23 +134,122 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       scrollToBottom();
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen, messages, isLoading]);
+  }, [isOpen, messages, isLoading, selectedImage]);
+
+  // Clean up speech recognition when unmounting
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+      }
+    };
+  }, []);
+
+  const handleToggleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      audioManager.playSfx('click');
+      return;
+    }
+
+    const SpeechRec =
+      typeof window !== 'undefined'
+        ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+        : null;
+
+    if (!SpeechRec) {
+      audioManager.playSfx('wrong');
+      alert('Trình duyệt chưa hỗ trợ micro nhận diện giọng nói. Bé hãy gõ đề bài hoặc chụp ảnh nhé!');
+      return;
+    }
+
+    try {
+      audioManager.playSfx('pop');
+      const rec = new SpeechRec();
+      rec.lang = 'vi-VN';
+      rec.continuous = false;
+      rec.interimResults = true;
+
+      rec.onstart = () => {
+        setIsListening(true);
+      };
+
+      rec.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((res: any) => res[0]?.transcript)
+          .join('');
+        if (transcript) {
+          setInputValue(transcript);
+        }
+      };
+
+      rec.onerror = (e: any) => {
+        console.warn('Speech recognition error:', e);
+        setIsListening(false);
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
+    } catch (err) {
+      console.error('Cannot start SpeechRecognition:', err);
+      setIsListening(false);
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Vui lòng chọn file hình ảnh (JPEG, PNG, v.v.).');
+      return;
+    }
+
+    audioManager.playSfx('pop');
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    audioManager.playSfx('click');
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputValue).trim();
-    if (!text || isLoading) return;
+    const imageToSend = selectedImage;
+
+    if ((!text && !imageToSend) || isLoading) return;
 
     audioManager.playSfx('pop');
 
     const userMsg: ChatMessageItem = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: text,
+      content: text || (imageToSend ? 'Đề bài trong ảnh đính kèm 📷' : ''),
+      image: imageToSend || undefined,
       timestamp: Date.now(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
     setInputValue('');
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setIsLoading(true);
 
     try {
@@ -156,7 +261,11 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       const res = await fetch('/api/tutor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: historyPayload }),
+        body: JSON.stringify({
+          messages: historyPayload,
+          message: text,
+          image: imageToSend,
+        }),
       });
 
       if (!res.ok) {
@@ -206,6 +315,10 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
         timestamp: Date.now(),
       },
     ]);
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -243,7 +356,7 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       {isOpen && (
         <div
           data-testid="grade3-tutor-window"
-          className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] max-h-[82vh] h-[580px] bg-white rounded-[2rem] shadow-2xl border-4 border-amber-300 border-b-[8px] border-b-amber-500 flex flex-col overflow-hidden animate-scale-in"
+          className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 w-[94vw] sm:w-[440px] max-h-[85vh] h-[600px] bg-white rounded-[2rem] shadow-2xl border-4 border-amber-300 border-b-[8px] border-b-amber-500 flex flex-col overflow-hidden animate-scale-in"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 border-b-2 border-amber-400 shadow-sm">
@@ -309,6 +422,15 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
                         : 'bg-sky-500 text-white font-medium shadow-md'
                     }`}
                   >
+                    {msg.image && (
+                      <div className="mb-2 overflow-hidden rounded-xl border-2 border-white/80 shadow-sm max-w-[200px]">
+                        <img
+                          src={msg.image}
+                          alt="Ảnh đề bài đã gửi"
+                          className="w-full h-auto max-h-40 object-cover"
+                        />
+                      </div>
+                    )}
                     <div className="space-y-0.5">
                       {renderFormattedContent(msg.content)}
                     </div>
@@ -333,7 +455,7 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
             {isLoading && (
               <div className="flex items-center gap-2 self-start bg-amber-100 text-amber-900 px-3.5 py-2.5 rounded-2xl border-2 border-amber-200 shadow-sm text-sm font-bold animate-pulse">
                 <span>🦉</span>
-                <span>Cú Mèo đang suy nghĩ bài giải...</span>
+                <span>Cú Mèo đang đọc đề và suy nghĩ bài giải...</span>
                 <span className="inline-flex gap-0.5">
                   <span className="animate-bounce">.</span>
                   <span className="animate-bounce delay-100">.</span>
@@ -361,29 +483,118 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
             ))}
           </div>
 
-          {/* Input Bar */}
+          {/* Image Preview Bar if an image is selected */}
+          {selectedImage && (
+            <div
+              data-testid="tutor-image-preview"
+              className="px-3 py-2 bg-amber-100/90 border-t-2 border-amber-300 flex items-center justify-between gap-3 animate-fade-in"
+            >
+              <div className="flex items-center gap-2 overflow-hidden">
+                <img
+                  src={selectedImage}
+                  alt="Ảnh đề bài toán"
+                  className="w-10 h-10 object-cover rounded-xl border border-amber-300 shadow-sm shrink-0"
+                />
+                <span className="text-xs font-bold text-amber-950 truncate">
+                  Đã đính kèm ảnh đề bài 📸
+                </span>
+              </div>
+              <button
+                type="button"
+                data-testid="remove-image-preview-btn"
+                onClick={handleRemoveImage}
+                aria-label="Xóa ảnh đã chọn"
+                className="min-w-[32px] min-h-[32px] w-8 h-8 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow-sm"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Listening Indicator Bar */}
+          {isListening && (
+            <div className="px-3 py-1.5 bg-rose-100 border-t border-rose-300 flex items-center justify-between text-rose-900 text-xs font-bold animate-pulse">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping inline-block" />
+                Đang lắng nghe bé nói đề bài...
+              </span>
+              <button
+                type="button"
+                onClick={handleToggleVoiceInput}
+                className="text-xs text-rose-700 underline font-extrabold hover:text-rose-900"
+              >
+                Dừng lại
+              </button>
+            </div>
+          )}
+
+          {/* Input & Action Bar */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 bg-white border-t-2 border-amber-200 flex items-center gap-2"
+            className="p-2.5 sm:p-3 bg-white border-t-2 border-amber-200 flex items-center gap-1.5 sm:gap-2"
           >
+            {/* Hidden File Input for Camera / Photo selection */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              data-testid="tutor-file-input"
+              className="hidden"
+              onChange={handleImageSelect}
+            />
+
+            {/* Camera / Photo Button */}
+            <button
+              type="button"
+              data-testid="tutor-camera-btn"
+              onClick={() => fileInputRef.current?.click()}
+              title="Chụp ảnh đề bài"
+              aria-label="Chụp ảnh hoặc gửi ảnh đề bài"
+              disabled={isLoading}
+              className="min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-950 flex items-center justify-center text-lg sm:text-xl shadow-sm transition-transform active:scale-95 disabled:opacity-50 shrink-0"
+            >
+              📷
+            </button>
+
+            {/* Microphone Button */}
+            <button
+              type="button"
+              data-testid="tutor-mic-btn"
+              onClick={handleToggleVoiceInput}
+              title={isListening ? 'Dừng thu âm' : 'Đọc đề bài bằng giọng nói'}
+              aria-label={isListening ? 'Dừng thu âm' : 'Đọc đề bài bằng giọng nói'}
+              disabled={isLoading}
+              className={`min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-lg sm:text-xl shadow-sm transition-all active:scale-95 disabled:opacity-50 shrink-0 ${
+                isListening
+                  ? 'bg-rose-500 text-white animate-pulse ring-4 ring-rose-300'
+                  : 'bg-yellow-100 hover:bg-yellow-200 text-amber-950'
+              }`}
+            >
+              🎙️
+            </button>
+
+            {/* Text Input */}
             <input
               ref={inputRef}
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Nhập đề bài toán lớp 3 cần giải..."
+              placeholder={isListening ? 'Đang nghe bé nói...' : 'Nhập đề bài toán lớp 3 hoặc đọc mic, gửi ảnh...'}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-50 border-2 border-amber-200 focus:border-amber-400 focus:bg-white focus:outline-none text-slate-800 text-sm sm:text-base font-medium shadow-inner placeholder:text-slate-400"
+              className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-slate-50 border-2 border-amber-200 focus:border-amber-400 focus:bg-white focus:outline-none text-slate-800 text-sm sm:text-base font-medium shadow-inner placeholder:text-slate-400"
             />
+
+            {/* Send Button */}
             <button
               type="submit"
               data-testid="tutor-send-btn"
-              disabled={isLoading || !inputValue.trim()}
+              disabled={isLoading || (!inputValue.trim() && !selectedImage)}
               aria-label="Gửi câu hỏi"
-              className="min-w-[48px] min-h-[48px] px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-black text-lg shadow-md transition-all active:scale-95 flex items-center justify-center"
+              className="min-w-[44px] min-h-[44px] sm:min-w-[48px] sm:min-h-[48px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-black text-lg shadow-md transition-all active:scale-95 flex items-center justify-center shrink-0"
             >
               🚀
             </button>

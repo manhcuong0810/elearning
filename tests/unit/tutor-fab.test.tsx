@@ -78,4 +78,68 @@ describe('Grade3TutorFab', () => {
       expect(screen.getByText(/x \+ 15 = 45 => x = 45 - 15 = 30/i)).toBeDefined();
     });
   });
+
+  it('renders microphone button and camera/photo upload button with >= 40x40px touch targets', () => {
+    render(<Grade3TutorFab />);
+    fireEvent.click(screen.getByTestId('grade3-tutor-fab-btn'));
+
+    const micBtn = screen.getByTestId('tutor-mic-btn');
+    expect(micBtn).toBeDefined();
+    expect(micBtn.className).toMatch(/min-w-\[40px\]|min-h-\[40px\]|min-w-\[44px\]|min-h-\[44px\]|min-w-\[48px\]/);
+
+    const cameraBtn = screen.getByTestId('tutor-camera-btn');
+    expect(cameraBtn).toBeDefined();
+    expect(cameraBtn.className).toMatch(/min-w-\[40px\]|min-h-\[40px\]|min-w-\[44px\]|min-h-\[44px\]|min-w-\[48px\]/);
+
+    const fileInput = screen.getByTestId('tutor-file-input');
+    expect(fileInput).toBeDefined();
+    expect(fileInput.getAttribute('type')).toBe('file');
+    expect(fileInput.getAttribute('accept')).toContain('image');
+  });
+
+  it('supports selecting photo of math problem, shows preview thumbnail, and sends with image payload', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        reply: 'Cú Mèo đã đọc bài toán trong ảnh: Chiều dài 12m, chiều rộng 6m...',
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    // Mock FileReader
+    class MockFileReader {
+      result = 'data:image/jpeg;base64,mockimagedata';
+      onload: (() => void) | null = null;
+      readAsDataURL() {
+        setTimeout(() => this.onload?.(), 10);
+      }
+    }
+    vi.stubGlobal('FileReader', MockFileReader);
+
+    render(<Grade3TutorFab />);
+    fireEvent.click(screen.getByTestId('grade3-tutor-fab-btn'));
+
+    const fileInput = screen.getByTestId('tutor-file-input');
+    const fakeFile = new File(['dummy content'], 'math-exercise.jpg', { type: 'image/jpeg' });
+    fireEvent.change(fileInput, { target: { files: [fakeFile] } });
+
+    // Expect preview thumbnail to appear
+    await waitFor(() => {
+      expect(screen.getByTestId('tutor-image-preview')).toBeDefined();
+    });
+
+    const sendBtn = screen.getByTestId('tutor-send-btn');
+    fireEvent.click(sendBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Chiều dài 12m, chiều rộng 6m/i)).toBeDefined();
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/tutor',
+      expect.objectContaining({
+        body: expect.stringContaining('mockimagedata'),
+      })
+    );
+  });
 });

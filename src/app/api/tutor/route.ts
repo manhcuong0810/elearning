@@ -25,7 +25,8 @@ Nhiệm vụ của bạn:
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+  image?: string;
 }
 
 export async function POST(req: Request) {
@@ -40,27 +41,58 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => ({}));
     const rawMessages: ChatMessage[] = body.messages || [];
+    const attachedImage = typeof body.image === 'string' && body.image.trim().length > 0 ? body.image.trim() : null;
 
     // Support single 'message' payload
     if (typeof body.message === 'string' && body.message.trim().length > 0) {
       rawMessages.push({ role: 'user', content: body.message.trim() });
+    } else if (attachedImage && rawMessages.length === 0) {
+      rawMessages.push({
+        role: 'user',
+        content: 'Bé gửi hình ảnh đề bài toán này, Cú Mèo hãy đọc đề trong hình và hướng dẫn giải từng bước chi tiết nhé!',
+      });
     }
 
     if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
       return NextResponse.json(
-        { error: 'Vui lòng nhập nội dung câu hỏi toán cần hỗ trợ.' },
+        { error: 'Vui lòng nhập nội dung câu hỏi hoặc gửi ảnh đề bài toán.' },
         { status: 400 }
       );
     }
 
     // Build message array with Grade 3 Math system prompt
-    const messagesPayload: ChatMessage[] = [
+    const messagesPayload: any[] = [
       { role: 'system', content: GRADE_3_MATH_SYSTEM_PROMPT },
-      ...rawMessages.map((m) => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: String(m.content || '').slice(0, 2000), // safety length limit
-      })),
     ];
+
+    rawMessages.forEach((m, idx) => {
+      const isLast = idx === rawMessages.length - 1;
+      const role = m.role === 'assistant' ? 'assistant' : 'user';
+
+      if (role === 'user' && isLast && attachedImage) {
+        messagesPayload.push({
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text:
+                typeof m.content === 'string' && m.content.trim().length > 0
+                  ? m.content.trim()
+                  : 'Bé gửi hình ảnh đề bài toán này, Cú Mèo hãy đọc đề trong ảnh và hướng dẫn giải từng bước chi tiết nhé!',
+            },
+            {
+              type: 'image_url',
+              image_url: { url: attachedImage },
+            },
+          ],
+        });
+      } else {
+        messagesPayload.push({
+          role,
+          content: typeof m.content === 'string' ? m.content.slice(0, 2000) : m.content,
+        });
+      }
+    });
 
     const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -69,7 +101,7 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek-flash',
         messages: messagesPayload,
         temperature: 0.3,
         max_tokens: 1500,
