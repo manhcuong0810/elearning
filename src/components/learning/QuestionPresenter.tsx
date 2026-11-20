@@ -55,15 +55,9 @@ export const QuestionPresenter: React.FC<QuestionPresenterProps> = ({
     if (isCorrect) {
       setFeedbackState('correct');
       audioManager.playSfx('correct');
-      audioManager.playVoice(question.feedbackAudio?.correct || '', {
-        text: 'Bé làm đúng rồi! Giỏi quá!',
-      });
     } else {
       setFeedbackState('wrong');
       audioManager.playSfx('wrong');
-      audioManager.playVoice(question.feedbackAudio?.wrong || '', {
-        text: 'Bé thử lại nhé, cố lên nào!',
-      });
       // Allow retry after a short cooldown if wrong
       lockTimerRef.current = setTimeout(() => {
         submissionLockRef.current = false;

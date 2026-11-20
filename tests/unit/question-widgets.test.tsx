@@ -214,9 +214,11 @@ describe('QuestionPresenter', () => {
     vi.clearAllMocks();
   });
 
-  it('renders prompt text, audio button, and handles correct answer selection', () => {
+  it('renders prompt text, audio button, and handles correct answer selection with sfx only (no spoken text-to-speech praise)', () => {
     const onAnswerMock = vi.fn();
-    render(<QuestionPresenter question={sampleQuestion} onAnswer={onAnswerMock} />);
+    const playSfxSpy = vi.spyOn(audioManager, 'playSfx');
+    const playVoiceSpy = vi.spyOn(audioManager, 'playVoice');
+    render(<QuestionPresenter question={sampleQuestion} onAnswer={onAnswerMock} audioManager={audioManager} />);
 
     expect(screen.getByText('Có bao nhiêu quả táo trong tranh?')).toBeDefined();
     expect(screen.getByTestId('audio-prompt-button')).toBeDefined();
@@ -225,7 +227,10 @@ describe('QuestionPresenter', () => {
     fireEvent.click(correctBtn);
 
     expect(onAnswerMock).toHaveBeenCalledWith(true, sampleQuestion);
-    // Encouraging feedback banner appears
+    expect(playSfxSpy).toHaveBeenCalledWith('correct');
+    // Critical: Do NOT speak verbal praise like "Bé làm đúng rồi, giỏi quá" - sfx only
+    expect(playVoiceSpy).not.toHaveBeenCalled();
+    // Encouraging feedback banner appears visually
     expect(screen.getByTestId('question-feedback-banner')).toBeDefined();
     expect(screen.getByTestId('question-feedback-banner').textContent).toMatch(/Giỏi quá|Tuyệt vời|Chính xác/i);
   });
