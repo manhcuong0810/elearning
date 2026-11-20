@@ -1,0 +1,91 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { POST } from '@/app/api/tutor/route';
+
+describe('POST /api/tutor', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    vi.resetModules();
+    process.env = { ...originalEnv, DEEPSEEK_API_KEY: 'test-deepseek-key' };
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it('returns 400 when message or messages are missing', async () => {
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({}),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBeDefined();
+  });
+
+  it('calls DeepSeek API with system prompt and returns the assistant reply', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              content: 'Chào bé! Để tính chu vi hình chữ nhật, ta lấy (chiều dài + chiều rộng) x 2 nhé!',
+            },
+          },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'Làm thế nào để tính chu vi hình chữ nhật ạ?' }],
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.reply).toContain('chu vi hình chữ nhật');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.deepseek.com/chat/completions',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-deepseek-key',
+        }),
+      })
+    );
+  });
+
+  it('handles DeepSeek API errors gracefully', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Tìm x: x + 15 = 45',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(502);
+    const data = await res.json();
+    expect(data.error).toBeDefined();
+  });
+});
