@@ -4,6 +4,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ActivitiesSidebar } from '@/components/dashboard/ActivitiesSidebar';
 import { defaultAudioManager } from '@/lib/audio-manager';
 
+import { useProgressStore } from '@/store/useProgressStore';
+
 vi.mock('@/lib/audio-manager', () => ({
   defaultAudioManager: {
     playSfx: vi.fn(),
@@ -17,6 +19,7 @@ describe('ActivitiesSidebar', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useProgressStore.getState().reset();
   });
 
   it('renders daily quests, mystery chest, and mini leaderboard when authenticated', () => {
@@ -228,5 +231,31 @@ describe('ActivitiesSidebar', () => {
 
     // Claimed quest button must show "✓ Đã nhận" and NOT "Nhận thưởng"
     expect(screen.getAllByText(/✓ Đã nhận/i).length).toBeGreaterThan(0);
+  });
+
+  it('displays quest rewards and progress without "Đã nhận thưởng" text when user has 0 progress today', () => {
+    render(
+      <ActivitiesSidebar
+        isAuthenticated={true}
+        todayStars={0}
+        stagesCompletedToday={0}
+        arenaMatchesToday={0}
+        onClaimReward={mockOnClaimReward}
+      />
+    );
+
+    // No quests should be marked as claimed
+    expect(screen.queryByText(/✓ Đã nhận thưởng/i)).toBeNull();
+    // No claim reward buttons should be visible
+    expect(screen.queryByRole('button', { name: /nhận thưởng/i })).toBeNull();
+
+    // Reward previews should be visible
+    expect(screen.getByText(/\+15 Xu/i)).toBeDefined();
+    expect(screen.getAllByText(/\+20 Xu/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/\+25 Xu/i)).toBeDefined();
+
+    // Progress should be 0/5, 0/1, 0/1
+    expect(screen.getByText('0/5')).toBeDefined();
+    expect(screen.getAllByText('0/1').length).toBe(2);
   });
 });

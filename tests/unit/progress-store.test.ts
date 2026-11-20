@@ -287,6 +287,9 @@ describe('Progress Store (useProgressStore)', () => {
     expect(refreshed.dailyArenaMatches).toBe(0);
     expect(refreshed.studyMinutesToday).toBe(0);
 
+    // Consecutive streak must automatically advance to 2 when returning today
+    expect(refreshed.streakDays).toBe(2);
+
     // Daily quests are not yet claimed today, but also NOT completed (counters are 0)
     expect(refreshed.isQuestClaimed('stage_1', day2)).toBe(false);
     expect(refreshed.isQuestClaimed('stars_5', day2)).toBe(false);

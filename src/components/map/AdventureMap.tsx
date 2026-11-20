@@ -86,7 +86,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                 Chào mừng Ba Mẹ & Bé đến với Xứ Sở Cú Mèo!
               </h3>
               <p className="text-xs font-bold text-amber-100">
-                Khám phá lộ trình Toán Lớp 1 tương tác. Đăng nhập ngay để mở khóa các ải học và lưu tiến độ cho bé!
+                Khám phá lộ trình Toán Diệu Kỳ tương tác. Đăng nhập ngay để mở khóa các ải học và lưu tiến độ cho bé!
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                 Khu Vườn Cú Mèo Thông Thái 🦉
               </h1>
               <p className="text-xs sm:text-sm font-extrabold text-emerald-950 mt-0.5">
-                Cùng dạo bước qua các bậc đá cỏ hoa, giải đố hái quả và khám phá tri thức Lớp 1! 🌻
+                Cùng dạo bước qua các bậc đá cỏ hoa, giải đố hái quả và khám phá tri thức diệu kỳ! 🌻
               </p>
             </div>
           </div>

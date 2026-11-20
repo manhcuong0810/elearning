@@ -243,7 +243,7 @@ export function ActivitiesSidebar({
             <div className="flex flex-col gap-3">
               {quests.map((quest) => {
                 const isCompleted = quest.current >= quest.target;
-                const isClaimed = isQuestClaimed(quest.id);
+                const isClaimed = isCompleted && isQuestClaimed(quest.id);
                 const progressPercent = Math.min(
                   100,
                   Math.round((quest.current / quest.target) * 100)

@@ -438,7 +438,7 @@ export default function HomePage() {
                 Báo Cáo Học Tập Của Bé
               </h1>
               <p className="text-sm font-medium text-slate-600">
-                Theo dõi tiến độ, thời lượng học tập và kỹ năng Toán Lớp 1 của con
+                Theo dõi tiến độ, thời lượng học tập và kỹ năng Toán của con
               </p>
             </div>
 

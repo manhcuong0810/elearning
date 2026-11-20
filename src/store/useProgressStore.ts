@@ -218,6 +218,11 @@ export const useProgressStore = create<ProgressStoreState>()(
         const todayStr = dateStr || new Date().toISOString().split('T')[0];
         const state = get();
         if (state.dailyActivityDate !== todayStr) {
+          // If child studied previously on a different day, advance or reset streak
+          if (state.lastStudyDate && state.lastStudyDate !== todayStr) {
+            get().recordStudyDay(todayStr);
+          }
+
           set({
             dailyActivityDate: todayStr,
             dailyStars: 0,

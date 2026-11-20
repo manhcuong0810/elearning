@@ -4,9 +4,9 @@ import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Toán Lớp 1 - Xứ Sở Toán Học Diệu Kỳ',
+  title: 'Toán Diệu Kỳ - Xứ Sở Toán Học Diệu Kỳ',
   description:
-    'Nền tảng học tập & ôn luyện game hóa môn Toán lớp 1 với âm thanh đa giác quan, đấu Boss, đấu trường 1vs1 và nhà linh vật Cú Mèo.',
+    'Nền tảng học tập & ôn luyện game hóa môn Toán tiểu học với âm thanh đa giác quan, đấu Boss, đấu trường 1vs1 và nhà linh vật Cú Mèo.',
 };
 
 export default function RootLayout({

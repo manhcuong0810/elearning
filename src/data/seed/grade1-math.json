@@ -1,8 +1,8 @@
 {
   "subject": "math",
   "grade": 1,
-  "title": "Toán Lớp 1 - Xứ Sở Toán Học Diệu Kỳ",
-  "description": "Hành trình khám phá 100 ải toán kỳ thú dành cho học sinh Lớp 1",
+  "title": "Toán Diệu Kỳ - Xứ Sở Toán Học Diệu Kỳ",
+  "description": "Hành trình khám phá 100 ải toán kỳ thú dành cho học sinh",
   "chapters": [
     {
       "id": "chapter_1",

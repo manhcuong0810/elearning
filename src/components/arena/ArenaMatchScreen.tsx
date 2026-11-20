@@ -319,7 +319,7 @@ export const ArenaMatchScreen: React.FC<ArenaMatchScreenProps> = ({
         </h1>
 
         <p className="text-lg sm:text-xl font-bold text-slate-700 max-w-lg leading-relaxed">
-          Cùng thi đua giải nhanh 5 câu đố Toán Lớp 1 trên đường đua sắc màu và nhận thật nhiều Xu vàng nhé!
+          Cùng thi đua giải nhanh 5 câu đố Toán Diệu Kỳ trên đường đua sắc màu và nhận thật nhiều Xu vàng nhé!
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-4">

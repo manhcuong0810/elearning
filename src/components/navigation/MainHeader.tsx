@@ -169,7 +169,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
             </div>
             <div className="hidden sm:block">
               <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 block leading-none">
-                Toán Lớp 1 Diệu Kỳ
+                Toán Diệu Kỳ
               </span>
               <span className="text-base font-black text-slate-800 leading-tight">
                 Xứ Sở Cú Mèo
