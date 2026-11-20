@@ -67,7 +67,7 @@ export function EndlessTowerModal({ isOpen, onClose }: EndlessTowerModalProps) {
       } else {
         // Floor completed!
         setFloorCompleted(true);
-        audioManager.playSfx('victory');
+        audioManager.playSfx('cheer');
         advanceTowerFloor(selectedSubject, selectedGrade, currentFloor);
       }
     }, 1200);

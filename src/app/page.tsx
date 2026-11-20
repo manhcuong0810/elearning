@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Stage, Question } from '@/types/curriculum';
-import { loadGrade1MathData } from '@/lib/curriculum-loader';
+import { loadCurriculum, loadGrade1MathData } from '@/lib/curriculum-loader';
 import { defaultAudioManager } from '@/lib/audio-manager';
 import { useProgressStore } from '@/store/useProgressStore';
 import {
@@ -22,9 +22,23 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { GUEST_CHILD_PROFILE } from '@/types/auth';
 import { CreateChildModal } from '@/components/profile/CreateChildModal';
 import { Grade3TutorFab } from '@/components/tutor/Grade3TutorFab';
+import { SubjectGradeSelector } from '@/components/navigation/SubjectGradeSelector';
+import { EndlessTowerModal } from '@/components/tower/EndlessTowerModal';
 
 export default function HomePage() {
-  const curriculum = useMemo(() => loadGrade1MathData(), []);
+  const selectedSubject = useProgressStore((state) => state.selectedSubject);
+  const selectedGrade = useProgressStore((state) => state.selectedGrade);
+  const getTowerFloor = useProgressStore((state) => state.getTowerFloor);
+
+  const curriculum = useMemo(() => {
+    try {
+      return loadCurriculum(selectedSubject, selectedGrade);
+    } catch {
+      return loadGrade1MathData();
+    }
+  }, [selectedSubject, selectedGrade]);
+
+  const [isEndlessTowerOpen, setIsEndlessTowerOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<NavigationTab>('adventure-map');
 
@@ -629,7 +643,44 @@ export default function HomePage() {
                 </div>
 
                 {/* Cột giữa: Bản đồ thám hiểm các ải */}
-                <div className="w-full min-w-0">
+                <div className="w-full min-w-0 flex flex-col">
+                  {/* Bộ Chọn Khối Lớp & Môn Học */}
+                  <SubjectGradeSelector />
+
+                  {/* Endless 1000-Floor Tower Banner */}
+                  <div className="w-full max-w-4xl mx-auto mb-6 p-4 rounded-3xl bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-950 border-4 border-amber-300 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border-2 border-amber-300 flex items-center justify-center text-3xl shrink-0">
+                        🏰
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base sm:text-lg font-black text-amber-300">
+                            Tháp Vô Tận 1000 Ải
+                          </h3>
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-[11px] font-black">
+                            Tầng {getTowerFloor(selectedSubject, selectedGrade)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-indigo-200">
+                          Thử thách trí tuệ vô tận với hàng ngàn câu hỏi phong phú!
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      data-testid="open-endless-tower-btn"
+                      onClick={() => {
+                        defaultAudioManager.playSfx('click');
+                        setIsEndlessTowerOpen(true);
+                      }}
+                      className="min-h-[48px] px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-sm shadow-lg hover:scale-105 active:scale-95 transition-all border-2 border-white shrink-0"
+                    >
+                      Leo Tháp Ngay 🚀
+                    </button>
+                  </div>
+
                   <AdventureMap
                     curriculum={curriculum}
                     onSelectStage={handleSelectStage}
@@ -717,6 +768,12 @@ export default function HomePage() {
 
       {/* Grade 3 Math AI Tutor Floating Widget (DeepSeek) */}
       <Grade3TutorFab audioManager={defaultAudioManager} />
+
+      {/* Endless 1000-Floor Tower Modal */}
+      <EndlessTowerModal
+        isOpen={isEndlessTowerOpen}
+        onClose={() => setIsEndlessTowerOpen(false)}
+      />
     </div>
   );
 }

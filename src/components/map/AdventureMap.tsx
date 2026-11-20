@@ -24,6 +24,10 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
   const stageStars = useProgressStore((state) => state.stageStars);
   const totalCoins = useProgressStore((state) => state.totalCoins);
   const totalExp = useProgressStore((state) => state.totalExp);
+  const isStageUnlocked = useProgressStore((state) => state.isStageUnlocked);
+  const getStageStars = useProgressStore((state) => state.getStageStars);
+  const selectedSubject = useProgressStore((state) => state.selectedSubject);
+  const selectedGrade = useProgressStore((state) => state.selectedGrade);
 
   const totalStarsEarned = isAuthenticated
     ? Object.values(stageStars).reduce((sum, s) => sum + s, 0)
@@ -34,7 +38,8 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
   // Find the current active stage (first unlocked stage with < 3 stars, or the latest unlocked)
   const allStages = data.chapters.flatMap((c) => c.stages);
   const currentActiveStageId =
-    allStages.find((s) => unlockedStages.includes(s.id) && (stageStars[s.id] ?? 0) < 3)?.id ??
+    allStages.find((s) => isStageUnlocked(s.id, selectedSubject, selectedGrade) && getStageStars(s.id, selectedSubject, selectedGrade) < 3)?.id ??
+    allStages.find((s) => isStageUnlocked(s.id, selectedSubject, selectedGrade))?.id ??
     unlockedStages[unlockedStages.length - 1];
 
   const handleStageSelect = (stage: Stage) => {
@@ -42,7 +47,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
       onRequireAuth?.();
       return;
     }
-    if (!unlockedStages.includes(stage.id)) {
+    if (!isStageUnlocked(stage.id, selectedSubject, selectedGrade)) {
       return;
     }
     onSelectStage?.(stage);
@@ -245,8 +250,8 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
               {/* Serpentine Adventure Path */}
               <div className="flex flex-col items-center gap-10 relative py-4 z-10">
                 {chapter.stages.map((stage, stageIdx) => {
-                  const isUnlocked = unlockedStages.includes(stage.id);
-                  const stars = isAuthenticated ? (stageStars[stage.id] ?? 0) : 0;
+                  const isUnlocked = isStageUnlocked(stage.id, selectedSubject, selectedGrade);
+                  const stars = isAuthenticated ? getStageStars(stage.id, selectedSubject, selectedGrade) : 0;
                   const isCurrentActive = isAuthenticated && stage.id === currentActiveStageId;
 
                   // Smooth alternating S-curve offset
