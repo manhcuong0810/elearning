@@ -307,4 +307,65 @@ describe('Progress Store (useProgressStore)', () => {
     expect(useProgressStore.getState().claimQuest('stage_1', 20, 10, day2)).toBe(true);
     expect(useProgressStore.getState().isQuestClaimed('stage_1', day2)).toBe(true);
   });
+
+  it('manages selectedSubject and selectedGrade across grades 1-5 and 3 subjects', () => {
+    const store = useProgressStore.getState();
+    expect(store.selectedSubject).toBe('math');
+    expect(store.selectedGrade).toBe(1);
+
+    store.setSubject('vietnamese');
+    expect(useProgressStore.getState().selectedSubject).toBe('vietnamese');
+
+    store.setGrade(3);
+    expect(useProgressStore.getState().selectedGrade).toBe(3);
+
+    store.setSubject('english');
+    store.setGrade(5);
+    expect(useProgressStore.getState().selectedSubject).toBe('english');
+    expect(useProgressStore.getState().selectedGrade).toBe(5);
+  });
+
+  it('tracks Endless Tower floor progression per subject and grade', () => {
+    const store = useProgressStore.getState();
+
+    // Floor starts at 1
+    expect(store.getTowerFloor('math', 1)).toBe(1);
+    expect(store.getTowerFloor('vietnamese', 2)).toBe(1);
+
+    // Complete floor 1 in Math Grade 1 -> floor advances to 2
+    store.advanceTowerFloor('math', 1, 1);
+    expect(useProgressStore.getState().getTowerFloor('math', 1)).toBe(2);
+
+    // Completing floor 2 in Vietnamese Grade 2
+    store.advanceTowerFloor('vietnamese', 2, 1);
+    store.advanceTowerFloor('vietnamese', 2, 2);
+    expect(useProgressStore.getState().getTowerFloor('vietnamese', 2)).toBe(3);
+
+    // Other subjects/grades are untouched
+    expect(useProgressStore.getState().getTowerFloor('english', 1)).toBe(1);
+  });
+
+  it('initializes and unlocks first stage for any subject and grade without breaking math progress', () => {
+    const store = useProgressStore.getState();
+
+    // Check Vietnamese Grade 1 first stage is unlocked
+    expect(store.isStageUnlocked('vn_g1_c1_s1', 'vietnamese', 1)).toBe(true);
+    expect(store.isStageUnlocked('vn_g1_c1_s2', 'vietnamese', 1)).toBe(false);
+
+    // Complete first stage in Vietnamese Grade 1
+    store.completeStage(
+      'vn_g1_c1_s1',
+      { stars: 3, earnedCoins: 15, earnedExp: 30 },
+      'vn_g1_c1_s2',
+      undefined,
+      'vietnamese',
+      1
+    );
+
+    // Stage 2 is now unlocked
+    expect(useProgressStore.getState().isStageUnlocked('vn_g1_c1_s2', 'vietnamese', 1)).toBe(true);
+
+    // Math progress is still intact
+    expect(useProgressStore.getState().isStageUnlocked('stage_1', 'math', 1)).toBe(true);
+  });
 });

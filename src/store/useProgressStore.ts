@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
-import { loadGrade1MathData } from '@/lib/curriculum-loader';
+import { loadGrade1MathData, loadCurriculum } from '@/lib/curriculum-loader';
 import { StageCompletionReward } from '@/types/progress';
+import { SubjectType, GradeLevel } from '@/types/curriculum';
 
 const STORAGE_KEY = 'math-g1-progress-storage';
 
@@ -98,8 +99,30 @@ const safeLocalStorage: StateStorage = {
   },
 };
 
+function getInitialUnlockedStagesFor(subject: SubjectType, grade: GradeLevel): string[] {
+  if (subject === 'math' && grade === 1) {
+    return getInitialUnlockedStages();
+  }
+  try {
+    const cur = loadCurriculum(subject, grade);
+    const firstStage = cur.chapters[0]?.stages[0]?.id;
+    return firstStage ? [firstStage] : [];
+  } catch {
+    return [];
+  }
+}
+
 export interface ProgressStoreState {
   currentChildId: string;
+  selectedSubject: SubjectType;
+  selectedGrade: GradeLevel;
+  setSubject: (subject: SubjectType) => void;
+  setGrade: (grade: GradeLevel) => void;
+  towerFloor: Record<string, number>;
+  getTowerFloor: (subject?: SubjectType, grade?: GradeLevel) => number;
+  advanceTowerFloor: (subject: SubjectType, grade: GradeLevel, completedFloor: number) => void;
+  subjectGradeUnlockedStages: Record<string, string[]>;
+  subjectGradeStageStars: Record<string, Record<string, number>>;
   unlockedStages: string[];
   stageStars: Record<string, number>;
   totalCoins: number;
@@ -117,14 +140,16 @@ export interface ProgressStoreState {
   claimedQuestDate: string | null;
   lastChestOpenedDate: string | null;
   chestRewardCoins: number | null;
-  isStageUnlocked: (stageId: string) => boolean;
-  getStageStars: (stageId: string) => number;
+  isStageUnlocked: (stageId: string, subject?: SubjectType, grade?: GradeLevel) => boolean;
+  getStageStars: (stageId: string, subject?: SubjectType, grade?: GradeLevel) => number;
   getTotalStars: () => number;
   completeStage: (
     stageId: string,
     result: StageCompletionReward,
     nextStageId?: string,
-    dateStr?: string
+    dateStr?: string,
+    subject?: SubjectType,
+    grade?: GradeLevel
   ) => void;
   recordStudyDay: (dateStr?: string) => void;
   addStudyMinutes: (minutes: number, dateStr?: string) => void;
@@ -149,6 +174,11 @@ export interface ProgressStoreState {
 
 const createInitialData = (childId = 'guest') => ({
   currentChildId: childId,
+  selectedSubject: 'math' as SubjectType,
+  selectedGrade: 1 as GradeLevel,
+  towerFloor: {} as Record<string, number>,
+  subjectGradeUnlockedStages: {} as Record<string, string[]>,
+  subjectGradeStageStars: {} as Record<string, Record<string, number>>,
   unlockedStages: getInitialUnlockedStages(),
   stageStars: {} as Record<string, number>,
   totalCoins: 0,
@@ -174,6 +204,11 @@ function persistCurrentChildSnapshot(getFn: () => ProgressStoreState): void {
   const currentKey = getProfileStorageKey(currentId);
   const currentPayload = JSON.stringify({
     state: {
+      selectedSubject: getFn().selectedSubject,
+      selectedGrade: getFn().selectedGrade,
+      towerFloor: getFn().towerFloor,
+      subjectGradeUnlockedStages: getFn().subjectGradeUnlockedStages,
+      subjectGradeStageStars: getFn().subjectGradeStageStars,
       unlockedStages: getFn().unlockedStages,
       stageStars: getFn().stageStars,
       totalCoins: getFn().totalCoins,
@@ -202,12 +237,58 @@ export const useProgressStore = create<ProgressStoreState>()(
     (set, get) => ({
       ...createInitialData(),
 
-      isStageUnlocked: (stageId: string): boolean => {
-        return get().unlockedStages.includes(stageId);
+      setSubject: (subject: SubjectType): void => {
+        set({ selectedSubject: subject });
       },
 
-      getStageStars: (stageId: string): number => {
-        return get().stageStars[stageId] ?? 0;
+      setGrade: (grade: GradeLevel): void => {
+        set({ selectedGrade: grade });
+      },
+
+      getTowerFloor: (subject?: SubjectType, grade?: GradeLevel): number => {
+        const s = subject ?? get().selectedSubject;
+        const g = grade ?? get().selectedGrade;
+        const key = `${s}_${g}`;
+        return get().towerFloor[key] ?? 1;
+      },
+
+      advanceTowerFloor: (subject: SubjectType, grade: GradeLevel, completedFloor: number): void => {
+        const key = `${subject}_${grade}`;
+        const current = get().getTowerFloor(subject, grade);
+        if (completedFloor >= current) {
+          set((state) => ({
+            towerFloor: {
+              ...state.towerFloor,
+              [key]: completedFloor + 1,
+            },
+          }));
+          persistCurrentChildSnapshot(get);
+        }
+      },
+
+      isStageUnlocked: (stageId: string, subject?: SubjectType, grade?: GradeLevel): boolean => {
+        const s = subject ?? get().selectedSubject;
+        const g = grade ?? get().selectedGrade;
+        if (s === 'math' && g === 1) {
+          return get().unlockedStages.includes(stageId);
+        }
+        const key = `${s}_${g}`;
+        const customList = get().subjectGradeUnlockedStages[key];
+        if (customList) {
+          return customList.includes(stageId);
+        }
+        const initial = getInitialUnlockedStagesFor(s, g);
+        return initial.includes(stageId);
+      },
+
+      getStageStars: (stageId: string, subject?: SubjectType, grade?: GradeLevel): number => {
+        const s = subject ?? get().selectedSubject;
+        const g = grade ?? get().selectedGrade;
+        if (s === 'math' && g === 1) {
+          return get().stageStars[stageId] ?? 0;
+        }
+        const key = `${s}_${g}`;
+        return get().subjectGradeStageStars[key]?.[stageId] ?? 0;
       },
 
       getTotalStars: (): number => {
@@ -248,7 +329,9 @@ export const useProgressStore = create<ProgressStoreState>()(
         stageId: string,
         result: StageCompletionReward,
         nextStageId?: string,
-        dateStr?: string
+        dateStr?: string,
+        subject?: SubjectType,
+        grade?: GradeLevel
       ): void => {
         const todayStr = dateStr || new Date().toISOString().split('T')[0];
         get().checkDailyReset(todayStr);
@@ -256,23 +339,53 @@ export const useProgressStore = create<ProgressStoreState>()(
         const clampedStars = Math.max(0, Math.min(3, Math.round(result.stars)));
         const earnedCoins = Math.max(0, result.earnedCoins);
         const earnedExp = Math.max(0, result.earnedExp);
+
+        const curSubject = subject ?? get().selectedSubject;
+        const curGrade = grade ?? get().selectedGrade;
+        const sgKey = `${curSubject}_${curGrade}`;
         const targetNextId = resolveNextStageId(stageId, nextStageId);
 
         set((state) => {
-          const prevStars = state.stageStars[stageId] ?? 0;
-          const bestStars = Math.max(prevStars, clampedStars);
+          // Subject-Grade namespaced update
+          const currentSgList = state.subjectGradeUnlockedStages[sgKey] || getInitialUnlockedStagesFor(curSubject, curGrade);
+          const sgUnlockedSet = new Set(currentSgList);
+          sgUnlockedSet.add(stageId);
+          if (nextStageId) {
+            sgUnlockedSet.add(nextStageId);
+          } else if (targetNextId) {
+            sgUnlockedSet.add(targetNextId);
+          }
 
-          const unlockedSet = new Set(state.unlockedStages);
-          unlockedSet.add(stageId);
-          if (targetNextId) {
-            unlockedSet.add(targetNextId);
+          const currentSgStars = { ...(state.subjectGradeStageStars[sgKey] || {}) };
+          currentSgStars[stageId] = Math.max(currentSgStars[stageId] ?? 0, clampedStars);
+
+          // Legacy Math G1 sync
+          let updatedUnlockedStages = state.unlockedStages;
+          let updatedStageStars = state.stageStars;
+
+          if (curSubject === 'math' && curGrade === 1) {
+            const unlockedSet = new Set(state.unlockedStages);
+            unlockedSet.add(stageId);
+            if (targetNextId) {
+              unlockedSet.add(targetNextId);
+            }
+            updatedUnlockedStages = Array.from(unlockedSet);
+            updatedStageStars = {
+              ...state.stageStars,
+              [stageId]: Math.max(state.stageStars[stageId] ?? 0, clampedStars),
+            };
           }
 
           return {
-            unlockedStages: Array.from(unlockedSet),
-            stageStars: {
-              ...state.stageStars,
-              [stageId]: bestStars,
+            unlockedStages: updatedUnlockedStages,
+            stageStars: updatedStageStars,
+            subjectGradeUnlockedStages: {
+              ...state.subjectGradeUnlockedStages,
+              [sgKey]: Array.from(sgUnlockedSet),
+            },
+            subjectGradeStageStars: {
+              ...state.subjectGradeStageStars,
+              [sgKey]: currentSgStars,
             },
             totalCoins: state.totalCoins + earnedCoins,
             totalExp: state.totalExp + earnedExp,
@@ -488,6 +601,11 @@ export const useProgressStore = create<ProgressStoreState>()(
       storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({
         currentChildId: state.currentChildId,
+        selectedSubject: state.selectedSubject,
+        selectedGrade: state.selectedGrade,
+        towerFloor: state.towerFloor,
+        subjectGradeUnlockedStages: state.subjectGradeUnlockedStages,
+        subjectGradeStageStars: state.subjectGradeStageStars,
         unlockedStages: state.unlockedStages,
         stageStars: state.stageStars,
         totalCoins: state.totalCoins,
