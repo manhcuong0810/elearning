@@ -109,6 +109,15 @@ describe('BossBattleScreen', () => {
             { id: 'o2', text: '4', isCorrect: false },
           ],
         },
+        {
+          id: 'bq2',
+          type: 'MULTIPLE_CHOICE',
+          promptText: '4 + 1 = ?',
+          options: [
+            { id: 'o1', text: '5', isCorrect: true },
+            { id: 'o2', text: '3', isCorrect: false },
+          ],
+        },
       ],
     };
 
@@ -116,13 +125,13 @@ describe('BossBattleScreen', () => {
       <BossBattleScreen stage={shortStage as any} onVictory={onVictoryMock} />
     );
 
-    // Choose wrong answer and advance/finish attempts
+    // Choose wrong answer on Q1 and skip to Q2
     const wrongBtn = screen.getByText('4');
     fireEvent.click(wrongBtn);
+    fireEvent.click(screen.getByTestId('boss-skip-question-btn'));
 
-    // Skip / finish question or exhaust attempts to trigger end of questions with 0/1 correct
-    const nextOrFinishBtn = screen.getByTestId('boss-skip-question-btn');
-    fireEvent.click(nextOrFinishBtn);
+    // Skip Q2 so all questions are exhausted with 0 correct and HP > 0
+    fireEvent.click(screen.getByTestId('boss-skip-question-btn'));
 
     // Should show encouraging retry screen
     expect(screen.getByTestId('boss-encourage-retry-screen')).toBeDefined();
@@ -143,5 +152,59 @@ describe('BossBattleScreen', () => {
 
     expect(screen.getByText('3 + 2 = ?')).toBeDefined();
     expect(screen.getByText(/2\s*\/\s*2/)).toBeDefined();
+  });
+
+  it('allows defeating Thần Cây Cổ Thụ (boss_c2) when answering all questions correctly even if bossMaxHp was misconfigured', () => {
+    const onVictoryMock = vi.fn();
+    const thanCayBossStage = {
+      id: 'boss_c2',
+      name: 'Thần Cây Cổ Thụ',
+      bossName: 'Thần Cây Cổ Thụ',
+      isBoss: true,
+      bossMaxHp: 5,
+      questions: [
+        {
+          id: 'bq2_1',
+          type: 'MULTIPLE_CHOICE',
+          promptText: '5 + 5 = ?',
+          options: [
+            { id: 'o1', text: '9', isCorrect: false },
+            { id: 'o2', text: '10', isCorrect: true },
+          ],
+        },
+        {
+          id: 'bq2_2',
+          type: 'MULTIPLE_CHOICE',
+          promptText: '6 + 3 = ?',
+          options: [
+            { id: 'o1', text: '8', isCorrect: false },
+            { id: 'o2', text: '9', isCorrect: true },
+          ],
+        },
+        {
+          id: 'bq2_3',
+          type: 'MULTIPLE_CHOICE',
+          promptText: '4 + 4 = ?',
+          options: [
+            { id: 'o1', text: '8', isCorrect: true },
+            { id: 'o2', text: '7', isCorrect: false },
+          ],
+        },
+      ],
+    };
+
+    render(<BossBattleScreen stage={thanCayBossStage as any} onVictory={onVictoryMock} />);
+
+    // Answer Q1: 5 + 5 = 10
+    fireEvent.click(screen.getByText('10'));
+    // Answer Q2: 6 + 3 = 9
+    fireEvent.click(screen.getByText('9'));
+    // Answer Q3: 4 + 4 = 8
+    fireEvent.click(screen.getByText('8'));
+
+    // Should NOT be sent to retry screen when all questions are answered correctly!
+    expect(screen.queryByTestId('boss-encourage-retry-screen')).toBeNull();
+    // Must trigger victory screen!
+    expect(screen.getByTestId('boss-victory-screen')).toBeDefined();
   });
 });

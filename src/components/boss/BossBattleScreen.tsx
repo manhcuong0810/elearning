@@ -139,7 +139,16 @@ export const BossBattleScreen: React.FC<BossBattleScreenProps> = ({
     }));
   }, [stage.questions]);
 
-  const maxHp = stage.bossMaxHp ?? Math.max(1, questions.length);
+  // Guard: maxHp must never exceed the number of available questions.
+  // Each correct question reduces 1 HP. If maxHp > questions.length, the boss is mathematically unwinnable even with 100% correct answers.
+  const maxHp = useMemo(() => {
+    const qCount = questions.length;
+    if (qCount <= 0) return 1;
+    if (typeof stage.bossMaxHp === 'number' && stage.bossMaxHp > 0) {
+      return Math.min(stage.bossMaxHp, qCount);
+    }
+    return qCount;
+  }, [stage.bossMaxHp, questions.length]);
 
   const [currentHp, setCurrentHp] = useState<number>(maxHp);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
