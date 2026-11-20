@@ -1,27 +1,32 @@
 import seedData from '@/data/seed/grade1-math.json';
-import { Curriculum, Chapter, Stage, Question } from '@/types/curriculum';
+import { curriculumRegistry } from '@/data/seed/curriculum-registry';
+import { Curriculum, Chapter, Stage, Question, SubjectType, GradeLevel } from '@/types/curriculum';
 
 /**
- * Validates a curriculum object to ensure it conforms to Grade 1 Math requirements.
+ * Validates a curriculum object to ensure it conforms to required specifications.
  * Specifically checks:
- * - subject is 'math' and grade is 1
+ * - subject and grade match expected values (defaults to 'math' and 1 for backwards compatibility)
  * - chapters array is valid and non-empty
  * - each stage contains questions
  * - every single question has a valid, non-empty promptAudioUrl
  */
-export function validateCurriculum(data: unknown): Curriculum {
+export function validateCurriculum(
+  data: unknown,
+  expectedSubject: SubjectType = 'math',
+  expectedGrade: GradeLevel = 1
+): Curriculum {
   if (!data || typeof data !== 'object') {
     throw new Error('Curriculum data must be a non-null object');
   }
 
   const raw = data as Partial<Curriculum>;
 
-  if (raw.subject !== 'math') {
-    throw new Error(`Invalid curriculum subject: expected 'math', received '${raw.subject}'`);
+  if (raw.subject !== expectedSubject) {
+    throw new Error(`Invalid curriculum subject: expected '${expectedSubject}', received '${raw.subject}'`);
   }
 
-  if (raw.grade !== 1) {
-    throw new Error(`Invalid curriculum grade: expected 1, received '${raw.grade}'`);
+  if (raw.grade !== expectedGrade) {
+    throw new Error(`Invalid curriculum grade: expected ${expectedGrade}, received '${raw.grade}'`);
   }
 
   if (!Array.isArray(raw.chapters) || raw.chapters.length === 0) {
@@ -64,10 +69,22 @@ export function validateCurriculum(data: unknown): Curriculum {
 }
 
 /**
- * Loads and validates Grade 1 Math curriculum from seed JSON data.
+ * Loads and validates curriculum by subject and grade.
+ */
+export function loadCurriculum(subject: SubjectType = 'math', grade: GradeLevel = 1): Curriculum {
+  const key = `${subject}_${grade}`;
+  const data = curriculumRegistry[key];
+  if (!data) {
+    throw new Error(`Curriculum not found for subject '${subject}' and grade ${grade}`);
+  }
+  return validateCurriculum(data, subject, grade);
+}
+
+/**
+ * Loads and validates Grade 1 Math curriculum from seed JSON data (legacy support).
  */
 export function loadGrade1MathData(): Curriculum {
-  return validateCurriculum(seedData);
+  return loadCurriculum('math', 1);
 }
 
 /**

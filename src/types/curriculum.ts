@@ -1,6 +1,9 @@
 /**
- * Core Curriculum Domain Types for Grade 1 Gamified Math
+ * Core Curriculum Domain Types for Multi-Subject & Grade 1-5 Gamified Platform
  */
+
+export type SubjectType = 'math' | 'vietnamese' | 'english';
+export type GradeLevel = 1 | 2 | 3 | 4 | 5;
 
 export type QuestionType = 'MULTIPLE_CHOICE' | 'DRAG_DROP' | 'COUNTING';
 

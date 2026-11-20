@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   loadGrade1MathData,
+  loadCurriculum,
   validateCurriculum,
   findChapterById,
   findStageById,
@@ -119,5 +120,41 @@ describe('Curriculum Loader', () => {
     expect(findChapterById(curriculum, 'non_existent')).toBeUndefined();
     expect(findStageById(curriculum, 'non_existent')).toBeUndefined();
     expect(findQuestionById(curriculum, 'non_existent')).toBeUndefined();
+  });
+
+  it('should load curriculum for all subjects (math, vietnamese, english) across grades 1-5', () => {
+    const subjects = ['math', 'vietnamese', 'english'] as const;
+    const grades = [1, 2, 3, 4, 5] as const;
+
+    for (const subject of subjects) {
+      for (const grade of grades) {
+        const curriculum = loadCurriculum(subject, grade);
+        expect(curriculum.subject).toBe(subject);
+        expect(curriculum.grade).toBe(grade);
+        expect(curriculum.chapters.length).toBeGreaterThanOrEqual(1);
+
+        for (const ch of curriculum.chapters) {
+          expect(ch.stages.length).toBeGreaterThanOrEqual(1);
+          for (const st of ch.stages) {
+            expect(st.questions.length).toBeGreaterThanOrEqual(1);
+            for (const q of st.questions) {
+              expect(q.promptAudioUrl).toBeTruthy();
+              expect(q.promptText).toBeTruthy();
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it('should support finding stages and questions across loaded Vietnamese and English curriculums', () => {
+    const vnG1 = loadCurriculum('vietnamese', 1);
+    expect(vnG1.title).toMatch(/Tiếng Việt/i);
+    const engG1 = loadCurriculum('english', 1);
+    expect(engG1.title).toMatch(/English|Tiếng Anh/i);
+
+    const firstVnStage = vnG1.chapters[0].stages[0];
+    const foundStage = findStageById(vnG1, firstVnStage.id);
+    expect(foundStage?.id).toBe(firstVnStage.id);
   });
 });
