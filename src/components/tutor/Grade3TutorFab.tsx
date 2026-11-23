@@ -19,7 +19,7 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 const INITIAL_GREETING =
-  'Chào bé! Cú Mèo là Gia Sư Toán Lớp 3 đây 🦉✨. Em có thể gõ câu hỏi, bấm micro 🎙️ để đọc đề bài hoặc chụp ảnh 📷 gửi Cú Mèo hướng dẫn nhé!';
+  'Chào bé! Mình là Gia Sư của Moon đây ✨. Em có thể gõ câu hỏi, bấm micro 🎙️ để đọc đề bài hoặc chụp ảnh 📷 gửi Gia Sư hướng dẫn nhé!';
 
 const formatInline = (text: string): React.ReactNode => {
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
@@ -275,7 +275,7 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       const data = await res.json();
       const replyText =
         data.reply ||
-        'Cú Mèo chưa nghe rõ, bé gửi lại câu hỏi cho Cú Mèo nhé!';
+        'Gia Sư của Moon chưa nghe rõ, bé gửi lại câu hỏi cho Gia Sư nhé!';
 
       audioManager.playSfx('correct');
 
@@ -292,7 +292,7 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
         id: `err-${Date.now()}`,
         role: 'assistant',
         content:
-          'Ôi, Cú Mèo đang bay đi tìm sách giải toán một lát 🦉. Bé hãy kiểm tra lại kết nối và hỏi lại nhé!',
+          'Ôi, Gia Sư của Moon đang mở sách giải toán một lát ✨. Bé hãy kiểm tra lại kết nối và hỏi lại nhé!',
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -329,10 +329,14 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
               audioManager.playSfx('click');
               setIsOpen(true);
             }}
-            aria-label="Mở Gia Sư Toán Lớp 3 Cú Mèo"
-            className="group relative flex items-center justify-center min-w-[56px] min-h-[56px] w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-white shadow-2xl border-4 border-white hover:scale-110 active:scale-95 transition-all duration-200"
+            aria-label="Mở Gia Sư của Moon"
+            className="group relative flex items-center justify-center min-w-[56px] min-h-[56px] w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-amber-400 via-rose-300 to-amber-300 text-white shadow-2xl border-4 border-white hover:scale-110 active:scale-95 transition-all duration-200 overflow-hidden"
           >
-            <span className="text-3xl sm:text-4xl animate-bounce-gentle">🦉</span>
+            <img
+              src="/images/tutor/moon-avatar.png"
+              alt="Gia Sư của Moon"
+              className="w-full h-full object-cover rounded-full"
+            />
 
             {/* Glowing Pulse Badge */}
             <span className="absolute -top-1 -right-1 flex h-4 w-4">
@@ -342,7 +346,7 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
 
             {/* Tooltip on hover */}
             <span className="absolute right-full mr-3 px-3 py-1.5 rounded-xl bg-slate-900/90 text-white text-xs font-black whitespace-nowrap shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              Gia Sư Toán 3 AI 🦉
+              Gia Sư của Moon 🌙
             </span>
           </button>
         )}
@@ -357,12 +361,16 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 border-b-2 border-amber-400 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/90 border-2 border-amber-400 flex items-center justify-center text-2xl shadow-inner">
-                🦉
+              <div className="w-11 h-11 rounded-2xl bg-white/90 border-2 border-amber-400 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
+                <img
+                  src="/images/tutor/moon-avatar.png"
+                  alt="Gia Sư của Moon"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <h3 className="text-base font-black text-amber-950 leading-tight">
-                  Gia Sư Cú Mèo 🦉
+                  Gia Sư của Moon 🌙
                 </h3>
                 <p className="text-xs font-bold text-amber-800">
                   Hỏi bài Toán Lớp 3 (DeepSeek AI)
@@ -407,9 +415,13 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
                   }`}
                 >
                   {isBot && (
-                    <span className="text-2xl shrink-0 mt-0.5" aria-hidden="true">
-                      🦉
-                    </span>
+                    <div className="w-8 h-8 rounded-full border-2 border-amber-300 overflow-hidden shrink-0 mt-0.5 shadow-sm">
+                      <img
+                        src="/images/tutor/moon-avatar.png"
+                        alt="Gia Sư của Moon"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   )}
                   <div
                     className={`rounded-2xl p-3 sm:p-3.5 shadow-sm text-sm sm:text-base leading-relaxed ${
@@ -437,8 +449,14 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
 
             {isLoading && (
               <div className="flex items-center gap-2 self-start bg-amber-100 text-amber-900 px-3.5 py-2.5 rounded-2xl border-2 border-amber-200 shadow-sm text-sm font-bold animate-pulse">
-                <span>🦉</span>
-                <span>Cú Mèo đang đọc đề và suy nghĩ bài giải...</span>
+                <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-amber-400">
+                  <img
+                    src="/images/tutor/moon-avatar.png"
+                    alt="Gia Sư của Moon"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span>Gia Sư của Moon đang đọc đề và suy nghĩ bài giải...</span>
                 <span className="inline-flex gap-0.5">
                   <span className="animate-bounce">.</span>
                   <span className="animate-bounce delay-100">.</span>

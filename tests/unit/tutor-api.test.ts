@@ -97,7 +97,7 @@ describe('POST /api/tutor', () => {
           {
             message: {
               role: 'assistant',
-              content: 'Cú Mèo đã đọc bài toán trong ảnh: Một hình chữ nhật có chu vi 24cm...',
+              content: 'Gia Sư của Moon đã đọc bài toán trong ảnh: Một hình chữ nhật có chu vi 24cm...',
             },
           },
         ],

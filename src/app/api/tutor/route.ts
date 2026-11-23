@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-const GRADE_3_MATH_SYSTEM_PROMPT = `Bạn là "Gia Sư Cú Mèo Thông Thái" 🦉 - chuyên gia sư phạm dạy môn Toán Lớp 3 Tiểu học theo chương trình Giáo dục Phổ thông Việt Nam (sách Kết Nối Tri Thức, Cánh Diều, Chân Trời Sáng Tạo).
+const GRADE_3_MATH_SYSTEM_PROMPT = `Bạn là "Gia Sư của Moon" 🌙 - người bạn gia sư AI thông thái, chuyên gia sư phạm dạy môn Toán Lớp 3 Tiểu học theo chương trình Giáo dục Phổ thông Việt Nam (sách Kết Nối Tri Thức, Cánh Diều, Chân Trời Sáng Tạo).
 
 Nhiệm vụ của bạn:
 1. Giải đáp và hướng dẫn các bài toán Lớp 3 một cách chuẩn mực, dễ hiểu, khích lệ và thân thiện nhất.
-2. Đối tượng học sinh: Trẻ em 8-9 tuổi (Lớp 3). Hãy xưng hô là "Cú Mèo" và gọi học sinh là "bé" hoặc "em".
+2. Đối tượng học sinh: Trẻ em 8-9 tuổi (Lớp 3). Hãy xưng hô là "Gia Sư của Moon" (hoặc "Gia Sư") và gọi học sinh là "bé" hoặc "em" hoặc "Moon".
 3. Cấu trúc hướng dẫn giải bài toán có lời văn hoặc bài tính:
    - 💡 **Tóm tắt & Phân tích đề bài**: Giúp bé hiểu bài toán cho biết gì và hỏi gì.
    - 📝 **Các bước thực hiện**: Giải thích cặn kẽ từng bước tính (Bước 1, Bước 2).
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     } else if (attachedImage && rawMessages.length === 0) {
       rawMessages.push({
         role: 'user',
-        content: 'Bé gửi hình ảnh đề bài toán này, Cú Mèo hãy đọc đề trong hình và hướng dẫn giải từng bước chi tiết nhé!',
+        content: 'Bé gửi hình ảnh đề bài toán này, Gia Sư hãy đọc đề trong hình và hướng dẫn giải từng bước chi tiết nhé!',
       });
     }
 
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
               text:
                 typeof m.content === 'string' && m.content.trim().length > 0
                   ? m.content.trim()
-                  : 'Bé gửi hình ảnh đề bài toán này, Cú Mèo hãy đọc đề trong ảnh và hướng dẫn giải từng bước chi tiết nhé!',
+                  : 'Bé gửi hình ảnh đề bài toán này, Gia Sư hãy đọc đề trong ảnh và hướng dẫn giải từng bước chi tiết nhé!',
             },
             {
               type: 'image_url',
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
           : '';
       console.error('DeepSeek API Error:', deepseekResponse.status, errorText);
       return NextResponse.json(
-        { error: 'Cú Mèo đang bận một chút, bé vui lòng thử lại sau giây lát nhé!' },
+        { error: 'Gia Sư của Moon đang bận một chút, bé vui lòng thử lại sau giây lát nhé!' },
         { status: 502 }
       );
     }
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
     const data = await deepseekResponse.json();
     const reply =
       data?.choices?.[0]?.message?.content?.trim() ||
-      'Cú Mèo đã nhận được câu hỏi nhưng chưa có phản hồi, bé hãy thử lại nhé!';
+      'Gia Sư của Moon đã nhận được câu hỏi nhưng chưa có phản hồi, bé hãy thử lại nhé!';
 
     return NextResponse.json({ reply });
   } catch (error) {

@@ -21,7 +21,12 @@ describe('Grade3TutorFab', () => {
     // Click FAB to open chat
     fireEvent.click(fabButton);
     expect(screen.getByTestId('grade3-tutor-window')).toBeDefined();
-    expect(screen.getByText(/Gia Sư Cú Mèo/i)).toBeDefined();
+    expect(screen.getAllByText(/Gia Sư của Moon/i).length).toBeGreaterThanOrEqual(1);
+
+    // Verify avatar image is rendered
+    const avatarImages = screen.getAllByRole('img', { name: /Gia Sư của Moon/i });
+    expect(avatarImages.length).toBeGreaterThanOrEqual(1);
+    expect(avatarImages[0].getAttribute('src')).toBe('/images/tutor/moon-avatar.png');
 
     // Close button dismisses chat
     const closeBtn = screen.getByTestId('tutor-close-btn');
