@@ -81,5 +81,21 @@ describe('Auth Flow Integration', () => {
     expect(screen.queryByTestId('active-profile-badge')).toBeNull();
     expect(screen.getByTestId('auth-open-modal-btn')).toBeDefined();
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
+
+    // 8. Log in again with the SAME Google account -> immediately restores Bé Tít without prompting onboarding!
+    fireEvent.click(screen.getByTestId('auth-open-modal-btn'));
+    fireEvent.click(screen.getByTestId('google-sign-in-btn'));
+    fireEvent.change(screen.getByTestId('google-email-input'), {
+      target: { value: 'nguyen.van.a@gmail.com' },
+    });
+    fireEvent.click(screen.getByTestId('confirm-google-sign-in-btn'));
+
+    await waitFor(() => {
+      // Must NOT show create child modal again
+      expect(screen.queryByTestId('create-child-modal')).toBeNull();
+      // Must restore active child profile in header
+      expect(screen.getByTestId('active-profile-badge').textContent).toContain('Bé Tít');
+      expect(useAuthStore.getState().user?.children.length).toBe(1);
+    });
   });
 });

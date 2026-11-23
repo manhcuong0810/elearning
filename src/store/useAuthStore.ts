@@ -9,6 +9,32 @@ import {
 } from '@/types/auth';
 
 const STORAGE_KEY = 'elearning-parent-auth-storage';
+const ACCOUNTS_REGISTRY_KEY = 'elearning-accounts-registry';
+
+function getAccountsRegistry(): Record<string, ParentUser> {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(ACCOUNTS_REGISTRY_KEY);
+      if (raw) return JSON.parse(raw);
+    }
+  } catch {
+    // Ignore storage parse error
+  }
+  return {};
+}
+
+function saveAccountToRegistry(user: ParentUser): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const registry = getAccountsRegistry();
+      const normalizedEmail = user.email.toLowerCase().trim();
+      registry[normalizedEmail] = user;
+      window.localStorage.setItem(ACCOUNTS_REGISTRY_KEY, JSON.stringify(registry));
+    }
+  } catch {
+    // Ignore storage write error
+  }
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -25,16 +51,33 @@ export const useAuthStore = create<AuthState>()(
         try {
           const email = payload?.email?.trim() || 'phuhuynh@gmail.com';
           const fullName = payload?.fullName?.trim() || 'Phụ Huynh';
+          const normalizedEmail = email.toLowerCase();
 
-          const googleUser: ParentUser = {
-            id: `google_${Date.now()}`,
-            email,
-            fullName,
-            avatarUrl: payload?.avatarUrl || '👩‍👧',
-            provider: 'google',
-            children: payload?.initialChildren || [],
-            createdAt: new Date().toISOString(),
-          };
+          const registry = getAccountsRegistry();
+          const existingAccount = registry[normalizedEmail];
+
+          let googleUser: ParentUser;
+          if (existingAccount) {
+            // Restore existing parent account and preserve all previously created child profiles!
+            googleUser = {
+              ...existingAccount,
+              fullName: payload?.fullName?.trim() || existingAccount.fullName,
+              avatarUrl: payload?.avatarUrl || existingAccount.avatarUrl,
+              children: existingAccount.children || [],
+            };
+          } else {
+            googleUser = {
+              id: `google_${Date.now()}`,
+              email,
+              fullName,
+              avatarUrl: payload?.avatarUrl || '👩‍👧',
+              provider: 'google',
+              children: payload?.initialChildren || [],
+              createdAt: new Date().toISOString(),
+            };
+          }
+
+          saveAccountToRegistry(googleUser);
 
           set({
             user: googleUser,
@@ -77,15 +120,29 @@ export const useAuthStore = create<AuthState>()(
           throw err;
         }
 
-        const emailUser: ParentUser = {
-          id: `email_${Date.now()}`,
-          email,
-          fullName: email.split('@')[0],
-          avatarUrl: '👨‍👩‍👧',
-          provider: 'email',
-          children: [],
-          createdAt: new Date().toISOString(),
-        };
+        const normalizedEmail = email.toLowerCase().trim();
+        const registry = getAccountsRegistry();
+        const existingAccount = registry[normalizedEmail];
+
+        let emailUser: ParentUser;
+        if (existingAccount) {
+          emailUser = {
+            ...existingAccount,
+            children: existingAccount.children || [],
+          };
+        } else {
+          emailUser = {
+            id: `email_${Date.now()}`,
+            email: normalizedEmail,
+            fullName: email.split('@')[0],
+            avatarUrl: '👨‍👩‍👧',
+            provider: 'email',
+            children: [],
+            createdAt: new Date().toISOString(),
+          };
+        }
+
+        saveAccountToRegistry(emailUser);
 
         set({
           user: emailUser,
@@ -93,6 +150,10 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
+
+        if (emailUser.children && emailUser.children.length > 0) {
+          useProgressStore.getState().loadChildProgress(emailUser.children[0].id);
+        }
 
         return emailUser;
       },
@@ -124,6 +185,10 @@ export const useAuthStore = create<AuthState>()(
           throw err;
         }
 
+        const normalizedEmail = email.toLowerCase().trim();
+        const registry = getAccountsRegistry();
+        const existingAccount = registry[normalizedEmail];
+
         const initialChildren: ChildProfile[] = initialChildName
           ? [
               {
@@ -135,17 +200,19 @@ export const useAuthStore = create<AuthState>()(
                 studyMinutesToday: 0,
               },
             ]
-          : [];
+          : existingAccount?.children || [];
 
         const newUser: ParentUser = {
-          id: `user_${Date.now()}`,
+          id: existingAccount?.id || `user_${Date.now()}`,
           fullName: fullName.trim(),
-          email,
+          email: normalizedEmail,
           avatarUrl: '👨‍👩‍👧',
           provider: 'email',
           children: initialChildren,
-          createdAt: new Date().toISOString(),
+          createdAt: existingAccount?.createdAt || new Date().toISOString(),
         };
+
+        saveAccountToRegistry(newUser);
 
         set({
           user: newUser,
@@ -153,6 +220,10 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
+
+        if (newUser.children && newUser.children.length > 0) {
+          useProgressStore.getState().loadChildProgress(newUser.children[0].id);
+        }
 
         return newUser;
       },
@@ -167,11 +238,15 @@ export const useAuthStore = create<AuthState>()(
 
         if (currentUser) {
           const updatedChildren = [...(currentUser.children || []), newChild];
+          const updatedUser: ParentUser = {
+            ...currentUser,
+            children: updatedChildren,
+          };
+
+          saveAccountToRegistry(updatedUser);
+
           set({
-            user: {
-              ...currentUser,
-              children: updatedChildren,
-            },
+            user: updatedUser,
           });
           if (updatedChildren.length === 1) {
             useProgressStore.getState().loadChildProgress(newChild.id);
@@ -195,11 +270,15 @@ export const useAuthStore = create<AuthState>()(
           return child;
         });
 
+        const updatedUser: ParentUser = {
+          ...currentUser,
+          children: updatedChildren,
+        };
+
+        saveAccountToRegistry(updatedUser);
+
         set({
-          user: {
-            ...currentUser,
-            children: updatedChildren,
-          },
+          user: updatedUser,
         });
       },
 
