@@ -108,12 +108,12 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek-flash',
+        model: 'deepseek-chat',
         messages: messagesPayload,
         temperature: 0.3,
-        max_tokens: 1500,
+        max_tokens: 4096,
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(45000),
     });
 
     if (!deepseekResponse.ok) {
@@ -129,8 +129,10 @@ export async function POST(req: Request) {
     }
 
     const data = await deepseekResponse.json();
+    const messageObj = data?.choices?.[0]?.message;
     const reply =
-      data?.choices?.[0]?.message?.content?.trim() ||
+      messageObj?.content?.trim() ||
+      messageObj?.reasoning_content?.trim() ||
       'Gia Sư của Moon đã nhận được câu hỏi nhưng chưa có phản hồi, bé hãy thử lại nhé!';
 
     return NextResponse.json({ reply });

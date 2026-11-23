@@ -215,7 +215,10 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       reader.onload = () => {
         const resultStr = (reader.result as string) || '';
 
-        if (typeof Image === 'undefined' || typeof document === 'undefined') {
+        const isJsdom =
+          typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent || '');
+
+        if (typeof Image === 'undefined' || typeof document === 'undefined' || isJsdom) {
           resolve(resultStr);
           return;
         }
@@ -229,10 +232,10 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
           resolve(dataUrl);
         };
 
-        // Fallback timer if environment (e.g. JSDOM in tests) doesn't fire img.onload
+        // Generous 5s timeout for real browsers decoding high-res camera photos
         const timer = setTimeout(() => {
           cleanupAndFinish(resultStr);
-        }, 150);
+        }, 5000);
 
         img.onerror = () => {
           clearTimeout(timer);
@@ -270,7 +273,15 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
             ctx.drawImage(img, 0, 0, width, height);
 
             const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
-            cleanupAndFinish(optimizedDataUrl);
+            if (
+              optimizedDataUrl &&
+              optimizedDataUrl.startsWith('data:image/') &&
+              optimizedDataUrl.length > 100
+            ) {
+              cleanupAndFinish(optimizedDataUrl);
+            } else {
+              cleanupAndFinish(resultStr);
+            }
           } catch {
             cleanupAndFinish(resultStr);
           }
