@@ -203,21 +203,112 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressAndOptimizeImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined' || typeof FileReader === 'undefined') {
+        resolve('');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onerror = () => resolve('');
+      reader.onload = () => {
+        const resultStr = (reader.result as string) || '';
+
+        if (typeof Image === 'undefined' || typeof document === 'undefined') {
+          resolve(resultStr);
+          return;
+        }
+
+        const img = new Image();
+        let isDone = false;
+
+        const cleanupAndFinish = (dataUrl: string) => {
+          if (isDone) return;
+          isDone = true;
+          resolve(dataUrl);
+        };
+
+        // Fallback timer if environment (e.g. JSDOM in tests) doesn't fire img.onload
+        const timer = setTimeout(() => {
+          cleanupAndFinish(resultStr);
+        }, 150);
+
+        img.onerror = () => {
+          clearTimeout(timer);
+          cleanupAndFinish(resultStr);
+        };
+
+        img.onload = () => {
+          clearTimeout(timer);
+          try {
+            const maxDim = 1200;
+            let width = img.naturalWidth || img.width || 800;
+            let height = img.naturalHeight || img.height || 600;
+
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              cleanupAndFinish(resultStr);
+              return;
+            }
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            cleanupAndFinish(optimizedDataUrl);
+          } catch {
+            cleanupAndFinish(resultStr);
+          }
+        };
+
+        img.src = resultStr;
+        if (img.complete && img.naturalWidth > 0) {
+          img.onload(new Event('load') as any);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    const isImage =
+      (file.type && file.type.startsWith('image/')) ||
+      /\.(jpe?g|png|webp|heic|heif|bmp|gif)$/i.test(file.name);
+
+    if (!isImage) {
       alert('Vui lòng chọn file hình ảnh (JPEG, PNG, v.v.).');
       return;
     }
 
     audioManager.playSfx('pop');
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSelectedImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimized = await compressAndOptimizeImage(file);
+      setSelectedImage(optimized);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleRemoveImage = () => {

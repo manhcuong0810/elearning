@@ -40,16 +40,19 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const rawMessages: ChatMessage[] = body.messages || [];
+    const rawMessages: ChatMessage[] = Array.isArray(body.messages) ? [...body.messages] : [];
     const attachedImage = typeof body.image === 'string' && body.image.trim().length > 0 ? body.image.trim() : null;
 
-    // Support single 'message' payload
-    if (typeof body.message === 'string' && body.message.trim().length > 0) {
-      rawMessages.push({ role: 'user', content: body.message.trim() });
+    // Support single 'message' payload without duplicating existing last message
+    const incomingText = typeof body.message === 'string' ? body.message.trim() : '';
+    const lastRaw = rawMessages[rawMessages.length - 1];
+
+    if (incomingText && (!lastRaw || lastRaw.content !== incomingText)) {
+      rawMessages.push({ role: 'user', content: incomingText });
     } else if (attachedImage && rawMessages.length === 0) {
       rawMessages.push({
         role: 'user',
-        content: 'Bé gửi hình ảnh đề bài toán này, Gia Sư hãy đọc đề trong hình và hướng dẫn giải từng bước chi tiết nhé!',
+        content: 'Bé gửi hình ảnh đề bài toán này, Gia Sư hãy đọc kỹ các chữ số, câu hỏi và hình vẽ trong ảnh rồi hướng dẫn bé giải từng bước chi tiết nhé!',
       });
     }
 
@@ -70,15 +73,19 @@ export async function POST(req: Request) {
       const role = m.role === 'assistant' ? 'assistant' : 'user';
 
       if (role === 'user' && isLast && attachedImage) {
+        const textContent =
+          typeof m.content === 'string' &&
+          m.content.trim().length > 0 &&
+          m.content.trim() !== 'Đề bài trong ảnh đính kèm 📷'
+            ? m.content.trim()
+            : 'Bé gửi hình ảnh đề bài toán này, Gia Sư hãy đọc kỹ các chữ số, câu hỏi và hình vẽ trong ảnh rồi hướng dẫn bé giải từng bước chi tiết nhé!';
+
         messagesPayload.push({
           role: 'user',
           content: [
             {
               type: 'text',
-              text:
-                typeof m.content === 'string' && m.content.trim().length > 0
-                  ? m.content.trim()
-                  : 'Bé gửi hình ảnh đề bài toán này, Gia Sư hãy đọc đề trong ảnh và hướng dẫn giải từng bước chi tiết nhé!',
+              text: textContent,
             },
             {
               type: 'image_url',
