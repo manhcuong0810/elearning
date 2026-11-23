@@ -172,4 +172,27 @@ describe('Grade3TutorFab', () => {
     expect(screen.queryByText(/Nghe đọc/i)).toBeNull();
     expect(screen.queryByTitle(/Nghe đọc lời giải/i)).toBeNull();
   });
+
+  it('handles server errors gracefully and displays informative message', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({
+        error: 'Gia Sư của Moon đang bận một chút, bé vui lòng thử lại sau giây lát nhé!',
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    render(<Grade3TutorFab />);
+    fireEvent.click(screen.getByTestId('grade3-tutor-fab-btn'));
+
+    const input = screen.getByPlaceholderText(/Nhập đề bài toán lớp 3/i);
+    fireEvent.change(input, { target: { value: '1+1=?' } });
+    fireEvent.click(screen.getByTestId('tutor-send-btn'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Gia Sư của Moon đang bận một chút/i)
+      ).toBeDefined();
+    });
+  });
 });

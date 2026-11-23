@@ -269,7 +269,8 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       });
 
       if (!res.ok) {
-        throw new Error('Server error');
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Server error');
       }
 
       const data = await res.json();
@@ -286,13 +287,16 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, botMsg]);
-    } catch {
+    } catch (err: any) {
       audioManager.playSfx('wrong');
+      const errorMsgText =
+        typeof err?.message === 'string' && err.message !== 'Server error'
+          ? err.message
+          : 'Ôi, Gia Sư của Moon đang mở sách giải toán một lát ✨. Bé hãy kiểm tra lại kết nối và hỏi lại nhé!';
       const errorMsg: ChatMessageItem = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content:
-          'Ôi, Gia Sư của Moon đang mở sách giải toán một lát ✨. Bé hãy kiểm tra lại kết nối và hỏi lại nhé!',
+        content: errorMsgText,
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMsg]);
