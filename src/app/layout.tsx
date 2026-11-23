@@ -15,8 +15,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
-      <body className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-emerald-50 text-slate-900 antialiased">
+    <html lang="vi" suppressHydrationWarning>
+      <body
+        className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50 to-emerald-50 text-slate-900 antialiased"
+        suppressHydrationWarning
+      >
         {children}
         <Script
           src="https://accounts.google.com/gsi/client"

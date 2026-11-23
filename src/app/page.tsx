@@ -21,7 +21,12 @@ import { ActivitiesSidebar } from '@/components/dashboard/ActivitiesSidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { GUEST_CHILD_PROFILE } from '@/types/auth';
 import { CreateChildModal } from '@/components/profile/CreateChildModal';
-import { Grade3TutorFab } from '@/components/tutor/Grade3TutorFab';
+import dynamic from 'next/dynamic';
+
+const Grade3TutorFab = dynamic(
+  () => import('@/components/tutor/Grade3TutorFab').then((mod) => mod.Grade3TutorFab),
+  { ssr: false }
+);
 import { SubjectGradeSelector } from '@/components/navigation/SubjectGradeSelector';
 import { EndlessTowerModal } from '@/components/tower/EndlessTowerModal';
 
