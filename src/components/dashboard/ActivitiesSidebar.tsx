@@ -69,7 +69,7 @@ export function ActivitiesSidebar({
     },
     {
       id: 'stage_1',
-      title: 'Vượt qua 1 ải toán',
+      title: 'Vượt qua 1 ải bài học',
       icon: '🏝️',
       current: stagesCompletedToday,
       target: 1,

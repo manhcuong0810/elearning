@@ -39,7 +39,7 @@ describe('ActivitiesSidebar', () => {
 
     // Check quest titles
     expect(screen.getByText(/Thu hoạch 5 Ngôi sao/i)).toBeDefined();
-    expect(screen.getByText(/Vượt qua 1 ải toán/i)).toBeDefined();
+    expect(screen.getByText(/Vượt qua 1 ải bài học/i)).toBeDefined();
   });
 
   it('renders guest lock banner and hides daily quests & mystery chest when not authenticated', () => {
