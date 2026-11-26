@@ -22,6 +22,7 @@ describe('Grade3TutorFab', () => {
     fireEvent.click(fabButton);
     expect(screen.getByTestId('grade3-tutor-window')).toBeDefined();
     expect(screen.getAllByText(/Gia Sư của Moon/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Tất cả các môn Lớp 3/i).length).toBeGreaterThanOrEqual(1);
 
     // Verify avatar image is rendered
     const avatarImages = screen.getAllByRole('img', { name: /Gia Sư của Moon/i });

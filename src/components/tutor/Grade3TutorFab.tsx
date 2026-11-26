@@ -13,13 +13,14 @@ export interface ChatMessageItem {
 
 const DEFAULT_SUGGESTIONS = [
   '📐 Công thức tính diện tích hình chữ nhật',
+  '📖 Viết đoạn văn ngắn kể về người thân của em',
+  '🌍 Cách giới thiệu bản thân bằng Tiếng Anh lớp 3',
+  '🌱 Cơ quan tuần hoàn và hô hấp hoạt động thế nào?',
   '💡 Cách giải bài toán rút về đơn vị',
-  '🔢 Tìm thừa số chưa biết: x × 6 = 48',
-  '⏰ Cách đọc đồng hồ số La Mã',
 ];
 
 const INITIAL_GREETING =
-  'Chào bé! Mình là Gia Sư của Moon đây ✨. Em có thể gõ câu hỏi, bấm micro 🎙️ để đọc đề bài hoặc chụp ảnh 📷 gửi Gia Sư hướng dẫn nhé!';
+  'Chào bé! Mình là Gia Sư của Moon đây ✨. Mình có thể hướng dẫn bé tất cả các môn Lớp 3 (Toán, Tiếng Việt, Tiếng Anh, Tự nhiên & Xã hội...). Em hãy gõ câu hỏi, bấm micro 🎙️ hoặc chụp ảnh 📷 đề bài gửi Gia Sư nhé!';
 
 const formatInline = (text: string): React.ReactNode => {
   const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
@@ -479,7 +480,7 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
                   Gia Sư của Moon 🌙
                 </h3>
                 <p className="text-xs font-bold text-amber-800">
-                  Hỏi bài Toán Lớp 3 (DeepSeek AI)
+                  Tất cả các môn Lớp 3 (Toán, Tiếng Việt, Tiếng Anh, TN&amp;XH...)
                 </p>
               </div>
             </div>

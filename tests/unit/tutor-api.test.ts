@@ -262,4 +262,43 @@ describe('POST /api/tutor', () => {
       })
     );
   });
+
+  it('includes all Grade 3 subjects (Toán, Tiếng Việt, Tiếng Anh, Tự nhiên và Xã hội) in system prompt', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              content: 'Đoạn văn mẫu tả người thân lớp 3...',
+            },
+          },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Giúp em viết đoạn văn ngắn kể về mẹ của em môn Tiếng Việt lớp 3',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const deepseekCall = mockFetch.mock.calls.find((c) =>
+      String(c[0]).includes('api.deepseek.com')
+    );
+    expect(deepseekCall).toBeDefined();
+    const sentBody = JSON.parse(deepseekCall![1].body);
+    const systemPrompt = sentBody.messages[0].content;
+    expect(systemPrompt).toMatch(/Toán/i);
+    expect(systemPrompt).toMatch(/Tiếng Việt/i);
+    expect(systemPrompt).toMatch(/Tiếng Anh/i);
+    expect(systemPrompt).toMatch(/Tự nhiên và Xã hội/i);
+  });
 });
