@@ -78,6 +78,7 @@ async function forwardQuestionToTelegram(params: {
   questionText: string;
   attachedImage: string | null;
   studentName?: string;
+  tutorReply?: string;
 }): Promise<void> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
   const rawChatId = process.env.TELEGRAM_CHAT_ID?.trim();
@@ -87,8 +88,11 @@ async function forwardQuestionToTelegram(params: {
     const chatId = await resolveTelegramChatId(botToken, rawChatId);
     const senderLabel = params.studentName?.trim() ? ` từ ${params.studentName.trim()}` : '';
     const textBody =
-      params.questionText.trim() || '📷 [Học sinh gửi hình ảnh đề bài toán]';
-    const messageText = `📩 [Gia Sư của Moon] Câu hỏi mới${senderLabel}:\n\n${textBody}`;
+      params.questionText.trim() || '📷 [Học sinh gửi hình ảnh đề bài]';
+    const questionHeader = `📩 [Gia Sư của Moon] Câu hỏi mới${senderLabel}:\n${textBody}`;
+    const replySection = params.tutorReply?.trim()
+      ? `\n\n🤖 [Trả lời của Gia Sư]:\n${params.tutorReply.trim()}`
+      : '';
 
     if (params.attachedImage && params.attachedImage.startsWith('data:image/')) {
       const match = params.attachedImage.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
@@ -99,7 +103,7 @@ async function forwardQuestionToTelegram(params: {
         const ext = mimeType.split('/')[1] || 'jpg';
         const formData = new FormData();
         formData.append('chat_id', chatId);
-        formData.append('caption', messageText.slice(0, 1024));
+        formData.append('caption', questionHeader.slice(0, 1024));
         formData.append(
           'photo',
           new Blob([binaryBuffer], { type: mimeType }),
@@ -111,16 +115,29 @@ async function forwardQuestionToTelegram(params: {
           body: formData,
           signal: AbortSignal.timeout(10000),
         });
+
+        if (params.tutorReply?.trim()) {
+          await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: `🤖 [Trả lời của Gia Sư]:\n\n${params.tutorReply.trim()}`.slice(0, 4000),
+            }),
+            signal: AbortSignal.timeout(10000),
+          });
+        }
         return;
       }
     }
 
+    const fullMessageText = `${questionHeader}${replySection}`;
     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
-        text: messageText.slice(0, 4000),
+        text: fullMessageText.slice(0, 4000),
       }),
       signal: AbortSignal.timeout(10000),
     });
@@ -208,29 +225,20 @@ export async function POST(req: Request) {
         ? (rawMessages[rawMessages.length - 1].content as string)
         : '');
 
-    const telegramPromise = forwardQuestionToTelegram({
-      questionText: latestUserContent,
-      attachedImage,
-      studentName,
-    });
-
-    const [deepseekResponse] = await Promise.all([
-      fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: messagesPayload,
-          temperature: 0.3,
-          max_tokens: 4096,
-        }),
-        signal: AbortSignal.timeout(45000),
+    const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: messagesPayload,
+        temperature: 0.3,
+        max_tokens: 4096,
       }),
-      telegramPromise,
-    ]);
+      signal: AbortSignal.timeout(45000),
+    });
 
     if (!deepseekResponse.ok) {
       const errorText =
@@ -238,6 +246,12 @@ export async function POST(req: Request) {
           ? await deepseekResponse.text().catch(() => '')
           : '';
       console.error('DeepSeek API Error:', deepseekResponse.status, errorText);
+      await forwardQuestionToTelegram({
+        questionText: latestUserContent,
+        attachedImage,
+        studentName,
+        tutorReply: '⚠️ [DeepSeek AI tạm thời bận - chưa trả lời được]',
+      });
       return NextResponse.json(
         { error: 'Gia Sư của Moon đang bận một chút, bé vui lòng thử lại sau giây lát nhé!' },
         { status: 502 }
@@ -250,6 +264,13 @@ export async function POST(req: Request) {
       messageObj?.content?.trim() ||
       messageObj?.reasoning_content?.trim() ||
       'Gia Sư của Moon đã nhận được câu hỏi nhưng chưa có phản hồi, bé hãy thử lại nhé!';
+
+    await forwardQuestionToTelegram({
+      questionText: latestUserContent,
+      attachedImage,
+      studentName,
+      tutorReply: reply,
+    });
 
     return NextResponse.json({ reply });
   } catch (error) {

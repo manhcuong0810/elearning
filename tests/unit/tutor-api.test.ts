@@ -164,12 +164,12 @@ describe('POST /api/tutor', () => {
       expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: expect.stringContaining('12 x 5 bằng bao nhiêu ạ?'),
+        body: expect.stringMatching(/12 x 5 bằng bao nhiêu ạ\?[\s\S]*Kết quả của 12 x 5 là 60 nhé bé!/),
       })
     );
   });
 
-  it('forwards user image question to Telegram sendPhoto when image is attached', async () => {
+  it('forwards user image question to Telegram sendPhoto and sends AI reply when image is attached', async () => {
     process.env.TELEGRAM_BOT_TOKEN = '123456:ABC-DEF';
     process.env.TELEGRAM_CHAT_ID = '987654321';
 
@@ -205,6 +205,13 @@ describe('POST /api/tutor', () => {
       'https://api.telegram.org/bot123456:ABC-DEF/sendPhoto',
       expect.objectContaining({
         method: 'POST',
+      })
+    );
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.telegram.org/bot123456:ABC-DEF/sendMessage',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('Đã giải bài trong ảnh!'),
       })
     );
   });
