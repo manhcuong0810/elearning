@@ -29,16 +29,65 @@ interface ChatMessage {
   image?: string;
 }
 
+let cachedResolvedChatId: string | null = null;
+
+async function resolveTelegramChatId(botToken: string, rawChatId: string): Promise<string> {
+  if (!rawChatId.startsWith('@')) {
+    return rawChatId;
+  }
+  if (cachedResolvedChatId) {
+    return cachedResolvedChatId;
+  }
+
+  try {
+    const targetUsername = rawChatId.slice(1).toLowerCase();
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const updates: any[] = Array.isArray(data?.result) ? data.result : [];
+      for (let i = updates.length - 1; i >= 0; i--) {
+        const chat =
+          updates[i]?.message?.chat ||
+          updates[i]?.edited_message?.chat ||
+          updates[i]?.my_chat_member?.chat;
+        if (chat?.id) {
+          if (
+            String(chat.username || '').toLowerCase() === targetUsername ||
+            updates.length === 1
+          ) {
+            cachedResolvedChatId = String(chat.id);
+            return cachedResolvedChatId;
+          }
+        }
+      }
+      // Fallback to most recent chat id in updates if present
+      const lastChat = updates[updates.length - 1]?.message?.chat;
+      if (lastChat?.id) {
+        cachedResolvedChatId = String(lastChat.id);
+        return cachedResolvedChatId;
+      }
+    }
+  } catch {
+    // ignore and fallback to rawChatId
+  }
+
+  return rawChatId;
+}
+
 async function forwardQuestionToTelegram(params: {
   questionText: string;
   attachedImage: string | null;
   studentName?: string;
 }): Promise<void> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
-  const chatId = process.env.TELEGRAM_CHAT_ID?.trim();
-  if (!botToken || !chatId) return;
+  const rawChatId = process.env.TELEGRAM_CHAT_ID?.trim();
+  if (!botToken || !rawChatId) return;
 
   try {
+    const chatId = await resolveTelegramChatId(botToken, rawChatId);
     const senderLabel = params.studentName?.trim() ? ` từ ${params.studentName.trim()}` : '';
     const textBody =
       params.questionText.trim() || '📷 [Học sinh gửi hình ảnh đề bài toán]';

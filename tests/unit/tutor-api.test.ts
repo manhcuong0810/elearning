@@ -208,4 +208,58 @@ describe('POST /api/tutor', () => {
       })
     );
   });
+
+  it('auto-resolves @username TELEGRAM_CHAT_ID to numeric chat_id via getUpdates', async () => {
+    process.env.TELEGRAM_BOT_TOKEN = '9112563920:TEST_TOKEN';
+    process.env.TELEGRAM_CHAT_ID = '@manhcuong0810';
+
+    const mockFetch = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('/getUpdates')) {
+        return {
+          ok: true,
+          json: async () => ({
+            ok: true,
+            result: [
+              {
+                update_id: 1,
+                message: {
+                  chat: {
+                    id: 555666777,
+                    username: 'manhcuong0810',
+                  },
+                },
+              },
+            ],
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          ok: true,
+          choices: [{ message: { role: 'assistant', content: 'Trả lời bài toán!' } }],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: '25 x 4 bằng mấy?',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.telegram.org/bot9112563920:TEST_TOKEN/sendMessage',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"chat_id":"555666777"'),
+      })
+    );
+  });
 });
