@@ -8,6 +8,8 @@ export interface ChatMessageItem {
   role: 'user' | 'assistant';
   content: string;
   image?: string;
+  video?: string;
+  isLiveTutor?: boolean;
   timestamp: number;
 }
 
@@ -123,6 +125,8 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const recognitionRef = useRef<any>(null);
+  const sessionStartRef = useRef<number>(Date.now() - 10000);
+  const seenTelegramIdsRef = useRef<Set<string>>(new Set());
 
   const scrollToBottom = () => {
     if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
@@ -136,6 +140,54 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages, isLoading, selectedImage]);
+
+  // Poll incoming live replies (text, photo, video) from Telegram tutor
+  useEffect(() => {
+    if (!isOpen || typeof fetch === 'undefined') return;
+    let isCancelled = false;
+
+    const pollTelegramReplies = async () => {
+      try {
+        const res = await fetch(`/api/tutor?since=${sessionStartRef.current}`, {
+          method: 'GET',
+        });
+        if (!res || !res.ok || isCancelled) return;
+        const data = await res.json().catch(() => null);
+        if (!data || !Array.isArray(data.messages) || isCancelled) return;
+
+        const incoming: ChatMessageItem[] = [];
+        for (const item of data.messages) {
+          if (item && typeof item.id === 'string' && !seenTelegramIdsRef.current.has(item.id)) {
+            seenTelegramIdsRef.current.add(item.id);
+            incoming.push({
+              id: item.id,
+              role: 'assistant',
+              content: item.content || '',
+              image: item.image,
+              video: item.video,
+              isLiveTutor: true,
+              timestamp: item.timestamp || Date.now(),
+            });
+          }
+        }
+
+        if (incoming.length > 0 && !isCancelled) {
+          audioManager.playSfx('correct');
+          setMessages((prev) => [...prev, ...incoming]);
+        }
+      } catch {
+        // Ignore polling errors gracefully
+      }
+    };
+
+    pollTelegramReplies();
+    const intervalId = setInterval(pollTelegramReplies, 3500);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [isOpen, audioManager]);
 
   // Clean up speech recognition when unmounting
   useEffect(() => {
@@ -537,12 +589,32 @@ export const Grade3TutorFab: React.FC<Grade3TutorFabProps> = ({
                         : 'bg-sky-500 text-white font-medium shadow-md'
                     }`}
                   >
+                    {msg.isLiveTutor && (
+                      <div className="mb-1.5">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-black">
+                          👨‍🏫 Tin nhắn trực tiếp từ Gia Sư
+                        </span>
+                      </div>
+                    )}
                     {msg.image && (
-                      <div className="mb-2 overflow-hidden rounded-xl border-2 border-white/80 shadow-sm max-w-[200px]">
-                        <img
-                          src={msg.image}
-                          alt="Ảnh đề bài đã gửi"
-                          className="w-full h-auto max-h-40 object-cover"
+                      <div className="mb-2 overflow-hidden rounded-xl border-2 border-white/80 shadow-sm max-w-[240px]">
+                        <a href={msg.image} target="_blank" rel="noopener noreferrer">
+                          <img
+                            src={msg.image}
+                            alt="Ảnh đề bài hoặc hướng dẫn"
+                            className="w-full h-auto max-h-52 object-cover"
+                          />
+                        </a>
+                      </div>
+                    )}
+                    {msg.video && (
+                      <div className="mb-2 overflow-hidden rounded-xl border-2 border-amber-300 shadow-sm max-w-[260px] bg-slate-950">
+                        <video
+                          data-testid="tutor-message-video"
+                          src={msg.video}
+                          controls
+                          playsInline
+                          className="w-full h-auto max-h-56"
                         />
                       </div>
                     )}

@@ -260,3 +260,148 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+    const rawChatId = process.env.TELEGRAM_CHAT_ID?.trim();
+    const url = new URL(req.url);
+    const fileId = url.searchParams.get('fileId')?.trim();
+
+    // 1. Proxy photo / video media file from Telegram
+    if (fileId) {
+      if (!botToken) {
+        return NextResponse.json({ error: 'Chưa cấu hình Telegram Bot.' }, { status: 404 });
+      }
+
+      const fileInfoRes = await fetch(
+        `https://api.telegram.org/bot${botToken}/getFile?file_id=${encodeURIComponent(fileId)}`,
+        { method: 'GET', signal: AbortSignal.timeout(10000) }
+      );
+      if (!fileInfoRes.ok) {
+        return NextResponse.json({ error: 'Không tìm thấy tệp trên Telegram.' }, { status: 404 });
+      }
+
+      const fileInfoData = await fileInfoRes.json();
+      const filePath: string | undefined = fileInfoData?.result?.file_path;
+      if (!filePath) {
+        return NextResponse.json({ error: 'Đường dẫn tệp không hợp lệ.' }, { status: 404 });
+      }
+
+      const mediaRes = await fetch(
+        `https://api.telegram.org/file/bot${botToken}/${filePath}`,
+        { method: 'GET', signal: AbortSignal.timeout(20000) }
+      );
+      if (!mediaRes.ok) {
+        return NextResponse.json({ error: 'Không thể tải tệp từ Telegram.' }, { status: 502 });
+      }
+
+      const lowerPath = filePath.toLowerCase();
+      let contentType = mediaRes.headers?.get?.('Content-Type') || 'application/octet-stream';
+      if (lowerPath.endsWith('.mp4')) contentType = 'video/mp4';
+      else if (lowerPath.endsWith('.mov')) contentType = 'video/quicktime';
+      else if (lowerPath.endsWith('.webm')) contentType = 'video/webm';
+      else if (lowerPath.endsWith('.png')) contentType = 'image/png';
+      else if (lowerPath.endsWith('.webp')) contentType = 'image/webp';
+      else if (lowerPath.endsWith('.gif')) contentType = 'image/gif';
+      else if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) contentType = 'image/jpeg';
+
+      return new NextResponse(mediaRes.body, {
+        status: 200,
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=86400',
+        },
+      });
+    }
+
+    // 2. Poll incoming tutor messages (text, photo, video) from Telegram getUpdates
+    if (!botToken) {
+      return NextResponse.json({ messages: [] });
+    }
+
+    const sinceMs = Number(url.searchParams.get('since') || '0');
+    const updatesRes = await fetch(
+      `https://api.telegram.org/bot${botToken}/getUpdates?allowed_updates=%5B%22message%22%5D`,
+      {
+        method: 'GET',
+        headers: { 'Cache-Control': 'no-store' },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+
+    if (!updatesRes.ok) {
+      return NextResponse.json({ messages: [] });
+    }
+
+    const updatesData = await updatesRes.json();
+    const updates: any[] = Array.isArray(updatesData?.result) ? updatesData.result : [];
+    const targetClean = rawChatId ? rawChatId.replace(/^@/, '').toLowerCase() : '';
+
+    const messages = updates
+      .map((u) => {
+        const msg = u?.message || u?.edited_message;
+        if (!msg || !msg.message_id) return null;
+
+        // Verify message came from the authorized teacher chat
+        if (targetClean) {
+          const chatIdStr = String(msg.chat?.id || '');
+          const chatUsername = String(msg.chat?.username || '').toLowerCase();
+          if (chatIdStr !== targetClean && chatUsername !== targetClean) {
+            return null;
+          }
+        }
+
+        const rawText = typeof msg.text === 'string' ? msg.text.trim() : '';
+        if (rawText === '/start') return null;
+
+        const msgTimestamp = (typeof msg.date === 'number' ? msg.date : Math.floor(Date.now() / 1000)) * 1000;
+        if (sinceMs > 0 && msgTimestamp < sinceMs) {
+          return null;
+        }
+
+        const photos: any[] = Array.isArray(msg.photo) ? msg.photo : [];
+        const largestPhoto = photos.length > 0 ? photos[photos.length - 1] : null;
+        const docMime = String(msg.document?.mime_type || '');
+
+        const photoFileId: string | undefined =
+          largestPhoto?.file_id ||
+          (docMime.startsWith('image/') ? msg.document?.file_id : undefined);
+
+        const videoFileId: string | undefined =
+          msg.video?.file_id ||
+          msg.animation?.file_id ||
+          (docMime.startsWith('video/') ? msg.document?.file_id : undefined);
+
+        const textContent =
+          rawText ||
+          (typeof msg.caption === 'string' ? msg.caption.trim() : '') ||
+          (videoFileId
+            ? '🎬 Gia Sư gửi video hướng dẫn'
+            : photoFileId
+            ? '🖼️ Gia Sư gửi hình ảnh hướng dẫn'
+            : '');
+
+        if (!textContent && !photoFileId && !videoFileId) {
+          return null;
+        }
+
+        return {
+          id: `tg-${msg.message_id}`,
+          updateId: u.update_id,
+          role: 'assistant' as const,
+          isLiveTutor: true,
+          content: textContent,
+          image: photoFileId ? `/api/tutor?fileId=${encodeURIComponent(photoFileId)}` : undefined,
+          video: videoFileId ? `/api/tutor?fileId=${encodeURIComponent(videoFileId)}` : undefined,
+          timestamp: msgTimestamp,
+        };
+      })
+      .filter(Boolean);
+
+    return NextResponse.json({ messages });
+  } catch (error) {
+    console.warn('Error in GET /api/tutor:', error);
+    return NextResponse.json({ messages: [] });
+  }
+}

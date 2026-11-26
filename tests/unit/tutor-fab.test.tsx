@@ -196,4 +196,46 @@ describe('Grade3TutorFab', () => {
       ).toBeDefined();
     });
   });
+
+  it('displays incoming Telegram tutor replies (text, photo, and video) in the chat window', async () => {
+    const nowMs = Date.now();
+    const mockFetch = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      if (!init || init.method === 'GET' || String(url).includes('/api/tutor?')) {
+        return {
+          ok: true,
+          json: async () => ({
+            messages: [
+              {
+                id: 'tg-901',
+                role: 'assistant',
+                isLiveTutor: true,
+                content: 'Thầy gửi hướng dẫn kèm ảnh và video cho con nhé!',
+                image: '/api/tutor?fileId=photo_901',
+                video: '/api/tutor?fileId=video_901',
+                timestamp: nowMs,
+              },
+            ],
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ reply: 'OK' }),
+      };
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    render(<Grade3TutorFab />);
+    fireEvent.click(screen.getByTestId('grade3-tutor-fab-btn'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Thầy gửi hướng dẫn kèm ảnh và video cho con nhé!/i)
+      ).toBeDefined();
+    });
+
+    const videoEl = screen.getByTestId('tutor-message-video');
+    expect(videoEl).toBeDefined();
+    expect(videoEl.getAttribute('src')).toBe('/api/tutor?fileId=video_901');
+  });
 });
