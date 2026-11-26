@@ -126,4 +126,86 @@ describe('POST /api/tutor', () => {
       })
     );
   });
+
+  it('forwards user text question to Telegram when TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are configured', async () => {
+    process.env.TELEGRAM_BOT_TOKEN = '123456:ABC-DEF';
+    process.env.TELEGRAM_CHAT_ID = '987654321';
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              content: 'Kết quả của 12 x 5 là 60 nhé bé!',
+            },
+          },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: '12 x 5 bằng bao nhiêu ạ?',
+        studentName: 'Bé Moon',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.telegram.org/bot123456:ABC-DEF/sendMessage',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: expect.stringContaining('12 x 5 bằng bao nhiêu ạ?'),
+      })
+    );
+  });
+
+  it('forwards user image question to Telegram sendPhoto when image is attached', async () => {
+    process.env.TELEGRAM_BOT_TOKEN = '123456:ABC-DEF';
+    process.env.TELEGRAM_CHAT_ID = '987654321';
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        choices: [
+          {
+            message: {
+              role: 'assistant',
+              content: 'Đã giải bài trong ảnh!',
+            },
+          },
+        ],
+      }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const req = new Request('http://localhost:3000/api/tutor', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: 'Giải bài toán hình học này giúp con',
+        image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.telegram.org/bot123456:ABC-DEF/sendPhoto',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    );
+  });
 });

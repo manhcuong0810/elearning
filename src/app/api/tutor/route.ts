@@ -29,6 +29,60 @@ interface ChatMessage {
   image?: string;
 }
 
+async function forwardQuestionToTelegram(params: {
+  questionText: string;
+  attachedImage: string | null;
+  studentName?: string;
+}): Promise<void> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const chatId = process.env.TELEGRAM_CHAT_ID?.trim();
+  if (!botToken || !chatId) return;
+
+  try {
+    const senderLabel = params.studentName?.trim() ? ` từ ${params.studentName.trim()}` : '';
+    const textBody =
+      params.questionText.trim() || '📷 [Học sinh gửi hình ảnh đề bài toán]';
+    const messageText = `📩 [Gia Sư của Moon] Câu hỏi mới${senderLabel}:\n\n${textBody}`;
+
+    if (params.attachedImage && params.attachedImage.startsWith('data:image/')) {
+      const match = params.attachedImage.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+      if (match) {
+        const mimeType = match[1];
+        const base64Data = match[2];
+        const binaryBuffer = Buffer.from(base64Data, 'base64');
+        const ext = mimeType.split('/')[1] || 'jpg';
+        const formData = new FormData();
+        formData.append('chat_id', chatId);
+        formData.append('caption', messageText.slice(0, 1024));
+        formData.append(
+          'photo',
+          new Blob([binaryBuffer], { type: mimeType }),
+          `question.${ext}`
+        );
+
+        await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+          method: 'POST',
+          body: formData,
+          signal: AbortSignal.timeout(10000),
+        });
+        return;
+      }
+    }
+
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: messageText.slice(0, 4000),
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (err) {
+    console.warn('Telegram notification failed:', err);
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -101,20 +155,36 @@ export async function POST(req: Request) {
       }
     });
 
-    const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: messagesPayload,
-        temperature: 0.3,
-        max_tokens: 4096,
-      }),
-      signal: AbortSignal.timeout(45000),
+    const studentName = typeof body.studentName === 'string' ? body.studentName.trim() : undefined;
+    const latestUserContent =
+      incomingText ||
+      (typeof rawMessages[rawMessages.length - 1]?.content === 'string'
+        ? (rawMessages[rawMessages.length - 1].content as string)
+        : '');
+
+    const telegramPromise = forwardQuestionToTelegram({
+      questionText: latestUserContent,
+      attachedImage,
+      studentName,
     });
+
+    const [deepseekResponse] = await Promise.all([
+      fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: messagesPayload,
+          temperature: 0.3,
+          max_tokens: 4096,
+        }),
+        signal: AbortSignal.timeout(45000),
+      }),
+      telegramPromise,
+    ]);
 
     if (!deepseekResponse.ok) {
       const errorText =
